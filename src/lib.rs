@@ -77,6 +77,8 @@ pub(crate) mod skills;
 #[cfg(test)]
 pub(crate) mod test_locks;
 pub mod tools;
+#[cfg(feature = "tui-ratatui")]
+pub mod tui;
 pub(crate) mod tunnel;
 pub mod update;
 pub(crate) mod util;
