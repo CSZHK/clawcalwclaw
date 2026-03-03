@@ -2,7 +2,7 @@
 
 This file is the canonical table of contents for the documentation system.
 
-Last refreshed: **February 28, 2026**.
+Last refreshed: **March 3, 2026**.
 
 ## Language Entry
 
@@ -105,7 +105,12 @@ Last refreshed: **February 28, 2026**.
 - [sop/observability.md](sop/observability.md)
 - [sop/cookbook.md](sop/cookbook.md)
 
-### 8) Project Status & Snapshot
+### 8) Architecture & Design Principles
+
+- [architecture-and-principles.md](architecture-and-principles.md)
+- [agent-prompt-architecture.md](agent-prompt-architecture.md)
+
+### 9) Project Status & Snapshot
 
 - [project/README.md](project/README.md)
 - [project-triage-snapshot-2026-02-18.md](project-triage-snapshot-2026-02-18.md)
