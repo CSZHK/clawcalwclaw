@@ -2388,6 +2388,7 @@ pub enum ProxyScope {
     Environment,
     /// Apply proxy to all clawclawclaw-managed HTTP traffic (default).
     #[default]
+    #[serde(alias = "zeroclaw", alias = "internal", alias = "core")]
     Clawclawclaw,
     /// Apply proxy only to explicitly listed service selectors.
     Services,
@@ -2852,7 +2853,7 @@ pub fn build_runtime_proxy_client_with_timeouts(
 fn parse_proxy_scope(raw: &str) -> Option<ProxyScope> {
     match raw.trim().to_ascii_lowercase().as_str() {
         "environment" | "env" => Some(ProxyScope::Environment),
-        "clawclawclaw" | "internal" | "core" => Some(ProxyScope::Clawclawclaw),
+        "clawclawclaw" | "zeroclaw" | "internal" | "core" => Some(ProxyScope::Clawclawclaw),
         "services" | "service" => Some(ProxyScope::Services),
         _ => None,
     }
@@ -13795,6 +13796,22 @@ default_model = "legacy-model"
             .is_some_and(|value| value.contains("localhost")));
 
         clear_proxy_env_test_vars();
+    }
+
+    #[test]
+    async fn proxy_scope_deserializes_legacy_zeroclaw_alias() {
+        let _env_guard = env_override_lock().await;
+
+        let proxy: ProxyConfig = toml::from_str(
+            r#"
+enabled = true
+scope = "zeroclaw"
+http_proxy = "http://127.0.0.1:7890"
+"#,
+        )
+        .expect("proxy scope legacy alias should parse");
+
+        assert_eq!(proxy.scope, ProxyScope::Clawclawclaw);
     }
 
     fn runtime_proxy_cache_contains(cache_key: &str) -> bool {
