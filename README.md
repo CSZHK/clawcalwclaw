@@ -103,6 +103,9 @@ cd zeroclaw
 
 ```bash
 cargo install zeroclaw
+
+# Include full-screen terminal UI support in source installs
+cargo install zeroclaw --features tui-ratatui
 ```
 
 ### First Run
@@ -116,6 +119,9 @@ zeroclaw gateway
 
 # Or chat directly
 zeroclaw chat "Hello!"
+
+# Full-screen terminal UI (requires build with --features tui-ratatui)
+zeroclaw tui
 ```
 
 For detailed setup options, see [docs/one-click-bootstrap.md](docs/one-click-bootstrap.md).
