@@ -1,0 +1,78 @@
+{
+  "plan": {
+    "version": "1.0",
+    "scene": "generic-multi-image",
+    "outputDir": "/tmp/zeroclaw-wt-kang-artwork/assets/brand",
+    "images": [
+      {
+        "index": 1,
+        "filename": "01-hero-private-agent.png",
+        "role": "primary",
+        "aspectRatio": "16:9",
+        "quality": "2k",
+        "prompt": "A cinematic, ultra-clean hero illustration for an open-source project named clawclawclaw, showing a private personal AI runtime as a glowing command center on a desk at night. Main subject: a terminal-first control interface with elegant panel composition, subtle lobster-inspired claw emblem integrated into the UI glass reflections, no literal text. Environment: modern self-hosted workstation, compact server node, soft ambient fog, deep depth of field. Lighting: teal and warm amber dual-light setup, controlled highlights, soft shadows, premium contrast. Composition: left side negative space for title overlay, wide 16:9 banner framing, polished but realistic digital painting style, high detail, clean edges, no watermark, no logo text, no gibberish."
+      },
+      {
+        "index": 2,
+        "filename": "02-brand-emblem-concept.png",
+        "role": "supporting",
+        "aspectRatio": "1:1",
+        "quality": "2k",
+        "prompt": "A minimal yet powerful brand concept image for clawclawclaw: a stylized lobster-claw inspired emblem forged from brushed metal and translucent glass, floating over a dark matte surface with subtle circuit traces. Subject: single emblem object centered, elegant geometry, premium craftsmanship feel. Environment: abstract studio backdrop with shallow haze, no text, no letters. Lighting: dramatic rim light in cyan and soft orange bounce, micro-reflections showing precision and privacy-tech mood. Color: restrained palette, graphite black, steel silver, deep teal accents. Composition: centered 1:1 product-shot style, high-fidelity rendering, crisp contours, refined texture, no watermark, no typographic elements."
+      },
+      {
+        "index": 3,
+        "filename": "03-architecture-visual.png",
+        "role": "detail",
+        "aspectRatio": "4:3",
+        "quality": "2k",
+        "prompt": "A technical concept illustration visualizing a modular private agent architecture. Subject: layered blocks and flowing data paths representing providers, channels, tools, memory, and runtime adapters, arranged as a clean systems map without words. Environment: semi-dark blueprint-like digital space with subtle particles and depth layers. Lighting: cool directional key light with warm secondary accents to create hierarchy and focus. Composition: isometric 4:3 scene, clear visual separation between modules, elegant motion trails indicating data flow, balanced negative space, premium engineering aesthetic, high clarity, no text labels, no watermark, no clutter."
+      },
+      {
+        "index": 4,
+        "filename": "04-terminal-atmosphere.png",
+        "role": "atmosphere",
+        "aspectRatio": "16:9",
+        "quality": "2k",
+        "prompt": "An atmospheric terminal-first productivity scene for a personal private AI agent workflow. Subject: multiple dark-mode terminal panes with clean structured output blocks and subtle charts, viewed at a slight angle, with one central focus terminal glowing softly. Environment: quiet midnight workspace, mechanical keyboard, compact hardware node, cable management neat and intentional. Lighting: moody low-key cinematic light, cool blue ambient with warm practical desk lamp, volumetric glow. Composition: wide 16:9 cinematic framing with layered foreground and background for depth, modern editorial tech illustration style, highly detailed but uncluttered, no readable text, no watermark, no branding words."
+      }
+    ]
+  },
+  "results": [
+    {
+      "index": 1,
+      "filename": "01-hero-private-agent.png",
+      "status": "success",
+      "outputPath": "/tmp/zeroclaw-wt-kang-artwork/assets/brand/01-hero-private-agent.png",
+      "durationMs": 122942
+    },
+    {
+      "index": 2,
+      "filename": "02-brand-emblem-concept.png",
+      "status": "success",
+      "outputPath": "/tmp/zeroclaw-wt-kang-artwork/assets/brand/02-brand-emblem-concept.png",
+      "durationMs": 107579
+    },
+    {
+      "index": 3,
+      "filename": "03-architecture-visual.png",
+      "status": "success",
+      "outputPath": "/tmp/zeroclaw-wt-kang-artwork/assets/brand/03-architecture-visual.png",
+      "durationMs": 239113
+    },
+    {
+      "index": 4,
+      "filename": "04-terminal-atmosphere.png",
+      "status": "success",
+      "outputPath": "/tmp/zeroclaw-wt-kang-artwork/assets/brand/04-terminal-atmosphere.png",
+      "durationMs": 208773
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "succeeded": 4,
+    "failed": 0,
+    "totalDurationMs": 678408
+  },
+  "executedAt": "2026-03-04T04:46:54.960Z"
+}

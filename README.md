@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="zero-claw.jpeg" alt="clawclawclaw" width="200" />
+  <img src="assets/brand/01-hero-private-agent.png" alt="clawclawclaw hero" width="860" />
 </p>
 
 <h1 align="center">clawclawclaw 🦞</h1>
@@ -58,6 +58,14 @@ It keeps the Rust-first architecture and high performance foundation, while push
 - Strong terminal ergonomics, including TUI mode (`--features tui-ratatui`).
 - Service-oriented always-on mode for long-running agent workflows.
 - Broad integration surface (providers/channels/tools) while preserving explicit policy controls.
+
+## Visual Assets
+
+<p align="center">
+  <img src="assets/brand/02-brand-emblem-concept.png" alt="brand emblem concept" width="260" />
+  <img src="assets/brand/03-architecture-visual.png" alt="architecture visual" width="346" />
+  <img src="assets/brand/04-terminal-atmosphere.png" alt="terminal atmosphere" width="346" />
+</p>
 
 ## Runtime Compatibility & Migration
 
