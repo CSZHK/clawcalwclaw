@@ -14,8 +14,8 @@ use super::registry::PluginRegistry;
 use crate::config::PluginsConfig;
 use crate::tools::ToolResult;
 
-const ABI_TOOL_EXEC_FN: &str = "zeroclaw_tool_execute";
-const ABI_PROVIDER_CHAT_FN: &str = "zeroclaw_provider_chat";
+const ABI_TOOL_EXEC_FN: &str = "clawclawclaw_tool_execute";
+const ABI_PROVIDER_CHAT_FN: &str = "clawclawclaw_provider_chat";
 const ABI_ALLOC_FN: &str = "alloc";
 const ABI_DEALLOC_FN: &str = "dealloc";
 const MAX_WASM_PAYLOAD_BYTES_FALLBACK: usize = 4 * 1024 * 1024;
@@ -479,7 +479,7 @@ mod tests {
 id = "{id}"
 version = "1.0.0"
 module_path = "plugins/{id}.wasm"
-wit_packages = ["zeroclaw:tools@1.0.0", "zeroclaw:providers@1.0.0"]
+wit_packages = ["clawclawclaw:tools@1.0.0", "clawclawclaw:providers@1.0.0"]
 providers = ["{provider}"]
 
 [[tools]]

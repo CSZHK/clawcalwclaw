@@ -1064,7 +1064,7 @@ mod tests {
         });
         cfg.tunnel.ngrok = Some(NgrokTunnelConfig {
             auth_token: "ngrok-real-token".to_string(),
-            domain: Some("zeroclaw.ngrok.app".to_string()),
+            domain: Some("clawclawclaw.ngrok.app".to_string()),
         });
         cfg.channels_config.wati = Some(WatiConfig {
             api_token: "wati-real-token".to_string(),
@@ -1181,7 +1181,7 @@ mod tests {
         });
         current.tunnel.ngrok = Some(NgrokTunnelConfig {
             auth_token: "ngrok-real-token".to_string(),
-            domain: Some("zeroclaw.ngrok.app".to_string()),
+            domain: Some("clawclawclaw.ngrok.app".to_string()),
         });
         current.channels_config.wati = Some(WatiConfig {
             api_token: "wati-real-token".to_string(),

@@ -119,7 +119,7 @@ impl FromMeCache {
 /// happens in the gateway when BlueBubbles POSTs webhook events.
 ///
 /// BlueBubbles server must be configured to send webhooks to:
-///   `https://<your-zeroclaw-host>/bluebubbles`
+///   `https://<your-clawclawclaw-host>/bluebubbles`
 ///
 /// Authentication: BlueBubbles uses `?password=<password>` as a query
 /// parameter on every API call (not an Authorization header).
@@ -948,7 +948,7 @@ mod tests {
             "type": "new-message",
             "data": {
                 "guid": "p:0/abc123",
-                "text": "Hello ZeroClaw!",
+                "text": "Hello clawclawclaw!",
                 "isFromMe": false,
                 "dateCreated": 1_708_987_654_321_u64,
                 "handle": { "address": "+1_234_567_890" },
@@ -961,7 +961,7 @@ mod tests {
         assert_eq!(msgs.len(), 1);
         assert_eq!(msgs[0].id, "p:0/abc123");
         assert_eq!(msgs[0].sender, "+1_234_567_890");
-        assert_eq!(msgs[0].content, "Hello ZeroClaw!");
+        assert_eq!(msgs[0].content, "Hello clawclawclaw!");
         assert_eq!(msgs[0].reply_target, "iMessage;-;+1_234_567_890");
         assert_eq!(msgs[0].channel, "bluebubbles");
         assert_eq!(msgs[0].timestamp, 1_708_987_654); // ms → s

@@ -1,12 +1,12 @@
 #![forbid(unsafe_code)]
 
-//! __SKILL_NAME__ — ZeroClaw Skill (Rust / WASI)
+//! __SKILL_NAME__ — clawclawclaw Skill (Rust / WASI)
 //!
 //! Returns mock weather data for a given city.
 //! Protocol: read JSON from stdin, write JSON result to stdout.
 //! Build:    cargo build --target wasm32-wasip1 --release
 //!           cp target/wasm32-wasip1/release/__BIN_NAME__.wasm tool.wasm
-//! Test:     zeroclaw skill test . --args '{"city":"hanoi"}'
+//! Test:     clawclawclaw skill test . --args '{"city":"hanoi"}'
 
 use std::io::{self, Read, Write};
 use serde::{Deserialize, Serialize};

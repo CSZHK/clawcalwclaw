@@ -274,7 +274,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_creates_file() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -296,7 +296,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_creates_parent_dirs() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_nested");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_nested");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -317,7 +317,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_overwrites_existing() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_overwrite");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_overwrite");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
         tokio::fs::write(dir.join("exist.txt"), "old")
@@ -341,7 +341,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_blocks_path_traversal() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_traversal");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_traversal");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -372,11 +372,11 @@ mod tests {
         let home = std::env::var_os("HOME")
             .map(std::path::PathBuf::from)
             .expect("HOME should be available for tilde expansion tests");
-        let target_rel = format!("zeroclaw_tilde_write_{}.txt", uuid::Uuid::new_v4());
+        let target_rel = format!("clawclawclaw_tilde_write_{}.txt", uuid::Uuid::new_v4());
         let target_path = home.join(&target_rel);
         let _ = tokio::fs::remove_file(&target_path).await;
 
-        let workspace = std::env::temp_dir().join("zeroclaw_test_file_write_tilde_workspace");
+        let workspace = std::env::temp_dir().join("clawclawclaw_test_file_write_tilde_workspace");
         let _ = tokio::fs::remove_dir_all(&workspace).await;
         tokio::fs::create_dir_all(&workspace).await.unwrap();
 
@@ -414,7 +414,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_empty_content() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_empty");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_empty");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -431,7 +431,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_blocks_sensitive_file_by_default() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_sensitive_blocked");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_sensitive_blocked");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -454,7 +454,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_allows_sensitive_file_when_configured() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_sensitive_allowed");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_sensitive_allowed");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -480,7 +480,7 @@ mod tests {
     async fn file_write_blocks_symlink_escape() {
         use std::os::unix::fs::symlink;
 
-        let root = std::env::temp_dir().join("zeroclaw_test_file_write_symlink_escape");
+        let root = std::env::temp_dir().join("clawclawclaw_test_file_write_symlink_escape");
         let workspace = root.join("workspace");
         let outside = root.join("outside");
 
@@ -509,7 +509,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_blocks_readonly_mode() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_readonly");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_readonly");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -528,7 +528,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_blocks_when_rate_limited() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_rate_limited");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_rate_limited");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 
@@ -560,7 +560,7 @@ mod tests {
     async fn file_write_blocks_symlink_target_file() {
         use std::os::unix::fs::symlink;
 
-        let root = std::env::temp_dir().join("zeroclaw_test_file_write_symlink_target");
+        let root = std::env::temp_dir().join("clawclawclaw_test_file_write_symlink_target");
         let workspace = root.join("workspace");
         let outside = root.join("outside");
 
@@ -598,7 +598,7 @@ mod tests {
     #[cfg(unix)]
     #[tokio::test]
     async fn file_write_blocks_hardlink_target_file() {
-        let root = std::env::temp_dir().join("zeroclaw_test_file_write_hardlink_target");
+        let root = std::env::temp_dir().join("clawclawclaw_test_file_write_hardlink_target");
         let workspace = root.join("workspace");
         let outside = root.join("outside");
 
@@ -634,7 +634,7 @@ mod tests {
 
     #[tokio::test]
     async fn file_write_blocks_null_byte_in_path() {
-        let dir = std::env::temp_dir().join("zeroclaw_test_file_write_null");
+        let dir = std::env::temp_dir().join("clawclawclaw_test_file_write_null");
         let _ = tokio::fs::remove_dir_all(&dir).await;
         tokio::fs::create_dir_all(&dir).await.unwrap();
 

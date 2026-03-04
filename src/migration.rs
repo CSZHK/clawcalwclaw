@@ -191,7 +191,7 @@ async fn migrate_openclaw_memory(
     }
 
     if paths_equal(&source_workspace, &config.workspace_dir) {
-        bail!("Source workspace matches current ZeroClaw workspace; refusing self-migration");
+        bail!("Source workspace matches current clawclawclaw workspace; refusing self-migration");
     }
 
     let entries = collect_source_entries(source_workspace, &mut stats)?;

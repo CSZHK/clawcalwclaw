@@ -1,6 +1,6 @@
 # Android Setup
 
-ZeroClaw provides prebuilt binaries for Android devices.
+clawclawclaw provides prebuilt binaries for Android devices.
 
 ## Supported Architectures
 
@@ -11,7 +11,7 @@ ZeroClaw provides prebuilt binaries for Android devices.
 
 ## Installation via Termux
 
-The easiest way to run ZeroClaw on Android is via [Termux](https://termux.dev/).
+The easiest way to run clawclawclaw on Android is via [Termux](https://termux.dev/).
 
 ### 1. Install Termux
 
@@ -19,7 +19,7 @@ Download from [F-Droid](https://f-droid.org/packages/com.termux/) (recommended) 
 
 > ⚠️ **Note:** The Play Store version is outdated and unsupported.
 
-### 2. Download ZeroClaw
+### 2. Download clawclawclaw
 
 ```bash
 # Check your architecture
@@ -28,36 +28,36 @@ uname -m
 
 # Download the appropriate binary
 # For 64-bit (aarch64):
-curl -LO https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-aarch64-linux-android.tar.gz
-tar xzf zeroclaw-aarch64-linux-android.tar.gz
+curl -LO https://github.com/CSZHK/clawcalwclaw/releases/latest/download/clawclawclaw-aarch64-linux-android.tar.gz
+tar xzf clawclawclaw-aarch64-linux-android.tar.gz
 
 # For 32-bit (armv7):
-curl -LO https://github.com/zeroclaw-labs/zeroclaw/releases/latest/download/zeroclaw-armv7-linux-androideabi.tar.gz
-tar xzf zeroclaw-armv7-linux-androideabi.tar.gz
+curl -LO https://github.com/CSZHK/clawcalwclaw/releases/latest/download/clawclawclaw-armv7-linux-androideabi.tar.gz
+tar xzf clawclawclaw-armv7-linux-androideabi.tar.gz
 ```
 
 ### 3. Install and Run
 
 ```bash
-chmod +x zeroclaw
-mv zeroclaw $PREFIX/bin/
+chmod +x clawclawclaw
+mv clawclawclaw $PREFIX/bin/
 
 # Verify installation
-zeroclaw --version
+clawclawclaw --version
 
 # Run setup
-zeroclaw onboard
+clawclawclaw onboard
 ```
 
 ## Direct Installation via ADB
 
-For advanced users who want to run ZeroClaw outside Termux:
+For advanced users who want to run clawclawclaw outside Termux:
 
 ```bash
 # From your computer with ADB
-adb push zeroclaw /data/local/tmp/
-adb shell chmod +x /data/local/tmp/zeroclaw
-adb shell /data/local/tmp/zeroclaw --version
+adb push clawclawclaw /data/local/tmp/
+adb shell chmod +x /data/local/tmp/clawclawclaw
+adb shell /data/local/tmp/clawclawclaw --version
 ```
 
 > ⚠️ Running outside Termux requires a rooted device or specific permissions for full functionality.
@@ -70,7 +70,7 @@ adb shell /data/local/tmp/zeroclaw --version
 
 ## Building from Source
 
-ZeroClaw supports two Android source-build workflows.
+clawclawclaw supports two Android source-build workflows.
 
 ### A) Build directly inside Termux (on-device)
 
@@ -156,7 +156,7 @@ scripts/android/termux_source_build_check.sh \
   --target aarch64-linux-android \
   --mode ndk-cross \
   --diagnose-log /path/to/cargo-error.log \
-  --json-output /tmp/zeroclaw-android-selfcheck.json
+  --json-output /tmp/clawclawclaw-android-selfcheck.json
 ```
 
 For pipeline usage, output JSON directly to stdout:
@@ -183,7 +183,7 @@ scripts/android/termux_source_build_check.sh \
   --target aarch64-linux-android \
   --mode ndk-cross \
   --diagnose-log /path/to/cargo-error.log \
-  --json-output /tmp/zeroclaw-android-selfcheck.json \
+  --json-output /tmp/clawclawclaw-android-selfcheck.json \
   --strict
 ```
 
@@ -192,7 +192,7 @@ scripts/android/termux_source_build_check.sh \
 ### "Permission denied"
 
 ```bash
-chmod +x zeroclaw
+chmod +x clawclawclaw
 ```
 
 ### "not found" or linker errors

@@ -1,5 +1,5 @@
 """
-Built-in tools for ZeroClaw agents.
+Built-in tools for clawclawclaw agents.
 """
 
 from .base import tool

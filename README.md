@@ -61,6 +61,11 @@ Use this board for important notices (breaking changes, security advisories, mai
 | 2026-03-04 | _Important_ | clawclawclaw is independently maintained as a personal fork.                                                                                                                                                                                                                                                                                           | Use [CSZHK/clawcalwclaw](https://github.com/CSZHK/clawcalwclaw) as the canonical source for code, issues, and releases.                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | 2026-02-19 | _Important_ | Anthropic updated the Authentication and Credential Use terms on 2026-02-19. Claude Code OAuth tokens (Free, Pro, Max) are intended exclusively for Claude Code and Claude.ai; using OAuth tokens from Claude Free/Pro/Max in any other product, tool, or service (including Agent SDK) is not permitted and may violate the Consumer Terms of Service. | Please temporarily avoid Claude Code OAuth integrations to prevent potential loss. Original clause: [Authentication and Credential Use](https://code.claude.com/docs/en/legal-and-compliance#authentication-and-credential-use).                                                                                                                                                                                                                                                                                                                                                                                    |
 
+### Upstream Acknowledgement
+
+This project is independently maintained as **clawclawclaw**, and is based on upstream **ZeroClaw** work.  
+Respect and thanks to the original maintainers: <https://github.com/zeroclaw-labs/zeroclaw>.
+
 ### ✨ Features
 
 - 🏎️ **Lean Runtime by Default:** Common CLI and status workflows run in a few-megabyte memory envelope on release builds.
@@ -81,10 +86,10 @@ Use this board for important notices (breaking changes, security advisories, mai
 ### Option 1: Homebrew (macOS/Linuxbrew)
 
 ```bash
-brew install zeroclaw
+brew install clawclawclaw
 ```
 
-> Current executable name remains `zeroclaw` for compatibility.
+> Current executable name remains `clawclawclaw` for compatibility.
 
 ### Option 2: Clone + Bootstrap
 
@@ -99,26 +104,26 @@ cd clawcalwclaw
 ### Option 3: Cargo Install
 
 ```bash
-cargo install zeroclaw
+cargo install clawclawclaw
 
 # Include full-screen terminal UI support in source installs
-cargo install zeroclaw --features tui-ratatui
+cargo install clawclawclaw --features tui-ratatui
 ```
 
 ### First Run
 
 ```bash
 # Start the gateway (serves the Web Dashboard API/UI)
-zeroclaw gateway
+clawclawclaw gateway
 
 # Open the dashboard URL shown in startup logs
 # (default: http://127.0.0.1:3000/)
 
 # Or chat directly
-zeroclaw chat "Hello!"
+clawclawclaw chat "Hello!"
 
 # Full-screen terminal UI (requires build with --features tui-ratatui)
-zeroclaw tui
+clawclawclaw tui
 ```
 
 For detailed setup options, see [docs/one-click-bootstrap.md](docs/one-click-bootstrap.md).

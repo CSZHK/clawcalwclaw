@@ -116,7 +116,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                package: [zeroclaw-types, zeroclaw-core]
+                package: [clawclawclaw-types, clawclawclaw-core]
         steps:
             - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
             - name: Self-heal Rust toolchain cache
@@ -267,7 +267,7 @@ jobs:
                   BINARY_SIZE_HARD_LIMIT_MB: 28
                   BINARY_SIZE_ADVISORY_MB: 20
                   BINARY_SIZE_TARGET_MB: 5
-              run: bash scripts/ci/check_binary_size.sh target/release-fast/zeroclaw
+              run: bash scripts/ci/check_binary_size.sh target/release-fast/clawclawclaw
 
     docs-only:
         name: Docs-Only Fast Path

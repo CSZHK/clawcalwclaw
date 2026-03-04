@@ -1,4 +1,4 @@
-package ai.zeroclaw.android
+package ai.clawclawclaw.android
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -6,8 +6,8 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import ai.zeroclaw.android.data.SettingsRepository
-import ai.zeroclaw.android.worker.HeartbeatWorker
+import ai.clawclawclaw.android.data.SettingsRepository
+import ai.clawclawclaw.android.worker.HeartbeatWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -19,9 +19,9 @@ import kotlinx.coroutines.launch
 class ZeroClawApp : Application(), Configuration.Provider {
 
     companion object {
-        const val CHANNEL_ID = "zeroclaw_service"
-        const val CHANNEL_NAME = "ZeroClaw Agent"
-        const val AGENT_CHANNEL_ID = "zeroclaw_agent"
+        const val CHANNEL_ID = "clawclawclaw_service"
+        const val CHANNEL_NAME = "clawclawclaw Agent"
+        const val AGENT_CHANNEL_ID = "clawclawclaw_agent"
         const val AGENT_CHANNEL_NAME = "Agent Messages"
 
         // Singleton instance for easy access
@@ -68,7 +68,7 @@ class ZeroClawApp : Application(), Configuration.Provider {
         }
 
         // TODO: Initialize native library
-        // System.loadLibrary("zeroclaw_android")
+        // System.loadLibrary("clawclawclaw_android")
     }
 
     private fun createNotificationChannels() {
@@ -81,7 +81,7 @@ class ZeroClawApp : Application(), Configuration.Provider {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "ZeroClaw background service notification"
+                description = "clawclawclaw background service notification"
                 setShowBadge(false)
                 enableVibration(false)
                 setSound(null, null)

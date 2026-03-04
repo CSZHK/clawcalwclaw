@@ -1,4 +1,4 @@
-# CLAUDE.md — ZeroClaw Agent Engineering Protocol
+# CLAUDE.md — clawclawclaw Agent Engineering Protocol
 
 This file defines the default working protocol for Claude agents in this repository.
 Scope: entire repository.
@@ -11,7 +11,7 @@ Scope: entire repository.
 
 ## 1) Project Snapshot (Read First)
 
-ZeroClaw is a Rust-first autonomous agent runtime optimized for:
+clawclawclaw is a Rust-first autonomous agent runtime optimized for:
 
 - high performance
 - high efficiency

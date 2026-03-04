@@ -1,10 +1,10 @@
-package ai.zeroclaw.android
+package ai.clawclawclaw.android
 
 import android.content.Intent
 import android.net.Uri
 
 /**
- * Handles content shared TO ZeroClaw from other apps.
+ * Handles content shared TO clawclawclaw from other apps.
  *
  * Supports:
  * - Plain text

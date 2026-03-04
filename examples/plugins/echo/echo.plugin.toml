@@ -1,7 +1,7 @@
 id = "echo"
 version = "1.0.0"
 module_path = "examples/plugins/echo/echo.wasm"
-wit_packages = ["zeroclaw:tools@1.0.0", "zeroclaw:providers@1.0.0"]
+wit_packages = ["clawclawclaw:tools@1.0.0", "clawclawclaw:providers@1.0.0"]
 
 [[tools]]
 name = "echo_tool"

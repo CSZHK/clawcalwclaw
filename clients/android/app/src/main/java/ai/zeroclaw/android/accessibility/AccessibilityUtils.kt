@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.accessibility
+package ai.clawclawclaw.android.accessibility
 
 import android.content.Context
 import android.view.accessibility.AccessibilityManager
@@ -9,7 +9,7 @@ import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 
 /**
- * Accessibility utilities for ZeroClaw Android.
+ * Accessibility utilities for clawclawclaw Android.
  *
  * Ensures the app is usable with:
  * - TalkBack (screen reader)

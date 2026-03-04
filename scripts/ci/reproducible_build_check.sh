@@ -7,7 +7,7 @@ set -euo pipefail
 # - Emit JSON + markdown artifacts for auditability
 
 PROFILE="${PROFILE:-release}"
-BINARY_NAME="${BINARY_NAME:-zeroclaw}"
+BINARY_NAME="${BINARY_NAME:-clawclawclaw}"
 OUTPUT_DIR="${OUTPUT_DIR:-artifacts}"
 FAIL_ON_DRIFT="${FAIL_ON_DRIFT:-false}"
 ALLOW_BUILD_ID_DRIFT="${ALLOW_BUILD_ID_DRIFT:-true}"
@@ -101,7 +101,7 @@ fi
 
 cat > "${OUTPUT_DIR}/reproducible-build.json" <<EOF
 {
-  "schema_version": "zeroclaw.audit.v1",
+  "schema_version": "clawclawclaw.audit.v1",
   "event_type": "reproducible_build",
   "profile": "${PROFILE}",
   "target": "${host_target}",

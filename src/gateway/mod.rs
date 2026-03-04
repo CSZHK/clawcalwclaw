@@ -412,7 +412,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
             auth_profile_override: None,
             provider_api_url: config.api_url.clone(),
             provider_transport: config.effective_provider_transport(),
-            zeroclaw_dir: config.config_path.parent().map(std::path::PathBuf::from),
+            clawclawclaw_dir: config.config_path.parent().map(std::path::PathBuf::from),
             secrets_encrypt: config.secrets.encrypt,
             reasoning_enabled: config.runtime.reasoning_enabled,
             reasoning_level: config.effective_provider_reasoning_level(),
@@ -510,7 +510,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
 
     // WhatsApp app secret for webhook signature verification
     // Priority: environment variable > config file
-    let whatsapp_app_secret: Option<Arc<str>> = std::env::var("ZEROCLAW_WHATSAPP_APP_SECRET")
+    let whatsapp_app_secret: Option<Arc<str>> = std::env::var("CLAWCLAWCLAW_WHATSAPP_APP_SECRET")
         .ok()
         .and_then(|secret| {
             let secret = secret.trim();
@@ -538,7 +538,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
 
     // Linq signing secret for webhook signature verification
     // Priority: environment variable > config file
-    let linq_signing_secret: Option<Arc<str>> = std::env::var("ZEROCLAW_LINQ_SIGNING_SECRET")
+    let linq_signing_secret: Option<Arc<str>> = std::env::var("CLAWCLAWCLAW_LINQ_SIGNING_SECRET")
         .ok()
         .and_then(|secret| {
             let secret = secret.trim();
@@ -584,7 +584,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
         });
     // WATI webhook secret for signature verification
     // Priority: environment variable > config file
-    let wati_webhook_secret: Option<Arc<str>> = std::env::var("ZEROCLAW_WATI_WEBHOOK_SECRET")
+    let wati_webhook_secret: Option<Arc<str>> = std::env::var("CLAWCLAWCLAW_WATI_WEBHOOK_SECRET")
         .ok()
         .and_then(|secret| {
             let secret = secret.trim();
@@ -630,7 +630,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
     // Nextcloud Talk webhook secret for signature verification
     // Priority: environment variable > config file
     let nextcloud_talk_webhook_secret: Option<Arc<str>> =
-        std::env::var("ZEROCLAW_NEXTCLOUD_TALK_WEBHOOK_SECRET")
+        std::env::var("CLAWCLAWCLAW_NEXTCLOUD_TALK_WEBHOOK_SECRET")
             .ok()
             .and_then(|secret| {
                 let secret = secret.trim();
@@ -692,7 +692,7 @@ pub async fn run_gateway(host: &str, port: u16, config: Config) -> Result<()> {
         }
     }
 
-    println!("🦀 ZeroClaw Gateway listening on http://{display_addr}");
+    println!("🦀 clawclawclaw Gateway listening on http://{display_addr}");
     if let Some(ref url) = tunnel_url {
         println!("  🌐 Public URL: {url}");
     }
@@ -2268,7 +2268,7 @@ async fn handle_github_webhook(
         );
     };
 
-    let access_token = std::env::var("ZEROCLAW_GITHUB_TOKEN")
+    let access_token = std::env::var("CLAWCLAWCLAW_GITHUB_TOKEN")
         .ok()
         .map(|v| v.trim().to_string())
         .filter(|v| !v.is_empty())
@@ -2276,7 +2276,7 @@ async fn handle_github_webhook(
     if access_token.is_empty() {
         tracing::error!(
             "GitHub webhook received but no access token is configured. \
-             Set channels_config.github.access_token or ZEROCLAW_GITHUB_TOKEN."
+             Set channels_config.github.access_token or CLAWCLAWCLAW_GITHUB_TOKEN."
         );
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -2284,7 +2284,7 @@ async fn handle_github_webhook(
         );
     }
 
-    let webhook_secret = std::env::var("ZEROCLAW_GITHUB_WEBHOOK_SECRET")
+    let webhook_secret = std::env::var("CLAWCLAWCLAW_GITHUB_WEBHOOK_SECRET")
         .ok()
         .map(|v| v.trim().to_string())
         .filter(|v| !v.is_empty())
@@ -3064,7 +3064,7 @@ mod tests {
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
         let text = String::from_utf8(body.to_vec()).unwrap();
-        assert!(text.contains("zeroclaw_heartbeat_ticks_total 1"));
+        assert!(text.contains("clawclawclaw_heartbeat_ticks_total 1"));
     }
 
     #[tokio::test]
@@ -4952,7 +4952,7 @@ Reminder set successfully."#;
             access_token: "ghp_test_token".into(),
             webhook_secret: Some("github-secret".into()),
             api_base_url: None,
-            allowed_repos: vec!["zeroclaw-labs/zeroclaw".into()],
+            allowed_repos: vec!["CSZHK/clawcalwclaw".into()],
         });
 
         let state = AppState {
@@ -4990,7 +4990,7 @@ Reminder set successfully."#;
 
         let body = r#"{
             "action":"created",
-            "repository":{"full_name":"zeroclaw-labs/zeroclaw"},
+            "repository":{"full_name":"CSZHK/clawcalwclaw"},
             "issue":{"number":2079,"title":"x"},
             "comment":{"id":1,"body":"hello","user":{"login":"alice","type":"User"}}
         }"#;
@@ -5019,7 +5019,7 @@ Reminder set successfully."#;
             access_token: "ghp_test_token".into(),
             webhook_secret: Some(secret.into()),
             api_base_url: None,
-            allowed_repos: vec!["zeroclaw-labs/zeroclaw".into()],
+            allowed_repos: vec!["CSZHK/clawcalwclaw".into()],
         });
 
         let state = AppState {
@@ -5057,7 +5057,7 @@ Reminder set successfully."#;
 
         let body = r#"{
             "action":"created",
-            "repository":{"full_name":"zeroclaw-labs/zeroclaw"},
+            "repository":{"full_name":"CSZHK/clawcalwclaw"},
             "issue":{"number":2079,"title":"x"},
             "comment":{"id":1,"body":"hello","user":{"login":"alice","type":"User"}}
         }"#;

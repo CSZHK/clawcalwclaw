@@ -1,4 +1,4 @@
-# ZeroClaw Documentation Hub
+# clawclawclaw Documentation Hub
 
 This page is the primary entry point for the documentation system.
 
@@ -10,7 +10,7 @@ Localized hubs: [简体中文](i18n/zh-CN/README.md) · [日本語](i18n/ja/READ
 
 | I want to… | Read this |
 |---|---|
-| Install and run ZeroClaw quickly | [README.md (Quick Start)](../README.md#quick-start) |
+| Install and run clawclawclaw quickly | [README.md (Quick Start)](../README.md#quick-start) |
 | Bootstrap in one command | [one-click-bootstrap.md](one-click-bootstrap.md) |
 | Set up on Android (Termux/ADB) | [android-setup.md](android-setup.md) |
 | Update or uninstall on macOS | [getting-started/macos-update-uninstall.md](getting-started/macos-update-uninstall.md) |

@@ -1,4 +1,4 @@
-# ZeroClaw TUI 模块实现计划（修订版 v2）
+# clawclawclaw TUI 模块实现计划（修订版 v2）
 
 > 修订说明：本版本基于多智能体团队审查（arch-reviewer / security-reviewer / impl-reviewer）
 > 修复了 4 个 Critical、5 个 High、4 个 Medium 问题。
@@ -7,14 +7,14 @@
 
 ## 上下文
 
-**目标**: 为 ZeroClaw 添加原生 Rust TUI（终端用户界面）模块，提供富交互式界面。
+**目标**: 为 clawclawclaw 添加原生 Rust TUI（终端用户界面）模块，提供富交互式界面。
 
 **为什么需要这个**:
 - 现有 CLI 模式（rustyline REPL）功能有限，无法显示流式响应和工具执行进度
 - 用户需要一个更直观的可视化界面来与 Agent 交互
 - 终端界面保持轻量级，无需额外依赖（如 Electron）
 
-**预期结果**: `zeroclaw tui` 命令启动富终端界面，支持：
+**预期结果**: `clawclawclaw tui` 命令启动富终端界面，支持：
 - 分屏聊天历史（可滚动）
 - 多行输入（带历史导航）
 - 实时工具执行进度

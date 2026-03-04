@@ -30,15 +30,15 @@
         formatter = pkgs.nixfmt-tree;
 
         packages = {
-          default = self.packages.${system}.zeroclaw;
+          default = self.packages.${system}.clawclawclaw;
           inherit (pkgs)
-            zeroclaw
-            zeroclaw-web
+            clawclawclaw
+            clawclawclaw-web
             ;
         };
 
         devShells.default = pkgs.mkShell {
-          inputsFrom = [ pkgs.zeroclaw ];
+          inputsFrom = [ pkgs.clawclawclaw ];
           packages = [
             pkgs.rust-analyzer
           ];

@@ -1,6 +1,6 @@
 # Custom Provider Configuration
 
-ZeroClaw supports custom API endpoints for both OpenAI-compatible and Anthropic-compatible providers.
+clawclawclaw supports custom API endpoints for both OpenAI-compatible and Anthropic-compatible providers.
 
 ## Provider Types
 
@@ -28,10 +28,10 @@ provider_api = "openai-responses"
 
 Responses API WebSocket mode is supported for OpenAI-compatible endpoints:
 
-- Auto mode: when your `custom:` endpoint resolves to `api.openai.com`, ZeroClaw will try WebSocket mode first (`wss://.../responses`) and automatically fall back to HTTP if the websocket handshake or stream fails.
+- Auto mode: when your `custom:` endpoint resolves to `api.openai.com`, clawclawclaw will try WebSocket mode first (`wss://.../responses`) and automatically fall back to HTTP if the websocket handshake or stream fails.
 - Manual override:
-  - `ZEROCLAW_RESPONSES_WEBSOCKET=1` forces websocket-first mode for any `custom:` endpoint.
-  - `ZEROCLAW_RESPONSES_WEBSOCKET=0` disables websocket mode and uses HTTP only.
+  - `CLAWCLAWCLAW_RESPONSES_WEBSOCKET=1` forces websocket-first mode for any `custom:` endpoint.
+  - `CLAWCLAWCLAW_RESPONSES_WEBSOCKET=0` disables websocket mode and uses HTTP only.
 
 ### Anthropic-Compatible Endpoints (`anthropic-custom:`)
 
@@ -47,7 +47,7 @@ default_model = "your-model-name"
 
 ### Config File
 
-Edit `~/.zeroclaw/config.toml`:
+Edit `~/.clawclawclaw/config.toml`:
 
 ```toml
 api_key = "your-api-key"
@@ -61,18 +61,18 @@ For `custom:` and `anthropic-custom:` providers, use the generic key env vars:
 
 ```bash
 export API_KEY="your-api-key"
-# or: export ZEROCLAW_API_KEY="your-api-key"
-zeroclaw agent
+# or: export CLAWCLAWCLAW_API_KEY="your-api-key"
+clawclawclaw agent
 ```
 
 ## Hunyuan (Tencent)
 
-ZeroClaw includes a first-class provider for [Tencent Hunyuan](https://hunyuan.tencent.com/):
+clawclawclaw includes a first-class provider for [Tencent Hunyuan](https://hunyuan.tencent.com/):
 
 - Provider ID: `hunyuan` (alias: `tencent`)
 - Base API URL: `https://api.hunyuan.cloud.tencent.com/v1`
 
-Configure ZeroClaw:
+Configure clawclawclaw:
 
 ```toml
 default_provider = "hunyuan"
@@ -84,12 +84,12 @@ Set your API key:
 
 ```bash
 export HUNYUAN_API_KEY="your-api-key"
-zeroclaw agent -m "hello"
+clawclawclaw agent -m "hello"
 ```
 
 ## llama.cpp Server (Recommended Local Setup)
 
-ZeroClaw includes a first-class local provider for `llama-server`:
+clawclawclaw includes a first-class local provider for `llama-server`:
 
 - Provider ID: `llamacpp` (alias: `llama.cpp`)
 - Default endpoint: `http://localhost:8080/v1`
@@ -101,7 +101,7 @@ Start a local server (example):
 llama-server -hf ggml-org/gpt-oss-20b-GGUF --jinja -c 133000 --host 127.0.0.1 --port 8033
 ```
 
-Then configure ZeroClaw:
+Then configure clawclawclaw:
 
 ```toml
 default_provider = "llamacpp"
@@ -113,15 +113,15 @@ default_temperature = 0.7
 Quick validation:
 
 ```bash
-zeroclaw models refresh --provider llamacpp
-zeroclaw agent -m "hello"
+clawclawclaw models refresh --provider llamacpp
+clawclawclaw agent -m "hello"
 ```
 
-You do not need to export `ZEROCLAW_API_KEY=dummy` for this flow.
+You do not need to export `CLAWCLAWCLAW_API_KEY=dummy` for this flow.
 
 ## SGLang Server
 
-ZeroClaw includes a first-class local provider for [SGLang](https://github.com/sgl-project/sglang):
+clawclawclaw includes a first-class local provider for [SGLang](https://github.com/sgl-project/sglang):
 
 - Provider ID: `sglang`
 - Default endpoint: `http://localhost:30000/v1`
@@ -133,7 +133,7 @@ Start a local server (example):
 python -m sglang.launch_server --model meta-llama/Llama-3.1-8B-Instruct --port 30000
 ```
 
-Then configure ZeroClaw:
+Then configure clawclawclaw:
 
 ```toml
 default_provider = "sglang"
@@ -144,15 +144,15 @@ default_temperature = 0.7
 Quick validation:
 
 ```bash
-zeroclaw models refresh --provider sglang
-zeroclaw agent -m "hello"
+clawclawclaw models refresh --provider sglang
+clawclawclaw agent -m "hello"
 ```
 
-You do not need to export `ZEROCLAW_API_KEY=dummy` for this flow.
+You do not need to export `CLAWCLAWCLAW_API_KEY=dummy` for this flow.
 
 ## vLLM Server
 
-ZeroClaw includes a first-class local provider for [vLLM](https://docs.vllm.ai/):
+clawclawclaw includes a first-class local provider for [vLLM](https://docs.vllm.ai/):
 
 - Provider ID: `vllm`
 - Default endpoint: `http://localhost:8000/v1`
@@ -164,7 +164,7 @@ Start a local server (example):
 vllm serve meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Then configure ZeroClaw:
+Then configure clawclawclaw:
 
 ```toml
 default_provider = "vllm"
@@ -175,11 +175,11 @@ default_temperature = 0.7
 Quick validation:
 
 ```bash
-zeroclaw models refresh --provider vllm
-zeroclaw agent -m "hello"
+clawclawclaw models refresh --provider vllm
+clawclawclaw agent -m "hello"
 ```
 
-You do not need to export `ZEROCLAW_API_KEY=dummy` for this flow.
+You do not need to export `CLAWCLAWCLAW_API_KEY=dummy` for this flow.
 
 ## Testing Configuration
 
@@ -187,10 +187,10 @@ Verify your custom endpoint:
 
 ```bash
 # Interactive mode
-zeroclaw agent
+clawclawclaw agent
 
 # Single message test
-zeroclaw agent -m "test message"
+clawclawclaw agent -m "test message"
 ```
 
 ## Troubleshooting

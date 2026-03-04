@@ -879,14 +879,14 @@ mod tests {
     #[test]
     fn resolve_credential_profile_injects_env_backed_header() {
         let test_secret = "test-credential-value-12345";
-        std::env::set_var("ZEROCLAW_TEST_HTTP_CREDENTIAL", test_secret);
+        std::env::set_var("CLAWCLAWCLAW_TEST_HTTP_CREDENTIAL", test_secret);
 
         let mut profiles = HashMap::new();
         profiles.insert(
             "github".to_string(),
             HttpRequestCredentialProfile {
                 header_name: "Authorization".to_string(),
-                env_var: "ZEROCLAW_TEST_HTTP_CREDENTIAL".to_string(),
+                env_var: "CLAWCLAWCLAW_TEST_HTTP_CREDENTIAL".to_string(),
                 value_prefix: "Bearer ".to_string(),
             },
         );
@@ -911,7 +911,7 @@ mod tests {
         assert!(sensitive_values.contains(&test_secret.to_string()));
         assert!(sensitive_values.contains(&format!("Bearer {test_secret}")));
 
-        std::env::remove_var("ZEROCLAW_TEST_HTTP_CREDENTIAL");
+        std::env::remove_var("CLAWCLAWCLAW_TEST_HTTP_CREDENTIAL");
     }
 
     #[test]
@@ -921,7 +921,7 @@ mod tests {
             "missing".to_string(),
             HttpRequestCredentialProfile {
                 header_name: "Authorization".to_string(),
-                env_var: "ZEROCLAW_TEST_MISSING_HTTP_REQUEST_TOKEN".to_string(),
+                env_var: "CLAWCLAWCLAW_TEST_MISSING_HTTP_REQUEST_TOKEN".to_string(),
                 value_prefix: "Bearer ".to_string(),
             },
         );
@@ -940,13 +940,13 @@ mod tests {
             .resolve_credential_profile("missing")
             .expect_err("missing env var should fail")
             .to_string();
-        assert!(err.contains("ZEROCLAW_TEST_MISSING_HTTP_REQUEST_TOKEN"));
+        assert!(err.contains("CLAWCLAWCLAW_TEST_MISSING_HTTP_REQUEST_TOKEN"));
     }
 
     #[test]
     fn resolve_credential_profile_uses_cached_secret_when_env_temporarily_missing() {
         let env_var = format!(
-            "ZEROCLAW_TEST_HTTP_REQUEST_CACHE_{}",
+            "CLAWCLAWCLAW_TEST_HTTP_REQUEST_CACHE_{}",
             uuid::Uuid::new_v4().simple()
         );
         let test_secret = "cached-secret-value-12345";
@@ -985,7 +985,7 @@ mod tests {
     #[test]
     fn resolve_credential_profile_refreshes_cached_secret_after_rotation() {
         let env_var = format!(
-            "ZEROCLAW_TEST_HTTP_REQUEST_ROTATION_{}",
+            "CLAWCLAWCLAW_TEST_HTTP_REQUEST_ROTATION_{}",
             uuid::Uuid::new_v4().simple()
         );
         std::env::set_var(&env_var, "initial-secret");
@@ -1026,7 +1026,7 @@ mod tests {
     #[test]
     fn resolve_credential_profile_empty_env_var_does_not_fallback_to_cached_secret() {
         let env_var = format!(
-            "ZEROCLAW_TEST_HTTP_REQUEST_EMPTY_{}",
+            "CLAWCLAWCLAW_TEST_HTTP_REQUEST_EMPTY_{}",
             uuid::Uuid::new_v4().simple()
         );
         std::env::set_var(&env_var, "cached-secret");

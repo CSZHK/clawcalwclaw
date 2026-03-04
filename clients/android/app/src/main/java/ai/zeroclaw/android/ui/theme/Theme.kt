@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.ui.theme
+package ai.clawclawclaw.android.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// ZeroClaw brand colors
+// clawclawclaw brand colors
 private val ZeroClawOrange = Color(0xFFE85C0D)
 private val ZeroClawDark = Color(0xFF1A1A2E)
 

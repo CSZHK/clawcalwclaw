@@ -65,7 +65,7 @@ Merge-blocking checks should stay small and deterministic. Optional checks are u
     - Purpose: build reproducible Linux x86_64 production binaries on `main` pushes and `v*` tags using Blacksmith runners
     - Canonical build command: `cargo build --release --locked`
     - Quality gates: `cargo fmt --all -- --check`, `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked --verbose` before release build
-    - Artifact output: `zeroclaw-linux-amd64` (`target/release/zeroclaw` + `.sha256`)
+    - Artifact output: `clawclawclaw-linux-amd64` (`target/release/clawclawclaw` + `.sha256`)
 - `.github/workflows/pr-label-policy-check.yml` (`Label Policy Sanity`)
     - Purpose: validate shared contributor-tier policy in `.github/label-policy.json` and ensure label workflows consume that policy
 

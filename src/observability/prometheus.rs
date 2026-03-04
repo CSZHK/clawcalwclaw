@@ -35,156 +35,156 @@ impl PrometheusObserver {
         let registry = Registry::new();
 
         let agent_starts = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_agent_starts_total", "Total agent invocations"),
+            prometheus::Opts::new("clawclawclaw_agent_starts_total", "Total agent invocations"),
             &["provider", "model"],
         )
-        .context("failed to create zeroclaw_agent_starts_total counter")?;
+        .context("failed to create clawclawclaw_agent_starts_total counter")?;
 
         let llm_requests = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_llm_requests_total", "Total LLM provider requests"),
+            prometheus::Opts::new("clawclawclaw_llm_requests_total", "Total LLM provider requests"),
             &["provider", "model", "success"],
         )
-        .context("failed to create zeroclaw_llm_requests_total counter")?;
+        .context("failed to create clawclawclaw_llm_requests_total counter")?;
 
         let tokens_input_total = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_tokens_input_total", "Total input tokens consumed"),
+            prometheus::Opts::new("clawclawclaw_tokens_input_total", "Total input tokens consumed"),
             &["provider", "model"],
         )
-        .context("failed to create zeroclaw_tokens_input_total counter")?;
+        .context("failed to create clawclawclaw_tokens_input_total counter")?;
 
         let tokens_output_total = IntCounterVec::new(
             prometheus::Opts::new(
-                "zeroclaw_tokens_output_total",
+                "clawclawclaw_tokens_output_total",
                 "Total output tokens consumed",
             ),
             &["provider", "model"],
         )
-        .context("failed to create zeroclaw_tokens_output_total counter")?;
+        .context("failed to create clawclawclaw_tokens_output_total counter")?;
 
         let tool_calls = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_tool_calls_total", "Total tool calls"),
+            prometheus::Opts::new("clawclawclaw_tool_calls_total", "Total tool calls"),
             &["tool", "success"],
         )
-        .context("failed to create zeroclaw_tool_calls_total counter")?;
+        .context("failed to create clawclawclaw_tool_calls_total counter")?;
 
         let channel_messages = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_channel_messages_total", "Total channel messages"),
+            prometheus::Opts::new("clawclawclaw_channel_messages_total", "Total channel messages"),
             &["channel", "direction"],
         )
-        .context("failed to create zeroclaw_channel_messages_total counter")?;
+        .context("failed to create clawclawclaw_channel_messages_total counter")?;
 
         let webhook_auth_failures = IntCounterVec::new(
             prometheus::Opts::new(
-                "zeroclaw_webhook_auth_failures_total",
+                "clawclawclaw_webhook_auth_failures_total",
                 "Total webhook authentication failures",
             ),
             &["channel", "signature", "bearer"],
         )
-        .context("failed to create zeroclaw_webhook_auth_failures_total counter")?;
+        .context("failed to create clawclawclaw_webhook_auth_failures_total counter")?;
 
         let heartbeat_ticks =
-            prometheus::IntCounter::new("zeroclaw_heartbeat_ticks_total", "Total heartbeat ticks")
-                .context("failed to create zeroclaw_heartbeat_ticks_total counter")?;
+            prometheus::IntCounter::new("clawclawclaw_heartbeat_ticks_total", "Total heartbeat ticks")
+                .context("failed to create clawclawclaw_heartbeat_ticks_total counter")?;
 
         let errors = IntCounterVec::new(
-            prometheus::Opts::new("zeroclaw_errors_total", "Total errors by component"),
+            prometheus::Opts::new("clawclawclaw_errors_total", "Total errors by component"),
             &["component"],
         )
-        .context("failed to create zeroclaw_errors_total counter")?;
+        .context("failed to create clawclawclaw_errors_total counter")?;
 
         let agent_duration = HistogramVec::new(
             HistogramOpts::new(
-                "zeroclaw_agent_duration_seconds",
+                "clawclawclaw_agent_duration_seconds",
                 "Agent invocation duration in seconds",
             )
             .buckets(vec![0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0]),
             &["provider", "model"],
         )
-        .context("failed to create zeroclaw_agent_duration_seconds histogram")?;
+        .context("failed to create clawclawclaw_agent_duration_seconds histogram")?;
 
         let tool_duration = HistogramVec::new(
             HistogramOpts::new(
-                "zeroclaw_tool_duration_seconds",
+                "clawclawclaw_tool_duration_seconds",
                 "Tool execution duration in seconds",
             )
             .buckets(vec![0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0]),
             &["tool"],
         )
-        .context("failed to create zeroclaw_tool_duration_seconds histogram")?;
+        .context("failed to create clawclawclaw_tool_duration_seconds histogram")?;
 
         let request_latency = Histogram::with_opts(
             HistogramOpts::new(
-                "zeroclaw_request_latency_seconds",
+                "clawclawclaw_request_latency_seconds",
                 "Request latency in seconds",
             )
             .buckets(vec![0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]),
         )
-        .context("failed to create zeroclaw_request_latency_seconds histogram")?;
+        .context("failed to create clawclawclaw_request_latency_seconds histogram")?;
 
         let tokens_used = prometheus::IntGauge::new(
-            "zeroclaw_tokens_used_last",
+            "clawclawclaw_tokens_used_last",
             "Tokens used in the last request",
         )
-        .context("failed to create zeroclaw_tokens_used_last gauge")?;
+        .context("failed to create clawclawclaw_tokens_used_last gauge")?;
 
         let active_sessions = GaugeVec::new(
-            prometheus::Opts::new("zeroclaw_active_sessions", "Number of active sessions"),
+            prometheus::Opts::new("clawclawclaw_active_sessions", "Number of active sessions"),
             &[],
         )
-        .context("failed to create zeroclaw_active_sessions gauge")?;
+        .context("failed to create clawclawclaw_active_sessions gauge")?;
 
         let queue_depth = GaugeVec::new(
-            prometheus::Opts::new("zeroclaw_queue_depth", "Message queue depth"),
+            prometheus::Opts::new("clawclawclaw_queue_depth", "Message queue depth"),
             &[],
         )
-        .context("failed to create zeroclaw_queue_depth gauge")?;
+        .context("failed to create clawclawclaw_queue_depth gauge")?;
 
         // Register all metrics
         registry
             .register(Box::new(agent_starts.clone()))
-            .context("failed to register zeroclaw_agent_starts_total counter")?;
+            .context("failed to register clawclawclaw_agent_starts_total counter")?;
         registry
             .register(Box::new(llm_requests.clone()))
-            .context("failed to register zeroclaw_llm_requests_total counter")?;
+            .context("failed to register clawclawclaw_llm_requests_total counter")?;
         registry
             .register(Box::new(tokens_input_total.clone()))
-            .context("failed to register zeroclaw_tokens_input_total counter")?;
+            .context("failed to register clawclawclaw_tokens_input_total counter")?;
         registry
             .register(Box::new(tokens_output_total.clone()))
-            .context("failed to register zeroclaw_tokens_output_total counter")?;
+            .context("failed to register clawclawclaw_tokens_output_total counter")?;
         registry
             .register(Box::new(tool_calls.clone()))
-            .context("failed to register zeroclaw_tool_calls_total counter")?;
+            .context("failed to register clawclawclaw_tool_calls_total counter")?;
         registry
             .register(Box::new(channel_messages.clone()))
-            .context("failed to register zeroclaw_channel_messages_total counter")?;
+            .context("failed to register clawclawclaw_channel_messages_total counter")?;
         registry
             .register(Box::new(webhook_auth_failures.clone()))
-            .context("failed to register zeroclaw_webhook_auth_failures_total counter")?;
+            .context("failed to register clawclawclaw_webhook_auth_failures_total counter")?;
         registry
             .register(Box::new(heartbeat_ticks.clone()))
-            .context("failed to register zeroclaw_heartbeat_ticks_total counter")?;
+            .context("failed to register clawclawclaw_heartbeat_ticks_total counter")?;
         registry
             .register(Box::new(errors.clone()))
-            .context("failed to register zeroclaw_errors_total counter")?;
+            .context("failed to register clawclawclaw_errors_total counter")?;
         registry
             .register(Box::new(agent_duration.clone()))
-            .context("failed to register zeroclaw_agent_duration_seconds histogram")?;
+            .context("failed to register clawclawclaw_agent_duration_seconds histogram")?;
         registry
             .register(Box::new(tool_duration.clone()))
-            .context("failed to register zeroclaw_tool_duration_seconds histogram")?;
+            .context("failed to register clawclawclaw_tool_duration_seconds histogram")?;
         registry
             .register(Box::new(request_latency.clone()))
-            .context("failed to register zeroclaw_request_latency_seconds histogram")?;
+            .context("failed to register clawclawclaw_request_latency_seconds histogram")?;
         registry
             .register(Box::new(tokens_used.clone()))
-            .context("failed to register zeroclaw_tokens_used_last gauge")?;
+            .context("failed to register clawclawclaw_tokens_used_last gauge")?;
         registry
             .register(Box::new(active_sessions.clone()))
-            .context("failed to register zeroclaw_active_sessions gauge")?;
+            .context("failed to register clawclawclaw_active_sessions gauge")?;
         registry
             .register(Box::new(queue_depth.clone()))
-            .context("failed to register zeroclaw_queue_depth gauge")?;
+            .context("failed to register clawclawclaw_queue_depth gauge")?;
 
         Ok(Self {
             registry,
@@ -426,11 +426,11 @@ mod tests {
         obs.record_metric(&ObserverMetric::RequestLatency(Duration::from_millis(250)));
 
         let output = obs.encode();
-        assert!(output.contains("zeroclaw_agent_starts_total"));
-        assert!(output.contains("zeroclaw_tool_calls_total"));
-        assert!(output.contains("zeroclaw_webhook_auth_failures_total"));
-        assert!(output.contains("zeroclaw_heartbeat_ticks_total"));
-        assert!(output.contains("zeroclaw_request_latency_seconds"));
+        assert!(output.contains("clawclawclaw_agent_starts_total"));
+        assert!(output.contains("clawclawclaw_tool_calls_total"));
+        assert!(output.contains("clawclawclaw_webhook_auth_failures_total"));
+        assert!(output.contains("clawclawclaw_heartbeat_ticks_total"));
+        assert!(output.contains("clawclawclaw_request_latency_seconds"));
     }
 
     #[test]
@@ -442,7 +442,7 @@ mod tests {
         }
 
         let output = obs.encode();
-        assert!(output.contains("zeroclaw_heartbeat_ticks_total 3"));
+        assert!(output.contains("clawclawclaw_heartbeat_ticks_total 3"));
     }
 
     #[test]
@@ -466,8 +466,8 @@ mod tests {
         });
 
         let output = obs.encode();
-        assert!(output.contains(r#"zeroclaw_tool_calls_total{success="true",tool="shell"} 2"#));
-        assert!(output.contains(r#"zeroclaw_tool_calls_total{success="false",tool="shell"} 1"#));
+        assert!(output.contains(r#"clawclawclaw_tool_calls_total{success="true",tool="shell"} 2"#));
+        assert!(output.contains(r#"clawclawclaw_tool_calls_total{success="false",tool="shell"} 1"#));
     }
 
     #[test]
@@ -487,8 +487,8 @@ mod tests {
         });
 
         let output = obs.encode();
-        assert!(output.contains(r#"zeroclaw_errors_total{component="provider"} 2"#));
-        assert!(output.contains(r#"zeroclaw_errors_total{component="channels"} 1"#));
+        assert!(output.contains(r#"clawclawclaw_errors_total{component="provider"} 2"#));
+        assert!(output.contains(r#"clawclawclaw_errors_total{component="channels"} 1"#));
     }
 
     #[test]
@@ -498,7 +498,7 @@ mod tests {
         obs.record_metric(&ObserverMetric::TokensUsed(200));
 
         let output = obs.encode();
-        assert!(output.contains("zeroclaw_tokens_used_last 200"));
+        assert!(output.contains("clawclawclaw_tokens_used_last 200"));
     }
 
     #[test]
@@ -526,13 +526,13 @@ mod tests {
 
         let output = obs.encode();
         assert!(output.contains(
-            r#"zeroclaw_llm_requests_total{model="claude-sonnet",provider="openrouter",success="true"} 2"#
+            r#"clawclawclaw_llm_requests_total{model="claude-sonnet",provider="openrouter",success="true"} 2"#
         ));
         assert!(output.contains(
-            r#"zeroclaw_tokens_input_total{model="claude-sonnet",provider="openrouter"} 300"#
+            r#"clawclawclaw_tokens_input_total{model="claude-sonnet",provider="openrouter"} 300"#
         ));
         assert!(output.contains(
-            r#"zeroclaw_tokens_output_total{model="claude-sonnet",provider="openrouter"} 130"#
+            r#"clawclawclaw_tokens_output_total{model="claude-sonnet",provider="openrouter"} 130"#
         ));
     }
 
@@ -552,10 +552,10 @@ mod tests {
 
         let output = obs.encode();
         assert!(output.contains(
-            r#"zeroclaw_llm_requests_total{model="llama3",provider="ollama",success="false"} 1"#
+            r#"clawclawclaw_llm_requests_total{model="llama3",provider="ollama",success="false"} 1"#
         ));
         // Token counters should not appear (no data recorded)
-        assert!(!output.contains("zeroclaw_tokens_input_total{"));
-        assert!(!output.contains("zeroclaw_tokens_output_total{"));
+        assert!(!output.contains("clawclawclaw_tokens_input_total{"));
+        assert!(!output.contains("clawclawclaw_tokens_output_total{"));
     }
 }

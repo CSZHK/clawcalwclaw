@@ -1,10 +1,10 @@
-//! Hello World — example ZeroClaw plugin.
+//! Hello World — example clawclawclaw plugin.
 //!
 //! Demonstrates the minimal plugin contract:
 //! 1. Implement `Plugin` (manifest + register)
 //! 2. In `register()`, use `PluginApi` to contribute tools and hooks
 //!
-//! To enable this plugin, add to `~/.zeroclaw/config.toml`:
+//! To enable this plugin, add to `~/.clawclawclaw/config.toml`:
 //!
 //! ```toml
 //! [plugins]
@@ -15,9 +15,9 @@
 //! ```
 
 use async_trait::async_trait;
-use zeroclaw::hooks::{HookHandler, HookResult};
-use zeroclaw::plugins::{Plugin, PluginApi, PluginManifest};
-use zeroclaw::tools::traits::{Tool, ToolResult, ToolSpec};
+use clawclawclaw::hooks::{HookHandler, HookResult};
+use clawclawclaw::plugins::{Plugin, PluginApi, PluginManifest};
+use clawclawclaw::tools::traits::{Tool, ToolResult, ToolSpec};
 
 // ── Manifest ─────────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ fn manifest() -> PluginManifest {
     PluginManifest {
         id: "hello-world".into(),
         name: Some("Hello World".into()),
-        description: Some("Example plugin demonstrating the ZeroClaw plugin API.".into()),
+        description: Some("Example plugin demonstrating the clawclawclaw plugin API.".into()),
         version: Some("0.1.0".into()),
         config_schema: None,
     }

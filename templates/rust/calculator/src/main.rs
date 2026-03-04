@@ -1,12 +1,12 @@
 #![forbid(unsafe_code)]
 
-//! __SKILL_NAME__ — ZeroClaw Skill (Rust / WASI)
+//! __SKILL_NAME__ — clawclawclaw Skill (Rust / WASI)
 //!
 //! Performs arithmetic: add, subtract, multiply, divide.
 //! Protocol: read JSON from stdin, write JSON result to stdout.
 //! Build:    cargo build --target wasm32-wasip1 --release
 //!           cp target/wasm32-wasip1/release/__BIN_NAME__.wasm tool.wasm
-//! Test:     zeroclaw skill test . --args '{"op":"add","a":3,"b":7}'
+//! Test:     clawclawclaw skill test . --args '{"op":"add","a":3,"b":7}'
 
 use std::io::{self, Read, Write};
 use serde::{Deserialize, Serialize};

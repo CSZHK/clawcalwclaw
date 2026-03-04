@@ -24,13 +24,13 @@ use tokio_tungstenite::{
 };
 
 const DEFAULT_CODEX_RESPONSES_URL: &str = "https://chatgpt.com/backend-api/codex/responses";
-const CODEX_RESPONSES_URL_ENV: &str = "ZEROCLAW_CODEX_RESPONSES_URL";
-const CODEX_BASE_URL_ENV: &str = "ZEROCLAW_CODEX_BASE_URL";
-const CODEX_TRANSPORT_ENV: &str = "ZEROCLAW_CODEX_TRANSPORT";
-const CODEX_PROVIDER_TRANSPORT_ENV: &str = "ZEROCLAW_PROVIDER_TRANSPORT";
-const CODEX_RESPONSES_WEBSOCKET_ENV_LEGACY: &str = "ZEROCLAW_RESPONSES_WEBSOCKET";
+const CODEX_RESPONSES_URL_ENV: &str = "CLAWCLAWCLAW_CODEX_RESPONSES_URL";
+const CODEX_BASE_URL_ENV: &str = "CLAWCLAWCLAW_CODEX_BASE_URL";
+const CODEX_TRANSPORT_ENV: &str = "CLAWCLAWCLAW_CODEX_TRANSPORT";
+const CODEX_PROVIDER_TRANSPORT_ENV: &str = "CLAWCLAWCLAW_PROVIDER_TRANSPORT";
+const CODEX_RESPONSES_WEBSOCKET_ENV_LEGACY: &str = "CLAWCLAWCLAW_RESPONSES_WEBSOCKET";
 const DEFAULT_CODEX_INSTRUCTIONS: &str =
-    "You are ZeroClaw, a concise and helpful coding assistant.";
+    "You are clawclawclaw, a concise and helpful coding assistant.";
 const CODEX_WS_CONNECT_TIMEOUT: Duration = Duration::from_secs(20);
 const CODEX_WS_SEND_TIMEOUT: Duration = Duration::from_secs(15);
 const CODEX_WS_READ_TIMEOUT: Duration = Duration::from_secs(60);
@@ -153,9 +153,9 @@ impl OpenAiCodexProvider {
         gateway_api_key: Option<&str>,
     ) -> anyhow::Result<Self> {
         let state_dir = options
-            .zeroclaw_dir
+            .clawclawclaw_dir
             .clone()
-            .unwrap_or_else(default_zeroclaw_dir);
+            .unwrap_or_else(default_clawclawclaw_dir);
         let auth = AuthService::new(&state_dir, options.secrets_encrypt);
         let responses_url = resolve_responses_url(options)?;
 
@@ -179,10 +179,10 @@ impl OpenAiCodexProvider {
     }
 }
 
-fn default_zeroclaw_dir() -> PathBuf {
+fn default_clawclawclaw_dir() -> PathBuf {
     directories::UserDirs::new().map_or_else(
-        || PathBuf::from(".zeroclaw"),
-        |dirs| dirs.home_dir().join(".zeroclaw"),
+        || PathBuf::from(".clawclawclaw"),
+        |dirs| dirs.home_dir().join(".clawclawclaw"),
     )
 }
 
@@ -456,10 +456,10 @@ fn normalize_reasoning_level(raw: Option<&str>, source: &str) -> Option<String> 
 
 fn resolve_reasoning_effort(model_id: &str, override_level: Option<&str>) -> String {
     let override_level = normalize_reasoning_level(override_level, "provider.reasoning_level");
-    let env_level = std::env::var("ZEROCLAW_CODEX_REASONING_EFFORT")
+    let env_level = std::env::var("CLAWCLAWCLAW_CODEX_REASONING_EFFORT")
         .ok()
         .and_then(|value| {
-            normalize_reasoning_level(Some(&value), "ZEROCLAW_CODEX_REASONING_EFFORT")
+            normalize_reasoning_level(Some(&value), "CLAWCLAWCLAW_CODEX_REASONING_EFFORT")
         });
     let raw = override_level
         .or(env_level)
@@ -695,7 +695,7 @@ impl OpenAiCodexProvider {
         );
         headers.insert("originator", WsHeaderValue::from_static("pi"));
         headers.insert("accept", WsHeaderValue::from_static("text/event-stream"));
-        headers.insert(USER_AGENT, WsHeaderValue::from_static("zeroclaw"));
+        headers.insert(USER_AGENT, WsHeaderValue::from_static("clawclawclaw"));
 
         if let Some(account_id) = account_id {
             headers.insert("chatgpt-account-id", WsHeaderValue::from_str(account_id)?);
@@ -978,7 +978,7 @@ impl OpenAiCodexProvider {
         } else {
             Some(oauth_access_token.ok_or_else(|| {
                 anyhow::anyhow!(
-                    "OpenAI Codex auth profile not found. Run `zeroclaw auth login --provider openai-codex`."
+                    "OpenAI Codex auth profile not found. Run `clawclawclaw auth login --provider openai-codex`."
                 )
             })?)
         };
@@ -987,7 +987,7 @@ impl OpenAiCodexProvider {
         } else {
             Some(account_id.ok_or_else(|| {
                 anyhow::anyhow!(
-                    "OpenAI Codex account id not found in auth profile/token. Run `zeroclaw auth login --provider openai-codex` again."
+                    "OpenAI Codex account id not found in auth profile/token. Run `clawclawclaw auth login --provider openai-codex` again."
                 )
             })?)
         };
@@ -1194,7 +1194,7 @@ mod tests {
 
     #[test]
     fn default_state_dir_is_non_empty() {
-        let path = default_zeroclaw_dir();
+        let path = default_clawclawclaw_dir();
         assert!(!path.as_os_str().is_empty());
     }
 
@@ -1252,7 +1252,7 @@ mod tests {
         let _env_lock = env_lock();
         let _transport_guard = EnvGuard::set(CODEX_TRANSPORT_ENV, None);
         let _legacy_guard = EnvGuard::set(CODEX_RESPONSES_WEBSOCKET_ENV_LEGACY, None);
-        let _provider_guard = EnvGuard::set("ZEROCLAW_PROVIDER_TRANSPORT", None);
+        let _provider_guard = EnvGuard::set("CLAWCLAWCLAW_PROVIDER_TRANSPORT", None);
 
         assert_eq!(
             resolve_transport_mode(&ProviderRuntimeOptions::default()).unwrap(),
@@ -1280,7 +1280,7 @@ mod tests {
     fn resolve_transport_mode_legacy_bool_env_is_supported() {
         let _env_lock = env_lock();
         let _transport_guard = EnvGuard::set(CODEX_TRANSPORT_ENV, None);
-        let _provider_guard = EnvGuard::set("ZEROCLAW_PROVIDER_TRANSPORT", None);
+        let _provider_guard = EnvGuard::set("CLAWCLAWCLAW_PROVIDER_TRANSPORT", None);
         let _legacy_guard = EnvGuard::set(CODEX_RESPONSES_WEBSOCKET_ENV_LEGACY, Some("false"));
 
         assert_eq!(
@@ -1293,7 +1293,7 @@ mod tests {
     fn resolve_transport_mode_rejects_invalid_runtime_override() {
         let _env_lock = env_lock();
         let _transport_guard = EnvGuard::set(CODEX_TRANSPORT_ENV, None);
-        let _provider_guard = EnvGuard::set("ZEROCLAW_PROVIDER_TRANSPORT", None);
+        let _provider_guard = EnvGuard::set("CLAWCLAWCLAW_PROVIDER_TRANSPORT", None);
         let _legacy_guard = EnvGuard::set(CODEX_RESPONSES_WEBSOCKET_ENV_LEGACY, None);
 
         let options = ProviderRuntimeOptions {
@@ -1420,7 +1420,7 @@ mod tests {
     #[test]
     fn resolve_reasoning_effort_prefers_config_override() {
         let _env_lock = env_lock();
-        let _reasoning_guard = EnvGuard::set("ZEROCLAW_CODEX_REASONING_EFFORT", Some("low"));
+        let _reasoning_guard = EnvGuard::set("CLAWCLAWCLAW_CODEX_REASONING_EFFORT", Some("low"));
 
         assert_eq!(
             resolve_reasoning_effort("gpt-5-codex", Some("xhigh")),
@@ -1431,7 +1431,7 @@ mod tests {
     #[test]
     fn resolve_reasoning_effort_falls_back_to_env_when_override_invalid() {
         let _env_lock = env_lock();
-        let _reasoning_guard = EnvGuard::set("ZEROCLAW_CODEX_REASONING_EFFORT", Some("medium"));
+        let _reasoning_guard = EnvGuard::set("CLAWCLAWCLAW_CODEX_REASONING_EFFORT", Some("medium"));
 
         assert_eq!(
             resolve_reasoning_effort("gpt-5-codex", Some("banana")),
@@ -1595,7 +1595,7 @@ data: [DONE]
         let options = ProviderRuntimeOptions {
             provider_api_url: None,
             provider_transport: None,
-            zeroclaw_dir: None,
+            clawclawclaw_dir: None,
             secrets_encrypt: false,
             auth_profile_override: None,
             reasoning_enabled: None,

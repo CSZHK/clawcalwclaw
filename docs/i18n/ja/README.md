@@ -1,4 +1,4 @@
-# ZeroClaw ドキュメントハブ（日本語）
+# clawclawclaw ドキュメントハブ（日本語）
 
 このファイルは `docs/i18n/<locale>/` 構造における日本語ハブです。
 

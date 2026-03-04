@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.ui
+package ai.clawclawclaw.android.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,8 +16,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.repeatOnLifecycle
-import ai.zeroclaw.android.data.ZeroClawSettings
-import ai.zeroclaw.android.util.BatteryUtils
+import ai.clawclawclaw.android.data.ZeroClawSettings
+import ai.clawclawclaw.android.util.BatteryUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,7 +178,7 @@ fun SettingsScreen(
             SettingsSection(title = "Behavior") {
                 SettingsSwitch(
                     title = "Auto-start on boot",
-                    description = "Start ZeroClaw when device boots",
+                    description = "Start clawclawclaw when device boots",
                     checked = localSettings.autoStart,
                     onCheckedChange = { localSettings = localSettings.copy(autoStart = it) }
                 )
@@ -243,7 +243,7 @@ fun SettingsScreen(
                 if (BatteryUtils.hasAggressiveBatteryOptimization()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "⚠️ Your device may have aggressive battery management. If ZeroClaw stops working in background, check manufacturer battery settings.",
+                        text = "⚠️ Your device may have aggressive battery management. If clawclawclaw stops working in background, check manufacturer battery settings.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -264,7 +264,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("ZeroClaw Core")
+                    Text("clawclawclaw Core")
                     Text("0.x.x", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

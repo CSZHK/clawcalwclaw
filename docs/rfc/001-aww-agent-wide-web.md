@@ -134,13 +134,13 @@ did:agent:{method}:{id}
 ```
 
 Examples:
-- `did:agent:z:6MkqLqY4...` (ZeroClaw agent)
+- `did:agent:z:6MkqLqY4...` (clawclawclaw agent)
 - `did:agent:eth:0x123...` (Ethereum-based)
 - `did:agent:web:example.com...` (web-based)
 
 ---
 
-## ZeroClaw Integration
+## clawclawclaw Integration
 
 ### Rust API Design
 
@@ -273,7 +273,7 @@ pub enum PublishTrigger {
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐    │
-│  │   ZeroClaw  │      │  LangChain  │      │   AutoGPT   │    │
+│  │   clawclawclaw  │      │  LangChain  │      │   AutoGPT   │    │
 │  │   Agent A   │      │   Agent B   │      │   Agent C   │    │
 │  └──────┬──────┘      └──────┬──────┘      └──────┬──────┘    │
 │         │                    │                    │            │
@@ -289,7 +289,7 @@ pub enum PublishTrigger {
 │         │                    │                    │            │
 │    ┌────▼────┐          ┌────▼────┐          ┌────▼────┐     │
 │    │ Nodes   │          │ Nodes   │          │ Nodes   │     │
-│    │ (ZeroClaw│          │ (Python │          │ (Go     │     │
+│    │ (clawclawclaw│          │ (Python │          │ (Go     │     │
 │    │  Hosts) │          │  Hosts) │          │  Hosts) │     │
 │    └─────────┘          └─────────┘          └─────────┘     │
 │         │                    │                    │            │
@@ -322,7 +322,7 @@ Features:
 - [ ] RESTful API specification
 - [ ] Security and authentication spec
 
-### Phase 2: ZeroClaw Implementation (2-3 months)
+### Phase 2: clawclawclaw Implementation (2-3 months)
 
 - [ ] `aww-client` crate creation
 - [ ] Extend `memory` module to support AWW
@@ -372,7 +372,7 @@ Features:
 
 ```rust
 pub enum Did {
-    ZeroClaw(String),
+    clawclawclaw(String),
     Ethereum(Address),
     Web(String),
     Custom(String),
@@ -423,7 +423,7 @@ pub enum Did {
 | **MCP** | Complementary | MCP connects tools, AWW connects experiences |
 | **A2A** | Complementary | A2A for real-time communication, AWW for persistence |
 | **SAMEP** | Reference | Borrow security model, more open design |
-| **ZeroClaw** | Parent | First full implementation |
+| **clawclawclaw** | Parent | First full implementation |
 
 ---
 
@@ -555,10 +555,10 @@ pub enum Did {
 ### Use Case 3: Cross-Project Learning
 
 ```
-1. ZeroClaw agent solves database connection pooling issue
+1. clawclawclaw agent solves database connection pooling issue
 2. Publishes experience to AWW
 3. LangChain agent encounters similar issue
-4. Finds ZeroClaw's experience
+4. Finds clawclawclaw's experience
 5. Adapts solution to Python context
 6. Links both experiences for future reference
 ```

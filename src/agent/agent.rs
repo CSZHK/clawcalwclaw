@@ -786,7 +786,7 @@ impl Agent {
     }
 
     pub async fn run_interactive(&mut self) -> Result<()> {
-        println!("🦀 ZeroClaw Interactive Mode");
+        println!("🦀 clawclawclaw Interactive Mode");
         println!("Type /quit to exit.\n");
 
         let (tx, mut rx) = tokio::sync::mpsc::channel(32);
@@ -1148,7 +1148,7 @@ mod tests {
 id = "agent-from-config"
 version = "1.0.0"
 module_path = "plugins/agent-from-config.wasm"
-wit_packages = ["zeroclaw:tools@1.0.0"]
+wit_packages = ["clawclawclaw:tools@1.0.0"]
 
 [[tools]]
 name = "__agent_from_config_plugin_tool"
@@ -1177,7 +1177,7 @@ description = "plugin tool exposed for from_config tests"
 
     fn base_from_config_for_tool_filter_tests() -> Config {
         let root = std::env::temp_dir().join(format!(
-            "zeroclaw_agent_tool_filter_{}",
+            "clawclawclaw_agent_tool_filter_{}",
             uuid::Uuid::new_v4()
         ));
         std::fs::create_dir_all(root.join("workspace")).expect("create workspace dir");

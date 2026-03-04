@@ -1,11 +1,11 @@
-# ZeroClaw Android ProGuard Rules
+# clawclawclaw Android ProGuard Rules
 # Goal: Smallest possible APK
 
 # ============================================
 # KEEP NATIVE BRIDGE
 # ============================================
--keep class ai.zeroclaw.android.bridge.** { *; }
--keepclassmembers class ai.zeroclaw.android.bridge.** { *; }
+-keep class ai.clawclawclaw.android.bridge.** { *; }
+-keepclassmembers class ai.clawclawclaw.android.bridge.** { *; }
 
 # Keep JNI methods
 -keepclasseswithmembernames class * {
@@ -15,8 +15,8 @@
 # ============================================
 # KEEP DATA CLASSES
 # ============================================
--keep class ai.zeroclaw.android.data.** { *; }
--keepclassmembers class ai.zeroclaw.android.data.** { *; }
+-keep class ai.clawclawclaw.android.data.** { *; }
+-keepclassmembers class ai.clawclawclaw.android.data.** { *; }
 
 # ============================================
 # KOTLIN SERIALIZATION

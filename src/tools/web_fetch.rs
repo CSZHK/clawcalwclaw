@@ -526,7 +526,7 @@ mod tests {
             UrlAccessConfig::default(),
             500_000,
             30,
-            "ZeroClaw/1.0".to_string(),
+            "clawclawclaw/1.0".to_string(),
         )
     }
 

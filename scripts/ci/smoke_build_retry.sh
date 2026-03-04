@@ -22,7 +22,7 @@ is_retryable_code() {
     return 1
 }
 
-build_cmd=(cargo build --package zeroclaw --bin zeroclaw --profile release-fast --locked)
+build_cmd=(cargo build --package clawclawclaw --bin clawclawclaw --profile release-fast --locked)
 
 attempt=1
 while [ "$attempt" -le "$attempts" ]; do

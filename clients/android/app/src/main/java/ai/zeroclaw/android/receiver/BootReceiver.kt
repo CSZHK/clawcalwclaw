@@ -1,19 +1,19 @@
-package ai.zeroclaw.android.receiver
+package ai.clawclawclaw.android.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import ai.zeroclaw.android.ZeroClawApp
-import ai.zeroclaw.android.service.ZeroClawService
-import ai.zeroclaw.android.worker.HeartbeatWorker
+import ai.clawclawclaw.android.ZeroClawApp
+import ai.clawclawclaw.android.service.ZeroClawService
+import ai.clawclawclaw.android.worker.HeartbeatWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Receives boot completed broadcast to auto-start ZeroClaw.
+ * Receives boot completed broadcast to auto-start clawclawclaw.
  *
  * Also handles:
  * - Package updates (MY_PACKAGE_REPLACED)
@@ -63,7 +63,7 @@ class BootReceiver : BroadcastReceiver() {
                         settings.heartbeatIntervalMinutes.toLong()
                     )
 
-                    android.util.Log.i(TAG, "ZeroClaw auto-started on boot")
+                    android.util.Log.i(TAG, "clawclawclaw auto-started on boot")
                 } else {
                     android.util.Log.d(TAG, "Auto-start disabled or not configured, skipping")
                 }

@@ -1,4 +1,4 @@
-//! Self-update functionality for ZeroClaw.
+//! Self-update functionality for clawclawclaw.
 //!
 //! Downloads and installs the latest release from GitHub.
 
@@ -9,9 +9,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// GitHub repository for releases
-const GITHUB_REPO: &str = "zeroclaw-labs/zeroclaw";
+const GITHUB_REPO: &str = "CSZHK/clawcalwclaw";
 const GITHUB_API_RELEASES: &str =
-    "https://api.github.com/repos/zeroclaw-labs/zeroclaw/releases/latest";
+    "https://api.github.com/repos/CSZHK/clawcalwclaw/releases/latest";
 
 /// Release information from GitHub API
 #[derive(Debug, serde::Deserialize)]
@@ -59,25 +59,25 @@ fn get_target_triple() -> Result<String> {
 /// Get the binary name for the current platform
 fn get_binary_name() -> String {
     if cfg!(windows) {
-        "zeroclaw.exe".to_string()
+        "clawclawclaw.exe".to_string()
     } else {
-        "zeroclaw".to_string()
+        "clawclawclaw".to_string()
     }
 }
 
 /// Get the archive name for a given target
 fn get_archive_name(target: &str) -> String {
     if target.contains("windows") {
-        format!("zeroclaw-{}.zip", target)
+        format!("clawclawclaw-{}.zip", target)
     } else {
-        format!("zeroclaw-{}.tar.gz", target)
+        format!("clawclawclaw-{}.tar.gz", target)
     }
 }
 
 /// Fetch the latest release information from GitHub
 async fn fetch_latest_release() -> Result<Release> {
     let client = reqwest::Client::builder()
-        .user_agent(format!("zeroclaw/{}", current_version()))
+        .user_agent(format!("clawclawclaw/{}", current_version()))
         .build()
         .context("Failed to create HTTP client")?;
 
@@ -119,7 +119,7 @@ fn find_asset_for_platform(release: &Release) -> Result<&Asset> {
 /// Download and extract the binary from the release archive
 async fn download_binary(asset: &Asset, temp_dir: &Path) -> Result<PathBuf> {
     let client = reqwest::Client::builder()
-        .user_agent(format!("zeroclaw/{}", current_version()))
+        .user_agent(format!("clawclawclaw/{}", current_version()))
         .build()
         .context("Failed to create HTTP client")?;
 
@@ -222,7 +222,7 @@ fn get_current_exe() -> Result<PathBuf> {
 
 fn detect_install_method_for_path(resolved_path: &Path, home_dir: Option<&Path>) -> InstallMethod {
     let lower = resolved_path.to_string_lossy().to_ascii_lowercase();
-    if lower.contains("/cellar/zeroclaw/") || lower.contains("/homebrew/cellar/zeroclaw/") {
+    if lower.contains("/cellar/clawclawclaw/") || lower.contains("/homebrew/cellar/clawclawclaw/") {
         return InstallMethod::Homebrew;
     }
 
@@ -248,11 +248,11 @@ pub fn print_update_instructions() -> Result<()> {
     let current_exe = get_current_exe()?;
     let install_method = detect_install_method(&current_exe);
 
-    println!("ZeroClaw update guide");
+    println!("clawclawclaw update guide");
     println!("Detected binary: {}", current_exe.display());
     println!();
     println!("1) Check if a new release exists:");
-    println!("   zeroclaw update --check");
+    println!("   clawclawclaw update --check");
     println!();
 
     match install_method {
@@ -260,31 +260,31 @@ pub fn print_update_instructions() -> Result<()> {
             println!("Detected install method: Homebrew");
             println!("Recommended update commands:");
             println!("  brew update");
-            println!("  brew upgrade zeroclaw");
-            println!("  zeroclaw --version");
+            println!("  brew upgrade clawclawclaw");
+            println!("  clawclawclaw --version");
             println!();
             println!(
-                "Tip: avoid `zeroclaw update` on Homebrew installs unless you intentionally want to override the managed binary."
+                "Tip: avoid `clawclawclaw update` on Homebrew installs unless you intentionally want to override the managed binary."
             );
         }
         InstallMethod::CargoOrLocal => {
             println!("Detected install method: local binary (~/.cargo/bin or ~/.local/bin)");
             println!("Recommended update command:");
-            println!("  zeroclaw update");
+            println!("  clawclawclaw update");
             println!("Optional force reinstall:");
-            println!("  zeroclaw update --force");
+            println!("  clawclawclaw update --force");
             println!("Verify:");
-            println!("  zeroclaw --version");
+            println!("  clawclawclaw --version");
         }
         InstallMethod::Unknown => {
             println!("Detected install method: unknown");
             println!("Try the built-in updater first:");
-            println!("  zeroclaw update");
+            println!("  clawclawclaw update");
             println!(
                 "If your package manager owns the binary, use that manager's upgrade command."
             );
             println!("Verify:");
-            println!("  zeroclaw --version");
+            println!("  clawclawclaw --version");
         }
     }
 
@@ -366,7 +366,7 @@ pub async fn check_for_update() -> Result<Option<String>> {
 
 /// Perform the self-update
 pub async fn self_update(force: bool, check_only: bool) -> Result<()> {
-    println!("🦀 ZeroClaw Self-Update");
+    println!("🦀 clawclawclaw Self-Update");
     println!();
 
     let current_exe = get_current_exe()?;
@@ -391,7 +391,7 @@ pub async fn self_update(force: bool, check_only: bool) -> Result<()> {
                 current_version(),
                 latest_version
             );
-            println!("Run `zeroclaw update` to install the update.");
+            println!("Run `clawclawclaw update` to install the update.");
         }
         return Ok(());
     }
@@ -399,9 +399,9 @@ pub async fn self_update(force: bool, check_only: bool) -> Result<()> {
     if install_method == InstallMethod::Homebrew && !force {
         println!();
         println!("Detected a Homebrew-managed installation.");
-        println!("Use `brew upgrade zeroclaw` for the safest update path.");
+        println!("Use `brew upgrade clawclawclaw` for the safest update path.");
         println!(
-            "Run `zeroclaw update --force` only if you intentionally want to override Homebrew."
+            "Run `clawclawclaw update --force` only if you intentionally want to override Homebrew."
         );
         return Ok(());
     }
@@ -438,7 +438,7 @@ pub async fn self_update(force: bool, check_only: bool) -> Result<()> {
     println!();
     println!("✅ Successfully updated to {}!", release.tag_name);
     println!();
-    println!("Restart ZeroClaw to use the new version.");
+    println!("Restart clawclawclaw to use the new version.");
 
     Ok(())
 }
@@ -451,17 +451,17 @@ mod tests {
     fn archive_name_uses_zip_for_windows_and_targz_elsewhere() {
         assert_eq!(
             get_archive_name("x86_64-pc-windows-msvc"),
-            "zeroclaw-x86_64-pc-windows-msvc.zip"
+            "clawclawclaw-x86_64-pc-windows-msvc.zip"
         );
         assert_eq!(
             get_archive_name("x86_64-unknown-linux-gnu"),
-            "zeroclaw-x86_64-unknown-linux-gnu.tar.gz"
+            "clawclawclaw-x86_64-unknown-linux-gnu.tar.gz"
         );
     }
 
     #[test]
     fn detect_install_method_identifies_homebrew_paths() {
-        let path = Path::new("/opt/homebrew/Cellar/zeroclaw/0.1.7/bin/zeroclaw");
+        let path = Path::new("/opt/homebrew/Cellar/clawclawclaw/0.1.7/bin/clawclawclaw");
         let method = detect_install_method_for_path(path, None);
         assert_eq!(method, InstallMethod::Homebrew);
     }
@@ -469,8 +469,8 @@ mod tests {
     #[test]
     fn detect_install_method_identifies_local_bin_paths() {
         let home = Path::new("/Users/example");
-        let cargo_path = Path::new("/Users/example/.cargo/bin/zeroclaw");
-        let local_path = Path::new("/Users/example/.local/bin/zeroclaw");
+        let cargo_path = Path::new("/Users/example/.cargo/bin/clawclawclaw");
+        let local_path = Path::new("/Users/example/.local/bin/clawclawclaw");
 
         assert_eq!(
             detect_install_method_for_path(cargo_path, Some(home)),
@@ -484,7 +484,7 @@ mod tests {
 
     #[test]
     fn detect_install_method_returns_unknown_for_other_paths() {
-        let path = Path::new("/usr/bin/zeroclaw");
+        let path = Path::new("/usr/bin/clawclawclaw");
         let method = detect_install_method_for_path(path, Some(Path::new("/Users/example")));
         assert_eq!(method, InstallMethod::Unknown);
     }

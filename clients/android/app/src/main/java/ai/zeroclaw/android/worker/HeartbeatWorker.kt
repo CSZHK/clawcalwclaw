@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.worker
+package ai.clawclawclaw.android.worker
 
 import android.content.Context
 import androidx.work.*
@@ -44,8 +44,8 @@ class HeartbeatWorker(
     }
 
     private suspend fun runHeartbeat() {
-        // TODO: Connect to ZeroClaw bridge
-        // val bridge = ZeroClawBridge
+        // TODO: Connect to clawclawclaw bridge
+        // val bridge = ClawclawclawBridge
         // bridge.sendHeartbeat()
 
         // For now, just log
@@ -57,14 +57,14 @@ class HeartbeatWorker(
         val prompt = inputData.getString(KEY_PROMPT)
 
         // TODO: Execute cron job via bridge
-        // ZeroClawBridge.executeCronJob(jobId, prompt)
+        // ClawclawclawBridge.executeCronJob(jobId, prompt)
 
         android.util.Log.d(TAG, "Cron job executed: $jobId")
     }
 
     private suspend fun runHealthCheck() {
         // TODO: Check agent status
-        // val status = ZeroClawBridge.getStatus()
+        // val status = ClawclawclawBridge.getStatus()
 
         android.util.Log.d(TAG, "Health check executed")
     }
@@ -81,7 +81,7 @@ class HeartbeatWorker(
         const val TASK_CRON = "cron"
         const val TASK_HEALTH_CHECK = "health_check"
 
-        const val WORK_NAME_HEARTBEAT = "zeroclaw_heartbeat"
+        const val WORK_NAME_HEARTBEAT = "clawclawclaw_heartbeat"
 
         /**
          * Schedule periodic heartbeat (every 15 minutes minimum for WorkManager)

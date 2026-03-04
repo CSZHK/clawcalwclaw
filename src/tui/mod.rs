@@ -1,4 +1,4 @@
-//! Terminal UI module (`zeroclaw tui`).
+//! Terminal UI module (`clawclawclaw tui`).
 //!
 //! This module provides a native terminal interface backed by `ratatui`.
 //! Compile with `--features tui-ratatui` to enable this command path.

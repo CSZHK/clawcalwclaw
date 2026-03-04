@@ -40,7 +40,7 @@ Options:
   -h, --help           Show this help
 
 Purpose:
-  Validate Android source-build environment for ZeroClaw, with focus on:
+  Validate Android source-build environment for clawclawclaw, with focus on:
   - Termux native builds using plain clang
   - NDK cross-build overrides (CARGO_TARGET_*_LINKER and CC_*)
   - Common cc-rs linker mismatch failures
@@ -132,7 +132,7 @@ emit_json_report() {
   local json_payload
   json_payload="$(
     printf '{\n'
-    printf '  "schema_version": "zeroclaw.android-selfcheck.v1",\n'
+    printf '  "schema_version": "clawclawclaw.android-selfcheck.v1",\n'
     printf '  "timestamp_utc": "%s",\n' "$(json_escape "$ts")"
     printf '  "status": "%s",\n' "$status_text"
     printf '  "exit_code": %s,\n' "$exit_code"
@@ -490,7 +490,7 @@ if [[ -n "$DIAGNOSE_LOG" ]]; then
 fi
 
 if [[ "$RUN_CARGO_CHECK" -eq 1 ]]; then
-  tmp_log="$(mktemp -t zeroclaw-android-check-XXXXXX.log)"
+  tmp_log="$(mktemp -t clawclawclaw-android-check-XXXXXX.log)"
   cleanup_tmp_log() {
     rm -f "$tmp_log"
   }
@@ -498,7 +498,7 @@ if [[ "$RUN_CARGO_CHECK" -eq 1 ]]; then
 
   log "running cargo check --locked --target $TARGET --no-default-features"
   set +e
-  CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-/tmp/zeroclaw-android-selfcheck-target}" \
+  CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-/tmp/clawclawclaw-android-selfcheck-target}" \
     cargo check --locked --target "$TARGET" --no-default-features 2>&1 | tee "$tmp_log"
   cargo_status="${PIPESTATUS[0]}"
   set -e

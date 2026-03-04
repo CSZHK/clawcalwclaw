@@ -29,7 +29,7 @@ pub struct MatrixChannel {
     mention_only: bool,
     session_owner_hint: Option<String>,
     session_device_id_hint: Option<String>,
-    zeroclaw_dir: Option<PathBuf>,
+    clawclawclaw_dir: Option<PathBuf>,
     resolved_room_id_cache: Arc<RwLock<Option<String>>>,
     sdk_client: Arc<OnceCell<MatrixSdkClient>>,
     http_client: Client,
@@ -131,7 +131,7 @@ impl MatrixChannel {
         owner_hint: Option<String>,
         device_id_hint: Option<String>,
     ) -> Self {
-        Self::new_with_session_hint_and_zeroclaw_dir(
+        Self::new_with_session_hint_and_clawclawclaw_dir(
             homeserver,
             access_token,
             room_id,
@@ -142,14 +142,14 @@ impl MatrixChannel {
         )
     }
 
-    pub fn new_with_session_hint_and_zeroclaw_dir(
+    pub fn new_with_session_hint_and_clawclawclaw_dir(
         homeserver: String,
         access_token: String,
         room_id: String,
         allowed_users: Vec<String>,
         owner_hint: Option<String>,
         device_id_hint: Option<String>,
-        zeroclaw_dir: Option<PathBuf>,
+        clawclawclaw_dir: Option<PathBuf>,
     ) -> Self {
         let homeserver = homeserver.trim_end_matches('/').to_string();
         let access_token = access_token.trim().to_string();
@@ -168,7 +168,7 @@ impl MatrixChannel {
             mention_only: false,
             session_owner_hint: Self::normalize_optional_field(owner_hint),
             session_device_id_hint: Self::normalize_optional_field(device_id_hint),
-            zeroclaw_dir,
+            clawclawclaw_dir,
             resolved_room_id_cache: Arc::new(RwLock::new(None)),
             sdk_client: Arc::new(OnceCell::new()),
             http_client: Client::new(),
@@ -206,7 +206,7 @@ impl MatrixChannel {
     }
 
     fn matrix_store_dir(&self) -> Option<PathBuf> {
-        self.zeroclaw_dir
+        self.clawclawclaw_dir
             .as_ref()
             .map(|dir| dir.join("state").join("matrix"))
     }
@@ -971,25 +971,25 @@ mod tests {
     }
 
     #[test]
-    fn matrix_store_dir_is_derived_from_zeroclaw_dir() {
-        let ch = MatrixChannel::new_with_session_hint_and_zeroclaw_dir(
+    fn matrix_store_dir_is_derived_from_clawclawclaw_dir() {
+        let ch = MatrixChannel::new_with_session_hint_and_clawclawclaw_dir(
             "https://matrix.org".to_string(),
             "tok".to_string(),
             "!r:m".to_string(),
             vec![],
             None,
             None,
-            Some(PathBuf::from("/tmp/zeroclaw")),
+            Some(PathBuf::from("/tmp/clawclawclaw")),
         );
 
         assert_eq!(
             ch.matrix_store_dir(),
-            Some(PathBuf::from("/tmp/zeroclaw/state/matrix"))
+            Some(PathBuf::from("/tmp/clawclawclaw/state/matrix"))
         );
     }
 
     #[test]
-    fn matrix_store_dir_absent_without_zeroclaw_dir() {
+    fn matrix_store_dir_absent_without_clawclawclaw_dir() {
         let ch = MatrixChannel::new_with_session_hint(
             "https://matrix.org".to_string(),
             "tok".to_string(),

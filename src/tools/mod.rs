@@ -422,14 +422,14 @@ pub fn all_tools_with_runtime(
 ) -> Vec<Box<dyn Tool>> {
     let has_shell_access = runtime.has_shell_access();
     let has_filesystem_access = runtime.has_filesystem_access();
-    let zeroclaw_dir = root_config
+    let clawclawclaw_dir = root_config
         .config_path
         .parent()
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|| runtime.storage_path());
     let syscall_detector = Arc::new(crate::security::SyscallAnomalyDetector::new(
         root_config.security.syscall_anomaly.clone(),
-        &zeroclaw_dir,
+        &clawclawclaw_dir,
         root_config.security.audit.clone(),
     ));
 
@@ -634,7 +634,7 @@ pub fn all_tools_with_runtime(
             auth_profile_override: None,
             provider_api_url: root_config.api_url.clone(),
             provider_transport: root_config.effective_provider_transport(),
-            zeroclaw_dir: root_config
+            clawclawclaw_dir: root_config
                 .config_path
                 .parent()
                 .map(std::path::PathBuf::from),

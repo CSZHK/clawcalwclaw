@@ -16,7 +16,7 @@
 //! ## Example
 //!
 //! ```rust,ignore
-//! use zeroclaw::economic::{EconomicTracker, EconomicConfig, SurvivalStatus};
+//! use clawclawclaw::economic::{EconomicTracker, EconomicConfig, SurvivalStatus};
 //!
 //! let config = EconomicConfig {
 //!     enabled: true,

@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.data
+package ai.clawclawclaw.android.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 // Extension for DataStore
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "zeroclaw_settings")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "clawclawclaw_settings")
 
 /**
- * Repository for persisting ZeroClaw settings.
+ * Repository for persisting clawclawclaw settings.
  *
  * Uses DataStore for general settings and EncryptedSharedPreferences
  * for sensitive data like API keys.
@@ -41,7 +41,7 @@ class SettingsRepository(private val context: Context) {
 
         EncryptedSharedPreferences.create(
             context,
-            "zeroclaw_secure",
+            "clawclawclaw_secure",
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM

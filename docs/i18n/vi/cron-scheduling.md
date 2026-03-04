@@ -1,24 +1,24 @@
 # Hệ thống Cron & Lập lịch
 
-ZeroClaw bao gồm hệ thống lập lịch công việc đầy đủ tính năng để chạy các tác vụ theo lịch trình, tại thời điểm cụ thể, hoặc theo khoảng thời gian đều đặn.
+clawclawclaw bao gồm hệ thống lập lịch công việc đầy đủ tính năng để chạy các tác vụ theo lịch trình, tại thời điểm cụ thể, hoặc theo khoảng thời gian đều đặn.
 
 ## Bắt đầu nhanh
 
 ```bash
 # Thêm cron job (chạy mỗi ngày lúc 9 giờ sáng)
-zeroclaw cron add '0 9 * * *' 'echo "Chào buổi sáng!"'
+clawclawclaw cron add '0 9 * * *' 'echo "Chào buổi sáng!"'
 
 # Thêm nhắc nhở một lần (chạy sau 30 phút)
-zeroclaw cron once 30m 'notify-send "Hết giờ!"'
+clawclawclaw cron once 30m 'notify-send "Hết giờ!"'
 
 # Thêm job theo khoảng thời gian (chạy mỗi 5 phút)
-zeroclaw cron add-every 300000 'curl -s http://api.example.com/health'
+clawclawclaw cron add-every 300000 'curl -s http://api.example.com/health'
 
 # Liệt kê tất cả jobs
-zeroclaw cron list
+clawclawclaw cron list
 
 # Xóa một job
-zeroclaw cron remove <job-id>
+clawclawclaw cron remove <job-id>
 ```
 
 ## Loại lịch trình
@@ -29,13 +29,13 @@ Biểu thức cron tiêu chuẩn với hỗ trợ múi giờ tùy chọn.
 
 ```bash
 # Mỗi ngày làm việc lúc 9 giờ sáng giờ Pacific
-zeroclaw cron add '0 9 * * 1-5' --tz 'America/Los_Angeles' 'echo "Giờ làm việc"'
+clawclawclaw cron add '0 9 * * 1-5' --tz 'America/Los_Angeles' 'echo "Giờ làm việc"'
 
 # Mỗi giờ
-zeroclaw cron add '0 * * * *' 'echo "Kiểm tra hàng giờ"'
+clawclawclaw cron add '0 * * * *' 'echo "Kiểm tra hàng giờ"'
 
 # Mỗi 15 phút
-zeroclaw cron add '*/15 * * * *' 'curl http://localhost:8080/ping'
+clawclawclaw cron add '*/15 * * * *' 'curl http://localhost:8080/ping'
 ```
 
 **Định dạng:** `phút giờ ngày-trong-tháng tháng ngày-trong-tuần`
@@ -54,12 +54,12 @@ Chạy đúng một lần tại thời điểm cụ thể.
 
 ```bash
 # Tại thời điểm ISO cụ thể
-zeroclaw cron add-at '2026-03-15T14:30:00Z' 'echo "Cuộc họp bắt đầu!"'
+clawclawclaw cron add-at '2026-03-15T14:30:00Z' 'echo "Cuộc họp bắt đầu!"'
 
 # Độ trễ tương đối (thân thiện với người dùng)
-zeroclaw cron once 2h 'echo "Hai giờ sau"'
-zeroclaw cron once 30m 'echo "Nhắc nhở nửa giờ"'
-zeroclaw cron once 1d 'echo "Ngày mai"'
+clawclawclaw cron once 2h 'echo "Hai giờ sau"'
+clawclawclaw cron once 30m 'echo "Nhắc nhở nửa giờ"'
+clawclawclaw cron once 1d 'echo "Ngày mai"'
 ```
 
 **Đơn vị độ trễ:** `s` (giây), `m` (phút), `h` (giờ), `d` (ngày)
@@ -70,10 +70,10 @@ Chạy lặp lại theo khoảng thời gian cố định.
 
 ```bash
 # Mỗi 5 phút (300000 ms)
-zeroclaw cron add-every 300000 'echo "Ping"'
+clawclawclaw cron add-every 300000 'echo "Ping"'
 
 # Mỗi giờ (3600000 ms)
-zeroclaw cron add-every 3600000 'curl http://api.example.com/sync'
+clawclawclaw cron add-every 3600000 'curl http://api.example.com/sync'
 ```
 
 ## Loại công việc
@@ -83,7 +83,7 @@ zeroclaw cron add-every 3600000 'curl http://api.example.com/sync'
 Thực thi lệnh shell trực tiếp:
 
 ```bash
-zeroclaw cron add '0 6 * * *' 'backup.sh && notify-send "Sao lưu xong"'
+clawclawclaw cron add '0 6 * * *' 'backup.sh && notify-send "Sao lưu xong"'
 ```
 
 ### Agent Jobs
@@ -91,7 +91,7 @@ zeroclaw cron add '0 6 * * *' 'backup.sh && notify-send "Sao lưu xong"'
 Gửi prompt đến AI agent:
 
 ```toml
-# Trong zeroclaw.toml
+# Trong clawclawclaw.toml
 [[cron.jobs]]
 schedule = { kind = "cron", expr = "0 9 * * *", tz = "America/Los_Angeles" }
 job_type = "agent"
@@ -143,19 +143,19 @@ best_effort = true  # Không thất bại nếu gửi thất bại
 
 | Lệnh | Mô tả |
 |------|-------|
-| `zeroclaw cron list` | Hiển thị tất cả jobs đã lập lịch |
-| `zeroclaw cron add <expr> <cmd>` | Thêm job với biểu thức cron |
-| `zeroclaw cron add-at <time> <cmd>` | Thêm job chạy một lần tại thời điểm |
-| `zeroclaw cron add-every <ms> <cmd>` | Thêm job theo khoảng thời gian |
-| `zeroclaw cron once <delay> <cmd>` | Thêm job chạy một lần với độ trễ |
-| `zeroclaw cron update <id> [opts]` | Cập nhật cài đặt job |
-| `zeroclaw cron remove <id>` | Xóa một job |
-| `zeroclaw cron pause <id>` | Tạm dừng (vô hiệu hóa) job |
-| `zeroclaw cron resume <id>` | Tiếp tục (kích hoạt) job |
+| `clawclawclaw cron list` | Hiển thị tất cả jobs đã lập lịch |
+| `clawclawclaw cron add <expr> <cmd>` | Thêm job với biểu thức cron |
+| `clawclawclaw cron add-at <time> <cmd>` | Thêm job chạy một lần tại thời điểm |
+| `clawclawclaw cron add-every <ms> <cmd>` | Thêm job theo khoảng thời gian |
+| `clawclawclaw cron once <delay> <cmd>` | Thêm job chạy một lần với độ trễ |
+| `clawclawclaw cron update <id> [opts]` | Cập nhật cài đặt job |
+| `clawclawclaw cron remove <id>` | Xóa một job |
+| `clawclawclaw cron pause <id>` | Tạm dừng (vô hiệu hóa) job |
+| `clawclawclaw cron resume <id>` | Tiếp tục (kích hoạt) job |
 
 ## Tệp cấu hình
 
-Định nghĩa jobs trong `zeroclaw.toml`:
+Định nghĩa jobs trong `clawclawclaw.toml`:
 
 ```toml
 [[cron.jobs]]
@@ -204,9 +204,9 @@ Xong! Tôi sẽ nhắc bạn gọi điện cho mẹ lúc 4:30 chiều.
 
 ## Di chuyển từ OpenClaw
 
-Hệ thống cron của ZeroClaw tương thích với lập lịch của OpenClaw:
+Hệ thống cron của clawclawclaw tương thích với lập lịch của OpenClaw:
 
-| OpenClaw | ZeroClaw |
+| OpenClaw | clawclawclaw |
 |----------|----------|
 | `kind: "cron"` | `kind = "cron"` ✅ |
 | `kind: "every"` | `kind = "every"` ✅ |
@@ -216,7 +216,7 @@ Hệ thống cron của ZeroClaw tương thích với lập lịch của OpenCla
 | `payload.kind: "systemEvent"` | `job_type = "agent"` |
 | `payload.kind: "agentTurn"` | `job_type = "agent"` |
 
-**Khác biệt chính:** ZeroClaw sử dụng định dạng TOML, OpenClaw sử dụng JSON.
+**Khác biệt chính:** clawclawclaw sử dụng định dạng TOML, OpenClaw sử dụng JSON.
 
 ## Thực hành tốt nhất
 
@@ -229,7 +229,7 @@ Hệ thống cron của ZeroClaw tương thích với lập lịch của OpenCla
 ## Xử lý sự cố
 
 **Job không chạy?**
-- Kiểm tra `zeroclaw cron list` - nó có được bật không?
+- Kiểm tra `clawclawclaw cron list` - nó có được bật không?
 - Xác minh biểu thức cron đúng
 - Kiểm tra cài đặt múi giờ
 

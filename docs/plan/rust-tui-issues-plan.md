@@ -1,8 +1,8 @@
-# ZeroClaw TUI 模块 — Issue 拆分计划
+# clawclawclaw TUI 模块 — Issue 拆分计划
 
 ## Context
 
-ZeroClaw 需要原生 Rust TUI 模块（`zeroclaw tui` 命令），提供分屏聊天、流式响应、工具执行进度等富终端交互。当前 `src/tui/` 不存在，feature flag 未定义，完全从零实现。
+clawclawclaw 需要原生 Rust TUI 模块（`clawclawclaw tui` 命令），提供分屏聊天、流式响应、工具执行进度等富终端交互。当前 `src/tui/` 不存在，feature flag 未定义，完全从零实现。
 
 源计划：`docs/plan/rust-tui-plan.md`（v2，已通过多 Agent 审查）
 
@@ -78,7 +78,7 @@ Issue #1 (Cargo.toml + deps)
 - `cargo check` （无 feature）不引入 ratatui/crossterm/strip-ansi-escapes
 - `cargo tree -i crossterm --features tui-ratatui` 仅一个版本
 - `default = []` 未变
-- 二进制大小 gate: `cargo build --release --features tui-ratatui` 后 `ls -la target/release/zeroclaw` 记录基线值（CI 硬限制 22MB）
+- 二进制大小 gate: `cargo build --release --features tui-ratatui` 后 `ls -la target/release/clawclawclaw` 记录基线值（CI 硬限制 22MB）
 
 **关键文件**:
 - `Cargo.toml`: features 段 ~L217, dependencies 段

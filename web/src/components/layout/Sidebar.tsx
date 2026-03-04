@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               ZC
             </div>
             <span className="text-lg font-semibold text-white tracking-wide">
-              ZeroClaw
+              clawclawclaw
             </span>
           </div>
           <button

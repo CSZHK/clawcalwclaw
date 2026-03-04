@@ -1,4 +1,4 @@
-# ZeroClaw i18n Docs Index
+# clawclawclaw i18n Docs Index
 
 Canonical localized documentation trees live here.
 

@@ -1,44 +1,44 @@
-package ai.zeroclaw.android.bridge
+package ai.clawclawclaw.android.bridge
 
 /**
- * JNI bridge to ZeroClaw Rust library.
+ * JNI bridge to clawclawclaw Rust library.
  *
  * This class will be replaced by UniFFI-generated bindings.
  * For now, it provides stub implementations.
  *
- * Native library: libzeroclaw.so
+ * Native library: libclawclawclaw.so
  * Build command: cargo ndk -t arm64-v8a -o app/src/main/jniLibs build --release
  */
-object ZeroClawBridge {
+object ClawclawclawBridge {
 
     private var initialized = false
 
     /**
-     * Initialize the ZeroClaw runtime.
+     * Initialize the clawclawclaw runtime.
      * Must be called before any other methods.
      */
     fun initialize(dataDir: String): Result<Unit> {
         return runCatching {
             // TODO: Load native library
-            // System.loadLibrary("zeroclaw")
+            // System.loadLibrary("clawclawclaw")
             // nativeInit(dataDir)
             initialized = true
         }
     }
 
     /**
-     * Start the ZeroClaw gateway.
-     * @param configPath Path to zeroclaw.toml config file
+     * Start the clawclawclaw gateway.
+     * @param configPath Path to clawclawclaw.toml config file
      */
     fun start(configPath: String): Result<Unit> {
-        check(initialized) { "ZeroClawBridge not initialized" }
+        check(initialized) { "ClawclawclawBridge not initialized" }
         return runCatching {
             // TODO: nativeStart(configPath)
         }
     }
 
     /**
-     * Stop the ZeroClaw gateway.
+     * Stop the clawclawclaw gateway.
      */
     fun stop(): Result<Unit> {
         return runCatching {
@@ -50,7 +50,7 @@ object ZeroClawBridge {
      * Send a message to the agent.
      */
     fun sendMessage(message: String): Result<Unit> {
-        check(initialized) { "ZeroClawBridge not initialized" }
+        check(initialized) { "ClawclawclawBridge not initialized" }
         return runCatching {
             // TODO: nativeSendMessage(message)
         }
@@ -98,7 +98,7 @@ enum class AgentStatus {
 }
 
 /**
- * Configuration for ZeroClaw.
+ * Configuration for clawclawclaw.
  */
 data class ZeroClawConfig(
     val provider: String = "anthropic",

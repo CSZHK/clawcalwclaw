@@ -1,6 +1,6 @@
 //! OpenAI-compatible `/v1/chat/completions` and `/v1/models` endpoints.
 //!
-//! These endpoints allow ZeroClaw to act as a drop-in replacement for the
+//! These endpoints allow clawclawclaw to act as a drop-in replacement for the
 //! OpenAI API, enabling any OpenAI-compatible client (e.g., `openai` Python
 //! library, `curl`, Aura) to send chat requests through the gateway.
 
@@ -643,7 +643,7 @@ pub async fn handle_v1_models(
             id: state.model.clone(),
             object: "model",
             created: unix_timestamp(),
-            owned_by: "zeroclaw".to_string(),
+            owned_by: "clawclawclaw".to_string(),
         }],
     };
 
@@ -811,13 +811,13 @@ mod tests {
                 id: "anthropic/claude-sonnet-4".to_string(),
                 object: "model",
                 created: 1_234_567_890,
-                owned_by: "zeroclaw".to_string(),
+                owned_by: "clawclawclaw".to_string(),
             }],
         };
         let json = serde_json::to_string(&response).unwrap();
         assert!(json.contains("\"object\":\"list\""));
         assert!(json.contains("anthropic/claude-sonnet-4"));
-        assert!(json.contains("zeroclaw"));
+        assert!(json.contains("clawclawclaw"));
     }
 
     #[test]

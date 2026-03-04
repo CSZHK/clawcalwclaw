@@ -1,6 +1,6 @@
 ## Android Phase 3 - Agent Integration
 
-This PR implements the Android client for ZeroClaw with full agent integration, including foreground service, Quick Settings tile, boot receiver, and background heartbeat support.
+This PR implements the Android client for clawclawclaw with full agent integration, including foreground service, Quick Settings tile, boot receiver, and background heartbeat support.
 
 ### Changes
 - `ZeroClawApp.kt` - Application setup with notification channels and WorkManager

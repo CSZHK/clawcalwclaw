@@ -4,5 +4,5 @@
 //!
 //! This crate is intentionally minimal in PR-1 (scaffolding only).
 
-/// Marker constant proving dependency linkage to `zeroclaw-types`.
-pub const CORE_CRATE_ID: &str = zeroclaw_types::CRATE_ID;
+/// Marker constant proving dependency linkage to `clawclawclaw-types`.
+pub const CORE_CRATE_ID: &str = clawclawclaw_types::CRATE_ID;

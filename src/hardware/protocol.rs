@@ -1,7 +1,7 @@
-//! ZeroClaw serial JSON protocol — the firmware contract.
+//! clawclawclaw serial JSON protocol — the firmware contract.
 //!
 //! These types define the newline-delimited JSON wire format shared between
-//! the ZeroClaw host and device firmware (Pico, Arduino, ESP32, Nucleo).
+//! the clawclawclaw host and device firmware (Pico, Arduino, ESP32, Nucleo).
 //!
 //! Wire format:
 //!   Host → Device:  `{"cmd":"gpio_write","params":{"pin":25,"value":1}}\n`

@@ -597,7 +597,7 @@ def main(argv: list[str] | None = None) -> int:
 
     primary = budget_reports[0]
     payload: dict[str, object] = {
-        "schema_version": "zeroclaw.agent-team-eval.v1",
+        "schema_version": "clawclawclaw.agent-team-eval.v1",
         "budget_profile": primary["budget_profile"],
         "inputs": {
             "tasks": args.tasks,

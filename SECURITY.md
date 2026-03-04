@@ -10,7 +10,7 @@
 
 Please do not open public GitHub issues for unpatched security vulnerabilities.
 
-ZeroClaw uses GitHub's private vulnerability reporting and advisory workflow for important security issues.
+clawclawclaw uses GitHub's private vulnerability reporting and advisory workflow for important security issues.
 
 Preferred reporting paths:
 
@@ -21,7 +21,7 @@ Preferred reporting paths:
      - English: [`docs/security/private-vulnerability-report-template.md`](docs/security/private-vulnerability-report-template.md)
      - 中文: [`docs/security/private-vulnerability-report-template.zh-CN.md`](docs/security/private-vulnerability-report-template.zh-CN.md)
 2. If you are a maintainer/admin opening a draft directly:
-   - <https://github.com/zeroclaw-labs/zeroclaw/security/advisories/new>
+   - <https://github.com/CSZHK/clawcalwclaw/security/advisories/new>
 
 ### What to Include in a Report
 
@@ -38,7 +38,7 @@ Impersonation scams are a real risk in open communities.
 
 Security-critical rule:
 
-- ZeroClaw maintainers will not ask for cryptocurrency, wallet seed phrases, or private financial credentials.
+- clawclawclaw maintainers will not ask for cryptocurrency, wallet seed phrases, or private financial credentials.
 - Treat direct-message payment requests as fraudulent unless independently verified in the repository.
 - Verify announcements using repository sources first.
 
@@ -164,7 +164,7 @@ Before advisory publication:
 
 ## Security Architecture
 
-ZeroClaw uses defense-in-depth controls.
+clawclawclaw uses defense-in-depth controls.
 
 ### Autonomy Levels
 
@@ -202,7 +202,7 @@ cargo test -- tools::file_write
 
 ## Container Security
 
-ZeroClaw images follow CIS Docker Benchmark-oriented hardening.
+clawclawclaw images follow CIS Docker Benchmark-oriented hardening.
 
 | Control | Implementation |
 | ------- | -------------- |
@@ -214,12 +214,12 @@ ZeroClaw images follow CIS Docker Benchmark-oriented hardening.
 
 ```bash
 # Build and verify non-root user
-docker build -t zeroclaw .
-docker inspect --format='{{.Config.User}}' zeroclaw
+docker build -t clawclawclaw .
+docker inspect --format='{{.Config.User}}' clawclawclaw
 # Expected: 65534:65534
 
 # Run with read-only filesystem (production hardening)
-docker run --read-only -v /path/to/workspace:/workspace zeroclaw gateway
+docker run --read-only -v /path/to/workspace:/workspace clawclawclaw gateway
 ```
 
 ### CI Enforcement

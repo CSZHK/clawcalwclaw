@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
 use tracing_subscriber::EnvFilter;
-use zeroclaw::config::schema::McpServerConfig;
+use clawclawclaw::config::schema::McpServerConfig;
 
 #[derive(Default, Deserialize)]
 struct FileMcp {
@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
             (root.mcp.enabled, root.mcp.servers)
         }
         Err(_) => {
-            let config = zeroclaw::Config::load_or_init().await?;
+            let config = clawclawclaw::Config::load_or_init().await?;
             (config.mcp.enabled, config.mcp.servers)
         }
     };
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
         bail!("MCP is disabled or no servers configured");
     }
 
-    let registry = zeroclaw::tools::McpRegistry::connect_all(&servers).await?;
+    let registry = clawclawclaw::tools::McpRegistry::connect_all(&servers).await?;
     let tool_count = registry.tool_names().len();
     tracing::info!(
         "MCP smoke ok: {} server(s), {} tool(s)",

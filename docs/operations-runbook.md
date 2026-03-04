@@ -1,4 +1,4 @@
-# ZeroClaw Operations Runbook
+# clawclawclaw Operations Runbook
 
 This runbook is for operators who maintain availability, security posture, and incident response.
 
@@ -19,59 +19,59 @@ For first-time installation, start from [one-click-bootstrap.md](one-click-boots
 
 | Mode | Command | When to use |
 |---|---|---|
-| Foreground runtime | `zeroclaw daemon` | local debugging, short-lived sessions |
-| Foreground gateway only | `zeroclaw gateway` | webhook endpoint testing |
-| User service | `zeroclaw service install && zeroclaw service start` | persistent operator-managed runtime |
+| Foreground runtime | `clawclawclaw daemon` | local debugging, short-lived sessions |
+| Foreground gateway only | `clawclawclaw gateway` | webhook endpoint testing |
+| User service | `clawclawclaw service install && clawclawclaw service start` | persistent operator-managed runtime |
 
 ## Baseline Operator Checklist
 
 1. Validate configuration:
 
 ```bash
-zeroclaw status
+clawclawclaw status
 ```
 
 2. Verify diagnostics:
 
 ```bash
-zeroclaw doctor
-zeroclaw channel doctor
+clawclawclaw doctor
+clawclawclaw channel doctor
 ```
 
 3. Start runtime:
 
 ```bash
-zeroclaw daemon
+clawclawclaw daemon
 ```
 
 4. For persistent user session service:
 
 ```bash
-zeroclaw service install
-zeroclaw service start
-zeroclaw service status
+clawclawclaw service install
+clawclawclaw service start
+clawclawclaw service status
 ```
 
 ## Health and State Signals
 
 | Signal | Command / File | Expected |
 |---|---|---|
-| Config validity | `zeroclaw doctor` | no critical errors |
-| Channel connectivity | `zeroclaw channel doctor` | configured channels healthy |
-| Runtime summary | `zeroclaw status` | expected provider/model/channels |
-| Daemon heartbeat/state | `~/.zeroclaw/daemon_state.json` | file updates periodically |
+| Config validity | `clawclawclaw doctor` | no critical errors |
+| Channel connectivity | `clawclawclaw channel doctor` | configured channels healthy |
+| Runtime summary | `clawclawclaw status` | expected provider/model/channels |
+| Daemon heartbeat/state | `~/.clawclawclaw/daemon_state.json` | file updates periodically |
 
 ## Logs and Diagnostics
 
 ### macOS / Windows (service wrapper logs)
 
-- `~/.zeroclaw/logs/daemon.stdout.log`
-- `~/.zeroclaw/logs/daemon.stderr.log`
+- `~/.clawclawclaw/logs/daemon.stdout.log`
+- `~/.clawclawclaw/logs/daemon.stderr.log`
 
 ### Linux (systemd user service)
 
 ```bash
-journalctl --user -u zeroclaw.service -f
+journalctl --user -u clawclawclaw.service -f
 ```
 
 ## Incident Triage Flow (Fast Path)
@@ -79,25 +79,25 @@ journalctl --user -u zeroclaw.service -f
 1. Snapshot system state:
 
 ```bash
-zeroclaw status
-zeroclaw doctor
-zeroclaw channel doctor
+clawclawclaw status
+clawclawclaw doctor
+clawclawclaw channel doctor
 ```
 
 2. Check service state:
 
 ```bash
-zeroclaw service status
+clawclawclaw service status
 ```
 
 3. If service is unhealthy, restart cleanly:
 
 ```bash
-zeroclaw service stop
-zeroclaw service start
+clawclawclaw service stop
+clawclawclaw service start
 ```
 
-4. If channels still fail, verify allowlists and credentials in `~/.zeroclaw/config.toml`.
+4. If channels still fail, verify allowlists and credentials in `~/.clawclawclaw/config.toml`.
 
 5. If gateway is involved, verify bind/auth settings (`[gateway]`) and local reachability.
 
@@ -125,9 +125,9 @@ When `sec-audit.yml` reports a gitleaks finding or uploads SARIF alerts:
 
 Before applying config changes:
 
-1. backup `~/.zeroclaw/config.toml`
+1. backup `~/.clawclawclaw/config.toml`
 2. apply one logical change at a time
-3. run `zeroclaw doctor`
+3. run `clawclawclaw doctor`
 4. restart daemon/service
 5. verify with `status` + `channel doctor`
 

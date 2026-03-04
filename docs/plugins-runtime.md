@@ -1,6 +1,6 @@
 # WASM Plugin Runtime (Experimental)
 
-This document describes the current experimental plugin runtime for ZeroClaw.
+This document describes the current experimental plugin runtime for clawclawclaw.
 
 ## Scope
 
@@ -42,7 +42,7 @@ Minimal TOML example:
 id = "demo"
 version = "1.0.0"
 module_path = "plugins/demo.wasm"
-wit_packages = ["zeroclaw:tools@1.0.0", "zeroclaw:providers@1.0.0"]
+wit_packages = ["clawclawclaw:tools@1.0.0", "clawclawclaw:providers@1.0.0"]
 
 [[tools]]
 name = "demo_tool"
@@ -55,9 +55,9 @@ providers = ["demo-provider"]
 
 Supported package majors:
 
-- `zeroclaw:hooks@1.x`
-- `zeroclaw:tools@1.x`
-- `zeroclaw:providers@1.x`
+- `clawclawclaw:hooks@1.x`
+- `clawclawclaw:tools@1.x`
+- `clawclawclaw:providers@1.x`
 
 Unknown packages or mismatched major versions are rejected during manifest load.
 
@@ -70,8 +70,8 @@ Required exports:
 - `memory`
 - `alloc(i32) -> i32`
 - `dealloc(i32, i32)`
-- `zeroclaw_tool_execute(i32, i32) -> i64`
-- `zeroclaw_provider_chat(i32, i32) -> i64`
+- `clawclawclaw_tool_execute(i32, i32) -> i64`
+- `clawclawclaw_provider_chat(i32, i32) -> i64`
 
 Conventions:
 

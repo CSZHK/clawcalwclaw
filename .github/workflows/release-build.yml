@@ -88,15 +88,15 @@ jobs:
               run: |
                   set -euo pipefail
                   mkdir -p artifacts
-                  cp target/release/zeroclaw artifacts/zeroclaw
-                  sha256sum artifacts/zeroclaw > artifacts/zeroclaw.sha256
+                  cp target/release/clawclawclaw artifacts/clawclawclaw
+                  sha256sum artifacts/clawclawclaw > artifacts/clawclawclaw.sha256
 
             - name: Upload production artifact
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
               with:
-                  name: zeroclaw-linux-amd64
+                  name: clawclawclaw-linux-amd64
                   path: |
-                      artifacts/zeroclaw
-                      artifacts/zeroclaw.sha256
+                      artifacts/clawclawclaw
+                      artifacts/clawclawclaw.sha256
                   if-no-files-found: error
                   retention-days: 21

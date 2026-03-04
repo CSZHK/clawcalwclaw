@@ -94,7 +94,7 @@ pub fn run(config: &Config) -> Result<()> {
     let results = diagnose(config);
 
     // Print report
-    println!("🩺 ZeroClaw Doctor (enhanced)");
+    println!("🩺 clawclawclaw Doctor (enhanced)");
     println!();
 
     let mut current_cat = "";
@@ -128,7 +128,7 @@ pub fn run(config: &Config) -> Result<()> {
     println!("  Summary: {oks} ok, {warns} warnings, {errors} errors");
 
     if errors > 0 {
-        println!("  💡 Fix the errors above, then run `zeroclaw doctor` again.");
+        println!("  💡 Fix the errors above, then run `clawclawclaw doctor` again.");
     }
 
     Ok(())
@@ -202,7 +202,7 @@ pub async fn run_models(
         anyhow::bail!("No providers available for model probing");
     }
 
-    println!("🩺 ZeroClaw Doctor — Model Catalog Probe");
+    println!("🩺 clawclawclaw Doctor — Model Catalog Probe");
     println!("  Providers to probe: {}", targets.len());
     println!(
         "  Mode: {}",
@@ -411,7 +411,7 @@ pub fn run_traces(
     }
 
     println!();
-    println!("Use `zeroclaw doctor traces --id <trace-id>` to inspect a full event payload.");
+    println!("Use `clawclawclaw doctor traces --id <trace-id>` to inspect a full event payload.");
     Ok(())
 }
 
@@ -595,7 +595,7 @@ fn check_config_semantics(config: &Config, items: &mut Vec<DiagItem>) {
     } else {
         items.push(DiagItem::warn(
             cat,
-            "no channels configured — run `zeroclaw onboard` to set one up",
+            "no channels configured — run `clawclawclaw onboard` to set one up",
         ));
     }
 
@@ -878,7 +878,7 @@ fn workspace_probe_path(workspace_dir: &Path) -> std::path::PathBuf {
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |duration| duration.as_nanos());
     workspace_dir.join(format!(
-        ".zeroclaw_doctor_probe_{}_{}",
+        ".clawclawclaw_doctor_probe_{}_{}",
         std::process::id(),
         nanos
     ))
@@ -1395,7 +1395,7 @@ mod tests {
         assert!(first
             .file_name()
             .and_then(|name| name.to_str())
-            .is_some_and(|name| name.starts_with(".zeroclaw_doctor_probe_")));
+            .is_some_and(|name| name.starts_with(".clawclawclaw_doctor_probe_")));
     }
 
     #[test]

@@ -1,4 +1,4 @@
-//! WASM plugin tool — executes a `.wasm` binary as a ZeroClaw tool.
+//! WASM plugin tool — executes a `.wasm` binary as a clawclawclaw tool.
 //!
 //! # Feature gate
 //! Compiled when `--features wasm-tools` is active on supported targets
@@ -323,7 +323,7 @@ pub struct WasmManifest {
     /// Manifest format version (currently `"1"`).
     #[serde(default = "default_manifest_version")]
     pub version: String,
-    /// Optional homepage / source URL (shown in `zeroclaw skill list`).
+    /// Optional homepage / source URL (shown in `clawclawclaw skill list`).
     #[serde(default)]
     pub homepage: Option<String>,
 }
@@ -347,13 +347,13 @@ impl WasmManifest {
 ///
 /// Supports two layouts:
 ///
-/// **Installed layout** (from `zeroclaw skill install`):
+/// **Installed layout** (from `clawclawclaw skill install`):
 /// ```text
 /// skills/<skill-name>/tools/<tool-name>/tool.wasm
 /// skills/<skill-name>/tools/<tool-name>/manifest.json
 /// ```
 ///
-/// **Dev layout** (direct from `zeroclaw skill install ./my-tool`):
+/// **Dev layout** (direct from `clawclawclaw skill install ./my-tool`):
 /// ```text
 /// skills/<skill-name>/tool.wasm
 /// skills/<skill-name>/manifest.json
@@ -502,12 +502,12 @@ mod tests {
     #[test]
     fn manifest_round_trips() {
         let json = serde_json::json!({
-            "name": "zeroclaw_test_tool",
+            "name": "clawclawclaw_test_tool",
             "description": "Test tool",
             "parameters": { "type": "object", "properties": {} }
         });
         let m: WasmManifest = serde_json::from_value(json).unwrap();
-        assert_eq!(m.name, "zeroclaw_test_tool");
+        assert_eq!(m.name, "clawclawclaw_test_tool");
         assert_eq!(m.version, "1");
         assert!(m.homepage.is_none());
     }
@@ -515,7 +515,7 @@ mod tests {
     #[test]
     fn load_from_empty_dir_returns_empty() {
         let tools = load_wasm_tools_from_skills(std::path::Path::new(
-            "/tmp/zeroclaw_wasm_test_nonexistent_xyz",
+            "/tmp/clawclawclaw_wasm_test_nonexistent_xyz",
         ));
         assert!(tools.is_empty());
     }
@@ -544,7 +544,7 @@ mod tests {
     async fn stub_reports_feature_disabled() {
         let t = WasmTool::load(
             &PathBuf::from("/dev/null"),
-            "zeroclaw_test_stub".into(),
+            "clawclawclaw_test_stub".into(),
             "stub".into(),
             serde_json::json!({}),
         )
@@ -561,7 +561,7 @@ mod tests {
     #[test]
     fn manifest_load_from_missing_file_returns_error() {
         let result = WasmManifest::load_from(&PathBuf::from(
-            "/nonexistent_zeroclaw_test_dir/manifest.json",
+            "/nonexistent_clawclawclaw_test_dir/manifest.json",
         ));
         assert!(result.is_err());
         let msg = result.unwrap_err().to_string();
@@ -588,17 +588,17 @@ mod tests {
     #[test]
     fn manifest_with_optional_fields_parsed() {
         let json = serde_json::json!({
-            "name": "zeroclaw_optional_test",
+            "name": "clawclawclaw_optional_test",
             "description": "Tool with all optional fields",
             "parameters": { "type": "object", "properties": {} },
             "version": "2",
-            "homepage": "https://example.com/zeroclaw_optional_test"
+            "homepage": "https://example.com/clawclawclaw_optional_test"
         });
         let m: WasmManifest = serde_json::from_value(json).unwrap();
         assert_eq!(m.version, "2");
         assert_eq!(
             m.homepage.as_deref(),
-            Some("https://example.com/zeroclaw_optional_test")
+            Some("https://example.com/clawclawclaw_optional_test")
         );
     }
 
@@ -607,7 +607,7 @@ mod tests {
     #[test]
     fn load_wasm_tools_skips_dir_missing_manifest() {
         let dir = tempfile::tempdir().unwrap();
-        let skill_dir = dir.path().join("zeroclaw_test_skill");
+        let skill_dir = dir.path().join("clawclawclaw_test_skill");
         std::fs::create_dir_all(&skill_dir).unwrap();
         // tool.wasm present but no manifest.json — should be skipped silently
         std::fs::write(skill_dir.join("tool.wasm"), b"\x00asm\x01\x00\x00\x00").unwrap();
@@ -618,13 +618,13 @@ mod tests {
     #[test]
     fn load_wasm_tools_skips_dir_missing_wasm() {
         let dir = tempfile::tempdir().unwrap();
-        let skill_dir = dir.path().join("zeroclaw_test_skill");
+        let skill_dir = dir.path().join("clawclawclaw_test_skill");
         std::fs::create_dir_all(&skill_dir).unwrap();
         // manifest.json present but no tool.wasm — dev layout check fails
         std::fs::write(
             skill_dir.join("manifest.json"),
             serde_json::json!({
-                "name": "zeroclaw_test_tool",
+                "name": "clawclawclaw_test_tool",
                 "description": "test",
                 "parameters": {}
             })
@@ -638,7 +638,7 @@ mod tests {
     #[test]
     fn load_wasm_tools_skips_bad_manifest_json() {
         let dir = tempfile::tempdir().unwrap();
-        let skill_dir = dir.path().join("zeroclaw_test_skill");
+        let skill_dir = dir.path().join("clawclawclaw_test_skill");
         std::fs::create_dir_all(&skill_dir).unwrap();
         std::fs::write(skill_dir.join("tool.wasm"), b"\x00asm\x01\x00\x00\x00").unwrap();
         std::fs::write(skill_dir.join("manifest.json"), b"not valid json").unwrap();
@@ -652,9 +652,9 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let tool_dir = dir
             .path()
-            .join("zeroclaw_test_pkg")
+            .join("clawclawclaw_test_pkg")
             .join("tools")
-            .join("zeroclaw_test_func");
+            .join("clawclawclaw_test_func");
         std::fs::create_dir_all(&tool_dir).unwrap();
         std::fs::write(tool_dir.join("tool.wasm"), b"\x00asm\x01\x00\x00\x00").unwrap();
         std::fs::write(tool_dir.join("manifest.json"), b"{ invalid }").unwrap();
@@ -688,7 +688,7 @@ mod tests {
         std::fs::write(&wasm_path, b"this is not a valid wasm binary").unwrap();
         let result = WasmTool::load(
             &wasm_path,
-            "zeroclaw_invalid_test".into(),
+            "clawclawclaw_invalid_test".into(),
             "desc".into(),
             serde_json::json!({}),
         );
@@ -708,8 +708,8 @@ mod tests {
     #[ignore = "slow: initializes wasmtime Cranelift compiler; run with --include-ignored"]
     fn wasm_tool_load_rejects_missing_file() {
         let result = WasmTool::load(
-            &PathBuf::from("/nonexistent_zeroclaw_test_wasm/tool.wasm"),
-            "zeroclaw_missing_test".into(),
+            &PathBuf::from("/nonexistent_clawclawclaw_test_wasm/tool.wasm"),
+            "clawclawclaw_missing_test".into(),
             "desc".into(),
             serde_json::json!({}),
         );

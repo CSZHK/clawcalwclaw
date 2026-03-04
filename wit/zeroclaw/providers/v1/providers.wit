@@ -1,4 +1,4 @@
-package zeroclaw:providers@1.0.0;
+package clawclawclaw:providers@1.0.0;
 
 interface providers {
   record provider-info {

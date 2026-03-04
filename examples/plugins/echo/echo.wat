@@ -31,13 +31,13 @@
     )
   )
 
-  ;; ABI: zeroclaw_tool_execute(input_ptr, input_len) -> packed ptr/len i64
-  (func (export "zeroclaw_tool_execute") (param $ptr i32) (param $len i32) (result i64)
+  ;; ABI: clawclawclaw_tool_execute(input_ptr, input_len) -> packed ptr/len i64
+  (func (export "clawclawclaw_tool_execute") (param $ptr i32) (param $len i32) (result i64)
     (call $write_static_response (local.get $ptr) (local.get $len))
   )
 
-  ;; ABI: zeroclaw_provider_chat(input_ptr, input_len) -> packed ptr/len i64
-  (func (export "zeroclaw_provider_chat") (param $ptr i32) (param $len i32) (result i64)
+  ;; ABI: clawclawclaw_provider_chat(input_ptr, input_len) -> packed ptr/len i64
+  (func (export "clawclawclaw_provider_chat") (param $ptr i32) (param $len i32) (result i64)
     (call $write_static_response (local.get $ptr) (local.get $len))
   )
 )

@@ -1,4 +1,4 @@
-package zeroclaw:hooks@1.0.0;
+package clawclawclaw:hooks@1.0.0;
 
 interface hooks {
   enum hook-kind {

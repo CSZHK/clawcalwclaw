@@ -1,4 +1,4 @@
-package ai.zeroclaw.android
+package ai.clawclawclaw.android
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import ai.zeroclaw.android.ui.theme.ZeroClawTheme
+import ai.clawclawclaw.android.ui.theme.ZeroClawTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +38,7 @@ fun ZeroClawApp() {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ZeroClaw") },
+                title = { Text("clawclawclaw") },
                 actions = {
                     StatusIndicator(status = agentStatus)
                 }
@@ -117,7 +117,7 @@ fun EmptyState(status: AgentStatus, onStart: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "ZeroClaw",
+            text = "clawclawclaw",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -156,7 +156,7 @@ fun ChatInput(
                 value = text,
                 onValueChange = onTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Message ZeroClaw...") },
+                placeholder = { Text("Message clawclawclaw...") },
                 singleLine = true
             )
             Spacer(modifier = Modifier.width(8.dp))

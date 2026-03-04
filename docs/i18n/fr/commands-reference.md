@@ -1,6 +1,6 @@
 # Référence des commandes (Français)
 
-Cette page est une localisation initiale Wave 1 pour retrouver rapidement les commandes CLI ZeroClaw.
+Cette page est une localisation initiale Wave 1 pour retrouver rapidement les commandes CLI clawclawclaw.
 
 Source anglaise:
 
@@ -19,6 +19,6 @@ Source anglaise:
 
 ## Mise à jour récente
 
-- La source anglaise ajoute désormais `zeroclaw tui` (nécessite `--features tui-ratatui`) pour une interface terminal plein écran.
-- `zeroclaw gateway` prend en charge `--new-pairing` pour effacer les tokens appairés et générer un nouveau code d'appairage.
-- Le guide anglais inclut désormais les surfaces de migration OpenClaw: `zeroclaw onboard --migrate-openclaw`, `zeroclaw migrate openclaw` et l'outil agent `openclaw_migration` (traduction complète en cours).
+- La source anglaise ajoute désormais `clawclawclaw tui` (nécessite `--features tui-ratatui`) pour une interface terminal plein écran.
+- `clawclawclaw gateway` prend en charge `--new-pairing` pour effacer les tokens appairés et générer un nouveau code d'appairage.
+- Le guide anglais inclut désormais les surfaces de migration OpenClaw: `clawclawclaw onboard --migrate-openclaw`, `clawclawclaw migrate openclaw` et l'outil agent `openclaw_migration` (traduction complète en cours).

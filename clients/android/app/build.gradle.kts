@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "ai.zeroclaw.android"
+    namespace = "ai.clawclawclaw.android"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "ai.zeroclaw.android"
+        applicationId = "ai.clawclawclaw.android"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -82,13 +82,13 @@ android {
     tasks.register("buildRustLibrary") {
         doLast {
             exec {
-                workingDir = rootProject.projectDir.parentFile.parentFile // zeroclaw root
+                workingDir = rootProject.projectDir.parentFile.parentFile // clawclawclaw root
                 commandLine("cargo", "ndk",
                     "-t", "arm64-v8a",
                     "-t", "armeabi-v7a",
                     "-t", "x86_64",
                     "-o", "clients/android/app/src/main/jniLibs",
-                    "build", "--release", "-p", "zeroclaw-android-bridge")
+                    "build", "--release", "-p", "clawclawclaw-android-bridge")
             }
         }
     }

@@ -1,4 +1,4 @@
-# ZeroClaw GitHub Pages Frontend (Vite)
+# clawclawclaw GitHub Pages Frontend (Vite)
 
 This is the standalone frontend for GitHub Pages.
 
@@ -20,13 +20,13 @@ npm run build
 Build output is generated at:
 
 ```text
-/home/ubuntu/zeroclaw/gh-pages
+/home/ubuntu/clawclawclaw/gh-pages
 ```
 
 Notes:
 
 - Output directory is intentionally `gh-pages/` (not `out/`).
-- Vite base is configured to `/zeroclaw/` for `https://zeroclaw-labs.github.io/zeroclaw/`.
+- Vite base is configured to `/clawclawclaw/` for `https://clawclawclaw-labs.github.io/clawclawclaw/`.
 - Docs links in UI point to rendered GitHub docs pages for direct reading.
 - Docs Navigator supports:
   - keyword search with weighted ranking

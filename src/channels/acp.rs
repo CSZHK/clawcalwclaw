@@ -1,6 +1,6 @@
-//! ACP (Agent Client Protocol) channel for ZeroClaw.
+//! ACP (Agent Client Protocol) channel for clawclawclaw.
 //!
-//! This channel enables ZeroClaw to act as an ACP client, connecting to an OpenCode
+//! This channel enables clawclawclaw to act as an ACP client, connecting to an OpenCode
 //! ACP server via `opencode acp` command for JSON-RPC 2.0 communication over stdio.
 //! This allows users to control OpenCode behavior from any channel via social apps.
 
@@ -306,8 +306,8 @@ impl AcpChannel {
             protocol_version: 1,
             client_capabilities: ClientCapabilities::default(),
             client_info: ClientInfo {
-                name: "ZeroClaw".to_string(),
-                title: "ZeroClaw ACP Client".to_string(),
+                name: "clawclawclaw".to_string(),
+                title: "clawclawclaw ACP Client".to_string(),
                 version: env!("CARGO_PKG_VERSION").to_string(),
             },
         };
@@ -719,14 +719,14 @@ mod tests {
             protocol_version: 1,
             client_capabilities: ClientCapabilities::default(),
             client_info: ClientInfo {
-                name: "ZeroClaw".to_string(),
-                title: "ZeroClaw ACP Client".to_string(),
+                name: "clawclawclaw".to_string(),
+                title: "clawclawclaw ACP Client".to_string(),
                 version: "1.0.0".to_string(),
             },
         };
         let json = serde_json::to_value(&params).unwrap();
         assert_eq!(json["protocol_version"], 1);
-        assert_eq!(json["client_info"]["name"], "ZeroClaw");
+        assert_eq!(json["client_info"]["name"], "clawclawclaw");
     }
 
     #[test]

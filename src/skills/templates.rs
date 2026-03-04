@@ -10,7 +10,7 @@ pub struct SkillTemplate {
     pub name: &'static str,
     pub language: &'static str,
     pub description: &'static str,
-    /// Example args JSON for `zeroclaw skill test`
+    /// Example args JSON for `clawclawclaw skill test`
     pub test_args: &'static str,
     pub files: &'static [TemplateFile],
 }
@@ -127,7 +127,7 @@ pub const ALL: &[SkillTemplate] = &[
         name: "hello_world",
         language: "typescript",
         description: "Greet a user by name (TypeScript + Javy)",
-        test_args: r#"{"name":"ZeroClaw"}"#,
+        test_args: r#"{"name":"clawclawclaw"}"#,
         files: TS_HELLO_FILES,
     },
     SkillTemplate {

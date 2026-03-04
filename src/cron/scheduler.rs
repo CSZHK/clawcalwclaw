@@ -933,7 +933,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let config = test_config(&tmp).await;
         let _env = env_lock().await;
-        let _generic = EnvGuard::unset("ZEROCLAW_API_KEY");
+        let _generic = EnvGuard::unset("CLAWCLAWCLAW_API_KEY");
         let _fallback = EnvGuard::unset("API_KEY");
         let _openrouter = EnvGuard::unset("OPENROUTER_API_KEY");
         let mut job = test_job("");
@@ -1274,7 +1274,7 @@ mod tests {
             phone_number_id: None,
             verify_token: None,
             app_secret: None,
-            session_path: Some("~/.zeroclaw/state/whatsapp-web/session.db".into()),
+            session_path: Some("~/.clawclawclaw/state/whatsapp-web/session.db".into()),
             pair_phone: None,
             pair_code: None,
             allowed_numbers: vec!["*".into()],

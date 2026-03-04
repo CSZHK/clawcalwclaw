@@ -1,10 +1,10 @@
-"""__SKILL_NAME__ — ZeroClaw Skill (Python / WASI)
+"""__SKILL_NAME__ — clawclawclaw Skill (Python / WASI)
 
 Transform text in various ways.
 Protocol: read JSON from stdin, write JSON result to stdout.
 Build:    pip install componentize-py
-          componentize-py -d wit/ -w zeroclaw-skill componentize main -o tool.wasm
-Test:     zeroclaw skill test . --args '{"text":"hello world","transform":"uppercase"}'
+          componentize-py -d wit/ -w clawclawclaw-skill componentize main -o tool.wasm
+Test:     clawclawclaw skill test . --args '{"text":"hello world","transform":"uppercase"}'
 """
 
 import sys

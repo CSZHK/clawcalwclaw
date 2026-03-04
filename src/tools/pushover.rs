@@ -94,7 +94,7 @@ impl PushoverTool {
                     return Err(anyhow::anyhow!(
                         "{} uses secret references ({value}) for {key}. \
 Provide resolved credentials via process env vars ({PUSHOVER_TOKEN_ENV}/{PUSHOVER_USER_KEY_ENV}), \
-for example by launching ZeroClaw with enject injection.",
+for example by launching clawclawclaw with enject injection.",
                         env_path.display()
                     ));
                 }

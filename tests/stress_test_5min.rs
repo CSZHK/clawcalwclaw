@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use zeroclaw::providers::health::ProviderHealthTracker;
+use clawclawclaw::providers::health::ProviderHealthTracker;
 
 #[test]
 #[ignore] // Run with: cargo test --release -- --ignored --test-threads=1

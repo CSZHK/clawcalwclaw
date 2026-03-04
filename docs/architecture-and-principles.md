@@ -1,6 +1,6 @@
-# ZeroClaw 架构设计与工程原则
+# clawclawclaw 架构设计与工程原则
 
-本文档概述 ZeroClaw 项目的架构设计、关键模块、设计原则和技术约束。
+本文档概述 clawclawclaw 项目的架构设计、关键模块、设计原则和技术约束。
 
 ---
 
@@ -21,7 +21,7 @@
 
 ### 1.1 整体架构模式
 
-ZeroClaw 采用 **Trait + Factory** 架构模式，这是 Rust 生态中实现可扩展性的经典方案：
+clawclawclaw 采用 **Trait + Factory** 架构模式，这是 Rust 生态中实现可扩展性的经典方案：
 
 - **Trait 定义契约** - 每个子系统的接口都是明确的
 - **Factory 实现注册** - 运行时根据配置动态选择实现
@@ -121,7 +121,7 @@ pub fn create_provider_with_url_and_options(name: &str, api_key: Option<&str>,
 
 ### 2.2 `src/channels/` - 消息通道
 
-**职责**: 连接 ZeroClaw 到外部消息平台。
+**职责**: 连接 clawclawclaw 到外部消息平台。
 
 **核心 Trait** (`traits.rs`):
 
@@ -493,7 +493,7 @@ pub struct AgentBuilder { /* Agent 的 builder 模式 */ }
 ## 4. CLI 命令结构
 
 ```
-zeroclaw
+clawclawclaw
 ├── agent         # 交互式/单次 agent 会话
 ├── gateway       # HTTP/Webhook 服务器
 ├── daemon        # 完整运行时 (gateway + channels + heartbeat + scheduler)
@@ -724,7 +724,7 @@ strip = true         // 剥离符号
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                                                                 │
-│                    ZeroClaw 的灵魂                               │
+│                    clawclawclaw 的灵魂                               │
 │                                                                 │
 │        "一个 Rust 优先的自主 Agent 运行时，                       │
 │         在性能、安全、可扩展性之间追求极致平衡"                    │

@@ -25,7 +25,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ZeroClaw"
+        android:theme="@style/Theme.clawclawclaw"
         tools:targetApi="34">
         
         <!-- Main Activity -->
@@ -33,7 +33,7 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ZeroClaw"
+            android:theme="@style/Theme.clawclawclaw"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -104,8 +104,8 @@
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="ai.zeroclaw.widget.TOGGLE" />
-                <action android:name="ai.zeroclaw.widget.QUICK_MESSAGE" />
+                <action android:name="ai.clawclawclaw.widget.TOGGLE" />
+                <action android:name="ai.clawclawclaw.widget.QUICK_MESSAGE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

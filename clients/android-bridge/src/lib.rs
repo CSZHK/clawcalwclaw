@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
-//! ZeroClaw Android Bridge
+//! clawclawclaw Android Bridge
 //!
-//! This crate provides UniFFI bindings for ZeroClaw to be used from Kotlin/Android.
+//! This crate provides UniFFI bindings for clawclawclaw to be used from Kotlin/Android.
 //! It exposes a simplified API for:
 //! - Starting/stopping the gateway
 //! - Sending messages to the agent
@@ -37,7 +37,7 @@ pub enum AgentStatus {
     Error { message: String },
 }
 
-/// Configuration for the ZeroClaw agent
+/// Configuration for the clawclawclaw agent
 #[derive(Debug, Clone, uniffi::Record)]
 pub struct ZeroClawConfig {
     pub data_dir: String,
@@ -76,7 +76,7 @@ pub struct SendResult {
     pub error: Option<String>,
 }
 
-/// Main ZeroClaw controller exposed to Android
+/// Main clawclawclaw controller exposed to Android
 #[derive(uniffi::Object)]
 pub struct ZeroClawController {
     config: Mutex<ZeroClawConfig>,
@@ -93,7 +93,7 @@ impl ZeroClawController {
     pub fn new(config: ZeroClawConfig) -> Arc<Self> {
         // Initialize logging
         let _ = tracing_subscriber::fmt()
-            .with_env_filter("zeroclaw=info")
+            .with_env_filter("clawclawclaw=info")
             .try_init();
 
         Arc::new(Self {
@@ -111,7 +111,7 @@ impl ZeroClawController {
         Self::new(config)
     }
 
-    /// Start the ZeroClaw gateway
+    /// Start the clawclawclaw gateway
     pub fn start(&self) -> Result<(), ZeroClawError> {
         let mut status = self.status.lock().map_err(|_| ZeroClawError::LockError)?;
 
@@ -124,8 +124,8 @@ impl ZeroClawController {
 
         // TODO: Actually start the gateway
         // runtime().spawn(async move {
-        //     let config = zeroclaw::Config::load()?;
-        //     let gateway = zeroclaw::Gateway::new(config).await?;
+        //     let config = clawclawclaw::Config::load()?;
+        //     let gateway = clawclawclaw::Gateway::new(config).await?;
         //     gateway.run().await
         // });
 
@@ -133,7 +133,7 @@ impl ZeroClawController {
         let mut status = self.status.lock().map_err(|_| ZeroClawError::LockError)?;
         *status = AgentStatus::Running;
 
-        tracing::info!("ZeroClaw gateway started");
+        tracing::info!("clawclawclaw gateway started");
         Ok(())
     }
 
@@ -147,7 +147,7 @@ impl ZeroClawController {
         // }
 
         *status = AgentStatus::Stopped;
-        tracing::info!("ZeroClaw gateway stopped");
+        tracing::info!("clawclawclaw gateway stopped");
         Ok(())
     }
 
@@ -245,7 +245,7 @@ pub enum ZeroClawError {
 impl std::fmt::Display for ZeroClawError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::NotInitialized => write!(f, "ZeroClaw not initialized"),
+            Self::NotInitialized => write!(f, "clawclawclaw not initialized"),
             Self::AlreadyRunning => write!(f, "Gateway already running"),
             Self::ConfigError { message } => write!(f, "Config error: {}", message),
             Self::GatewayError { message } => write!(f, "Gateway error: {}", message),
@@ -280,13 +280,13 @@ mod tests {
 
     #[test]
     fn test_controller_creation() {
-        let controller = ZeroClawController::with_defaults("/tmp/zeroclaw".to_string());
+        let controller = ZeroClawController::with_defaults("/tmp/clawclawclaw".to_string());
         assert!(matches!(controller.get_status(), AgentStatus::Stopped));
     }
 
     #[test]
     fn test_start_stop() {
-        let controller = ZeroClawController::with_defaults("/tmp/zeroclaw".to_string());
+        let controller = ZeroClawController::with_defaults("/tmp/clawclawclaw".to_string());
         controller.start().unwrap();
         assert!(matches!(controller.get_status(), AgentStatus::Running));
         controller.stop().unwrap();
@@ -295,7 +295,7 @@ mod tests {
 
     #[test]
     fn test_send_message() {
-        let controller = ZeroClawController::with_defaults("/tmp/zeroclaw".to_string());
+        let controller = ZeroClawController::with_defaults("/tmp/clawclawclaw".to_string());
         let result = controller.send_message("Hello".to_string());
         assert!(result.success);
 

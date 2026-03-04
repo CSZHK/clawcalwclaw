@@ -5,4 +5,4 @@
 //! This crate is intentionally minimal in PR-1 (scaffolding only).
 
 /// Marker constant proving the crate is linked in workspace checks.
-pub const CRATE_ID: &str = "zeroclaw-types";
+pub const CRATE_ID: &str = "clawclawclaw-types";

@@ -10,8 +10,8 @@
     android:maxResizeHeight="110dp"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:initialLayout="@layout/widget_zeroclaw"
-    android:previewLayout="@layout/widget_zeroclaw"
+    android:initialLayout="@layout/widget_clawclawclaw"
+    android:previewLayout="@layout/widget_clawclawclaw"
     android:updatePeriodMillis="1800000"
     android:description="@string/widget_description"
     android:widgetFeatures="reconfigurable">

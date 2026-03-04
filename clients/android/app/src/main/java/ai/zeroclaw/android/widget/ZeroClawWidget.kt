@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.widget
+package ai.clawclawclaw.android.widget
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -6,12 +6,12 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import ai.zeroclaw.android.MainActivity
-import ai.zeroclaw.android.R
-import ai.zeroclaw.android.service.ZeroClawService
+import ai.clawclawclaw.android.MainActivity
+import ai.clawclawclaw.android.R
+import ai.clawclawclaw.android.service.ZeroClawService
 
 /**
- * Home screen widget for ZeroClaw.
+ * Home screen widget for clawclawclaw.
  *
  * Features:
  * - Shows agent status (running/stopped)
@@ -73,8 +73,8 @@ class ZeroClawWidget : AppWidgetProvider() {
     }
 
     companion object {
-        const val ACTION_TOGGLE = "ai.zeroclaw.widget.TOGGLE"
-        const val ACTION_QUICK_MESSAGE = "ai.zeroclaw.widget.QUICK_MESSAGE"
+        const val ACTION_TOGGLE = "ai.clawclawclaw.widget.TOGGLE"
+        const val ACTION_QUICK_MESSAGE = "ai.clawclawclaw.widget.QUICK_MESSAGE"
         const val EXTRA_MESSAGE = "message"
 
         internal fun updateAppWidget(
@@ -83,7 +83,7 @@ class ZeroClawWidget : AppWidgetProvider() {
             appWidgetId: Int
         ) {
             // Create RemoteViews
-            val views = RemoteViews(context.packageName, R.layout.widget_zeroclaw)
+            val views = RemoteViews(context.packageName, R.layout.widget_clawclawclaw)
 
             // Set status text
             // TODO: Get actual status from bridge

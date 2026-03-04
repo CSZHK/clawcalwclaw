@@ -1,4 +1,4 @@
-package ai.zeroclaw.android.util
+package ai.clawclawclaw.android.util
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,7 @@ import android.provider.Settings
 /**
  * Utilities for handling battery optimization.
  *
- * ZeroClaw needs to run reliably in the background for:
+ * clawclawclaw needs to run reliably in the background for:
  * - Heartbeat checks
  * - Cron job execution
  * - Notification monitoring
@@ -108,7 +108,7 @@ object BatteryUtils {
                         "com.miui.powerkeeper.ui.HiddenAppsConfigActivity"
                     )
                     putExtra("package_name", context.packageName)
-                    putExtra("package_label", "ZeroClaw")
+                    putExtra("package_label", "clawclawclaw")
                 }
             }
             manufacturer.contains("huawei") || manufacturer.contains("honor") -> {

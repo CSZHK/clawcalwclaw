@@ -91,7 +91,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
         { value: 'otlp', label: 'OpenTelemetry (OTLP)' },
       ]},
       { key: 'otel_endpoint', label: 'OTEL Endpoint', type: 'text', description: 'e.g. http://localhost:4317' },
-      { key: 'otel_service_name', label: 'OTEL Service Name', type: 'text', description: 'e.g. zeroclaw-prod' },
+      { key: 'otel_service_name', label: 'OTEL Service Name', type: 'text', description: 'e.g. clawclawclaw-prod' },
       { key: 'runtime_trace_mode', label: 'Runtime Trace Mode', type: 'select', defaultValue: 'none', options: [
         { value: 'none', label: 'None' },
         { value: 'file', label: 'File' },
@@ -221,7 +221,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
     defaultCollapsed: true,
     fields: [
       { key: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: false },
-      { key: 'state_file', label: 'State File', type: 'text', defaultValue: '~/.zeroclaw/estop-state.json', description: 'Default: ~/.zeroclaw/estop-state.json' },
+      { key: 'state_file', label: 'State File', type: 'text', defaultValue: '~/.clawclawclaw/estop-state.json', description: 'Default: ~/.clawclawclaw/estop-state.json' },
       { key: 'require_otp_to_resume', label: 'Require OTP to Resume', type: 'toggle', defaultValue: true },
     ],
   },
@@ -385,7 +385,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
     defaultCollapsed: true,
     fields: [
       { key: 'open_skills_enabled', label: 'Open Skills Enabled', type: 'toggle', defaultValue: false },
-      { key: 'open_skills_dir', label: 'Open Skills Directory', type: 'text', description: 'e.g. ./skills or /opt/zeroclaw/skills' },
+      { key: 'open_skills_dir', label: 'Open Skills Directory', type: 'text', description: 'e.g. ./skills or /opt/clawclawclaw/skills' },
       { key: 'allow_scripts', label: 'Allow Scripts', type: 'toggle', defaultValue: false },
       { key: 'prompt_injection_mode', label: 'Prompt Injection Mode', type: 'select', defaultValue: 'full', options: [
         { value: 'full', label: 'Full' },
@@ -680,7 +680,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
     defaultCollapsed: true,
     fields: [
       { key: 'url', label: 'URL', type: 'text', description: 'e.g. http://localhost:6334' },
-      { key: 'collection', label: 'Collection', type: 'text', defaultValue: 'zeroclaw_memories', description: 'Default: zeroclaw_memories' },
+      { key: 'collection', label: 'Collection', type: 'text', defaultValue: 'clawclawclaw_memories', description: 'Default: clawclawclaw_memories' },
       { key: 'api_key', label: 'API Key', type: 'password', sensitive: true, description: 'Qdrant Cloud API key' },
     ],
   },
@@ -754,7 +754,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
       { key: 'allowed_domains', label: 'Allowed Domains', type: 'tag-list', tagPlaceholder: 'e.g. api.example.com' },
       { key: 'max_response_size', label: 'Max Response Size (bytes)', type: 'number', min: 1, defaultValue: 1000000, description: 'Default: 1000000 (1 MB)' },
       { key: 'timeout_secs', label: 'Timeout (s)', type: 'number', min: 1, defaultValue: 30, description: 'Default: 30' },
-      { key: 'user_agent', label: 'User Agent', type: 'text', defaultValue: 'ZeroClaw/1.0', description: 'Default: ZeroClaw/1.0' },
+      { key: 'user_agent', label: 'User Agent', type: 'text', defaultValue: 'clawclawclaw/1.0', description: 'Default: clawclawclaw/1.0' },
     ],
   },
 
@@ -775,7 +775,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
       { key: 'blocked_domains', label: 'Blocked Domains', type: 'tag-list', tagPlaceholder: 'e.g. malware.example.com' },
       { key: 'max_response_size', label: 'Max Response Size (bytes)', type: 'number', min: 1, defaultValue: 500000, description: 'Default: 500000 (500 KB)' },
       { key: 'timeout_secs', label: 'Timeout (s)', type: 'number', min: 1, defaultValue: 30, description: 'Default: 30' },
-      { key: 'user_agent', label: 'User Agent', type: 'text', defaultValue: 'ZeroClaw/1.0', description: 'Default: ZeroClaw/1.0' },
+      { key: 'user_agent', label: 'User Agent', type: 'text', defaultValue: 'clawclawclaw/1.0', description: 'Default: clawclawclaw/1.0' },
     ],
   },
 
@@ -817,9 +817,9 @@ export const CONFIG_SECTIONS: SectionDef[] = [
       { key: 'https_proxy', label: 'HTTPS Proxy', type: 'text', description: 'e.g. http://proxy.example.com:8443' },
       { key: 'all_proxy', label: 'All Proxy', type: 'text', description: 'e.g. socks5://proxy.example.com:1080' },
       { key: 'no_proxy', label: 'No Proxy', type: 'tag-list', tagPlaceholder: 'e.g. localhost, 127.0.0.1, .internal' },
-      { key: 'scope', label: 'Scope', type: 'select', defaultValue: 'zeroclaw', options: [
+      { key: 'scope', label: 'Scope', type: 'select', defaultValue: 'clawclawclaw', options: [
         { value: 'environment', label: 'Environment' },
-        { value: 'zeroclaw', label: 'ZeroClaw Only' },
+        { value: 'clawclawclaw', label: 'clawclawclaw Only' },
         { value: 'services', label: 'Services' },
       ]},
       { key: 'services', label: 'Proxy Services', type: 'tag-list', tagPlaceholder: 'e.g. openai, anthropic' },
@@ -1044,7 +1044,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
       { key: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: true },
       { key: 'allow', label: 'Allow List', type: 'tag-list', tagPlaceholder: 'e.g. my-plugin, tools-extra' },
       { key: 'deny', label: 'Deny List', type: 'tag-list', tagPlaceholder: 'e.g. untrusted-plugin' },
-      { key: 'load_paths', label: 'Load Paths', type: 'tag-list', tagPlaceholder: 'e.g. ./plugins, /opt/zeroclaw/plugins' },
+      { key: 'load_paths', label: 'Load Paths', type: 'tag-list', tagPlaceholder: 'e.g. ./plugins, /opt/clawclawclaw/plugins' },
     ],
   },
 
@@ -1075,7 +1075,7 @@ export const CONFIG_SECTIONS: SectionDef[] = [
     defaultCollapsed: true,
     fields: [
       { key: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: false },
-      { key: 'db_path', label: 'Database Path', type: 'text', defaultValue: '~/.zeroclaw/agents.db', description: 'Default: ~/.zeroclaw/agents.db' },
+      { key: 'db_path', label: 'Database Path', type: 'text', defaultValue: '~/.clawclawclaw/agents.db', description: 'Default: ~/.clawclawclaw/agents.db' },
       { key: 'staleness_secs', label: 'Staleness (s)', type: 'number', min: 1, defaultValue: 300, description: 'Default: 300 (5 min)' },
     ],
   },

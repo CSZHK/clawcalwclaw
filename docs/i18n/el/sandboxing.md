@@ -1,4 +1,4 @@
-# Στρατηγικές Sandboxing για το ZeroClaw
+# Στρατηγικές Sandboxing για το clawclawclaw
 
 > [!WARNING]
 > **Κατάσταση: Πρόταση / Οδικός Χάρτης**
@@ -7,7 +7,7 @@
 
 ## Περιγραφή Προβλήματος
 
-Το ZeroClaw εφαρμόζει ασφάλεια σε επίπεδο εφαρμογής (allowlists, path validation, injection prevention), αλλά δεν διαθέτει απομόνωση σε επίπεδο λειτουργικού συστήματος. Χωρίς sandboxing, ένας εξουσιοδοτημένος χρήστης μπορεί να εκτελέσει εντολές με τα πλήρη δικαιώματα της διεργασίας του ZeroClaw.
+Το clawclawclaw εφαρμόζει ασφάλεια σε επίπεδο εφαρμογής (allowlists, path validation, injection prevention), αλλά δεν διαθέτει απομόνωση σε επίπεδο λειτουργικού συστήματος. Χωρίς sandboxing, ένας εξουσιοδοτημένος χρήστης μπορεί να εκτελέσει εντολές με τα πλήρη δικαιώματα της διεργασίας του clawclawclaw.
 
 ---
 
@@ -84,7 +84,7 @@ extra_args = ["--seccomp", "--caps.drop=all"]
 # Ρυθμίσεις Landlock
 [security.sandbox.landlock]
 readonly_paths = ["/usr", "/bin", "/lib"]
-readwrite_paths = ["$HOME/workspace", "/tmp/zeroclaw"]
+readwrite_paths = ["$HOME/workspace", "/tmp/clawclawclaw"]
 ```
 
 ---

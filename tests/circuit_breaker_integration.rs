@@ -3,7 +3,7 @@
 //! Tests ProviderHealthTracker opening/closing semantics and reset behavior.
 
 use std::time::Duration;
-use zeroclaw::providers::health::ProviderHealthTracker;
+use clawclawclaw::providers::health::ProviderHealthTracker;
 
 #[test]
 fn circuit_breaker_opens_after_failures() {

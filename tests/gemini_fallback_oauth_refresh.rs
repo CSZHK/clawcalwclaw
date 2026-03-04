@@ -11,7 +11,7 @@
 //! - The fallback request succeeds
 //!
 //! Requires:
-//! - Live Gemini OAuth profile in `~/.zeroclaw/auth-profiles.json` with refresh_token
+//! - Live Gemini OAuth profile in `~/.clawclawclaw/auth-profiles.json` with refresh_token
 //! - GEMINI_OAUTH_CLIENT_ID and GEMINI_OAUTH_CLIENT_SECRET env vars
 //!
 //! Run manually: `cargo test gemini_fallback_oauth_refresh -- --ignored --nocapture`
@@ -34,17 +34,17 @@ use std::path::PathBuf;
 #[tokio::test]
 #[ignore = "requires live Gemini OAuth credentials with refresh_token"]
 async fn gemini_warmup_refreshes_expired_oauth_token() -> Result<()> {
-    // Find ~/.zeroclaw/auth-profiles.json
+    // Find ~/.clawclawclaw/auth-profiles.json
     let home = env::var("HOME").expect("HOME env var not set");
-    let zeroclaw_dir = PathBuf::from(home).join(".zeroclaw");
-    let auth_profiles_path = zeroclaw_dir.join("auth-profiles.json");
+    let clawclawclaw_dir = PathBuf::from(home).join(".clawclawclaw");
+    let auth_profiles_path = clawclawclaw_dir.join("auth-profiles.json");
 
     if !auth_profiles_path.exists() {
         eprintln!(
             "⚠️  No auth-profiles.json found at {:?}",
             auth_profiles_path
         );
-        eprintln!("Run: zeroclaw auth login --provider gemini");
+        eprintln!("Run: clawclawclaw auth login --provider gemini");
         return Ok(());
     }
 
@@ -65,7 +65,7 @@ async fn gemini_warmup_refreshes_expired_oauth_token() -> Result<()> {
         .find(|k| k.starts_with("gemini:"))
         .ok_or_else(|| {
             anyhow::anyhow!(
-                "No Gemini OAuth profile found. Run: zeroclaw auth login --provider gemini"
+                "No Gemini OAuth profile found. Run: clawclawclaw auth login --provider gemini"
             )
         })?
         .clone();
@@ -124,8 +124,8 @@ async fn gemini_warmup_refreshes_expired_oauth_token() -> Result<()> {
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
     // Create GeminiProvider using the default factory
-    // This will load auth from ~/.zeroclaw/auth-profiles.json (with expired token)
-    let provider = zeroclaw::providers::create_provider("gemini", None)?;
+    // This will load auth from ~/.clawclawclaw/auth-profiles.json (with expired token)
+    let provider = clawclawclaw::providers::create_provider("gemini", None)?;
 
     println!("Created Gemini provider with expired token");
 
@@ -223,7 +223,7 @@ async fn gemini_warmup_refreshes_expired_oauth_token() -> Result<()> {
 #[ignore = "requires live Gemini OAuth credentials"]
 async fn gemini_warmup_with_valid_credentials() -> Result<()> {
     // Create provider from default config
-    let provider = zeroclaw::providers::create_provider("gemini", None)?;
+    let provider = clawclawclaw::providers::create_provider("gemini", None)?;
 
     println!("Created Gemini provider");
     println!("Calling warmup()...");

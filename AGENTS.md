@@ -1,13 +1,13 @@
-# AGENTS.md — ZeroClaw Agent Engineering Protocol
+# AGENTS.md — clawclawclaw Agent Engineering Protocol
 
 This file defines the default working protocol for coding agents in this repository.
 Scope: entire repository.
 
 ## 0) Session Default Target (Mandatory)
 
-- When operator intent does not explicitly specify another repository/path, treat the active coding target as this repository (`/home/ubuntu/zeroclaw`).
+- When operator intent does not explicitly specify another repository/path, treat the active coding target as this repository (`/home/ubuntu/clawclawclaw`).
 - Do not switch to or implement in other repositories unless the operator explicitly requests that scope in the current conversation.
-- Ambiguous wording (for example "这个仓库", "当前项目", "the repo") is resolved to `/home/ubuntu/zeroclaw` by default.
+- Ambiguous wording (for example "这个仓库", "当前项目", "the repo") is resolved to `/home/ubuntu/clawclawclaw` by default.
 - Context mentioning external repositories does not authorize cross-repo edits; explicit current-turn override is required.
 - Before any repo-affecting action, verify target lock (`pwd` + git root) to prevent accidental execution in sibling repositories.
 
@@ -21,7 +21,7 @@ Scope: entire repository.
 
 ## 1) Project Snapshot (Read First)
 
-ZeroClaw is a Rust-first autonomous agent runtime optimized for:
+clawclawclaw is a Rust-first autonomous agent runtime optimized for:
 
 - high performance
 - high efficiency
@@ -295,7 +295,7 @@ Use Git worktrees to isolate every active task stream safely and predictably:
 - Run validation commands inside the corresponding worktree before commit/PR.
 - Name worktrees clearly by scope (for example: `wt/ci-hardening`, `wt/provider-fix`).
 - After PR merge/close (or task abandonment), remove stale worktrees/branches and prune refs (`git worktree prune`, `git fetch --prune`).
-- Local Codex automation may use one-command cleanup helper: `~/.codex/skills/zeroclaw-pr-issue-automation/scripts/cleanup_track.sh --repo-dir <repo_dir> --worktree <worktree_path> --branch <branch_name>`.
+- Local Codex automation may use one-command cleanup helper: `~/.codex/skills/clawclawclaw-pr-issue-automation/scripts/cleanup_track.sh --repo-dir <repo_dir> --worktree <worktree_path> --branch <branch_name>`.
 - PR checkpoint rules from section 6.1 still apply to worktree-based development.
 
 ### 6.3 Code Naming Contract (Required)
@@ -307,7 +307,7 @@ Apply these naming rules for all code changes unless a subsystem has a stronger 
 - Keep trait implementer naming explicit and predictable: `<ProviderName>Provider`, `<ChannelName>Channel`, `<ToolName>Tool`, `<BackendName>Memory`.
 - Keep factory registration keys stable, lowercase, and user-facing (for example `"openai"`, `"discord"`, `"shell"`), and avoid alias sprawl without migration need.
 - Name tests by behavior/outcome (`<subject>_<expected_behavior>`) and keep fixture identifiers neutral/project-scoped.
-- If identity-like naming is required in tests/examples, use ZeroClaw-native labels only (`ZeroClawAgent`, `zeroclaw_user`, `zeroclaw_node`).
+- If identity-like naming is required in tests/examples, use clawclawclaw-native labels only (`ZeroClawAgent`, `clawclawclaw_user`, `clawclawclaw_node`).
 
 ### 6.4 Architecture Boundary Contract (Required)
 
@@ -420,11 +420,11 @@ Treat privacy and neutrality as merge gates, not best-effort guidelines.
 - Prohibited data includes (non-exhaustive): real names, personal emails, phone numbers, addresses, access tokens, API keys, credentials, IDs, and private URLs.
 - Use neutral project-scoped placeholders (for example: `user_a`, `test_user`, `project_bot`, `example.com`) instead of real identity data.
 - Test names/messages/fixtures must be impersonal and system-focused; avoid first-person or identity-specific language.
-- If identity-like context is unavoidable, use ZeroClaw-scoped roles/labels only (for example: `ZeroClawAgent`, `ZeroClawOperator`, `zeroclaw_user`) and avoid real-world personas.
+- If identity-like context is unavoidable, use clawclawclaw-scoped roles/labels only (for example: `ZeroClawAgent`, `ZeroClawOperator`, `clawclawclaw_user`) and avoid real-world personas.
 - Recommended identity-safe naming palette (use when identity-like context is required):
-    - actor labels: `ZeroClawAgent`, `ZeroClawOperator`, `ZeroClawMaintainer`, `zeroclaw_user`
-    - service/runtime labels: `zeroclaw_bot`, `zeroclaw_service`, `zeroclaw_runtime`, `zeroclaw_node`
-    - environment labels: `zeroclaw_project`, `zeroclaw_workspace`, `zeroclaw_channel`
+    - actor labels: `ZeroClawAgent`, `ZeroClawOperator`, `ZeroClawMaintainer`, `clawclawclaw_user`
+    - service/runtime labels: `clawclawclaw_bot`, `clawclawclaw_service`, `clawclawclaw_runtime`, `clawclawclaw_node`
+    - environment labels: `clawclawclaw_project`, `clawclawclaw_workspace`, `clawclawclaw_channel`
 - If reproducing external incidents, redact and anonymize all payloads before committing.
 - Before push, review `git diff --cached` specifically for accidental sensitive strings and identity leakage.
 

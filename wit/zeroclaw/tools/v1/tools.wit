@@ -1,4 +1,4 @@
-package zeroclaw:tools@1.0.0;
+package clawclawclaw:tools@1.0.0;
 
 interface tools {
   record tool-spec {

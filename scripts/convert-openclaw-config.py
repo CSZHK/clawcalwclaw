@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-OpenClaw → ZeroClaw Configuration Converter
+OpenClaw → clawclawclaw Configuration Converter
 
-Reads an OpenClaw config (openclaw.json) and produces a ZeroClaw config (config.toml).
+Reads an OpenClaw config (openclaw.json) and produces a clawclawclaw config (config.toml).
 Handles provider mapping, channel config, memory settings, and gateway settings.
 
 Usage:
@@ -21,7 +21,7 @@ from datetime import datetime
 # ── Provider Mapping ─────────────────────────────────────────────────────────
 
 # OpenClaw uses "provider/model" format (e.g., "anthropic/claude-opus-4-6")
-# ZeroClaw splits these into default_provider + default_model
+# clawclawclaw splits these into default_provider + default_model
 PROVIDER_MAP = {
     "anthropic": "anthropic",
     "openai": "openai",
@@ -39,7 +39,7 @@ PROVIDER_MAP = {
     "fireworks": "fireworks",
 }
 
-# OpenClaw model names → ZeroClaw model names (when they differ)
+# OpenClaw model names → clawclawclaw model names (when they differ)
 MODEL_MAP = {
     # Most models use the same name, but some differ
     "claude-opus-4-6": "claude-opus-4-6",
@@ -51,20 +51,20 @@ MODEL_MAP = {
     "gpt-4o-mini": "gpt-4o-mini",
 }
 
-# Channel name mapping (OpenClaw → ZeroClaw config section)
+# Channel name mapping (OpenClaw → clawclawclaw config section)
 CHANNEL_MAP = {
     "whatsapp": "whatsapp",
     "telegram": "telegram",
     "discord": "discord",
     "slack": "slack",
-    "signal": None,          # Not natively supported in ZeroClaw
-    "imessage": None,        # Not natively supported in ZeroClaw
-    "googlechat": None,      # Not natively supported in ZeroClaw
-    "msteams": None,         # Not natively supported in ZeroClaw
+    "signal": None,          # Not natively supported in clawclawclaw
+    "imessage": None,        # Not natively supported in clawclawclaw
+    "googlechat": None,      # Not natively supported in clawclawclaw
+    "msteams": None,         # Not natively supported in clawclawclaw
     "matrix": "matrix",
     "webchat": None,         # Handled differently — use /api/chat
-    "bluebubbles": None,     # Not natively supported in ZeroClaw
-    "zalo": None,            # Not natively supported in ZeroClaw
+    "bluebubbles": None,     # Not natively supported in clawclawclaw
+    "zalo": None,            # Not natively supported in clawclawclaw
     "lark": "lark",
     "feishu": "feishu",
     "nextcloud-talk": "nextcloud_talk",
@@ -127,11 +127,11 @@ def convert_gateway(oc: dict) -> dict:
     gw = oc.get("gateway", {})
     result = {}
 
-    # Port mapping: OpenClaw default 18789, ZeroClaw default 42617
+    # Port mapping: OpenClaw default 18789, clawclawclaw default 42617
     if "port" in gw:
         result["port"] = gw["port"]
     else:
-        result["port"] = 42617  # ZeroClaw default
+        result["port"] = 42617  # clawclawclaw default
 
     # Host/bind
     if "bind" in gw:
@@ -152,7 +152,7 @@ def convert_gateway(oc: dict) -> dict:
 def convert_memory(oc: dict) -> dict:
     """Convert memory/persistence settings."""
     result = {
-        "backend": "sqlite",  # ZeroClaw default, best match for OpenClaw behavior
+        "backend": "sqlite",  # clawclawclaw default, best match for OpenClaw behavior
         "auto_save": True,
         "embedding_provider": "openai",
         "embedding_model": "text-embedding-3-small",
@@ -230,9 +230,9 @@ def convert_agents(oc: dict) -> dict:
 
 
 def build_toml(oc: dict) -> str:
-    """Build ZeroClaw config.toml from parsed OpenClaw config."""
+    """Build clawclawclaw config.toml from parsed OpenClaw config."""
     lines = []
-    lines.append("# ZeroClaw configuration")
+    lines.append("# clawclawclaw configuration")
     lines.append(f"# Converted from OpenClaw on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     lines.append("# Review all values before deploying — some settings may need manual adjustment.")
     lines.append("")
@@ -250,7 +250,7 @@ def build_toml(oc: dict) -> str:
     lines.append("")
 
     # API key (leave as placeholder)
-    lines.append("# API key — set via ZEROCLAW_API_KEY env var or uncomment below:")
+    lines.append("# API key — set via CLAWCLAWCLAW_API_KEY env var or uncomment below:")
     lines.append('# api_key = "sk-..."')
     lines.append("")
 
@@ -340,7 +340,7 @@ def build_toml(oc: dict) -> str:
         lines.append("")
 
     if unsupported:
-        lines.append("# WARNING: The following OpenClaw channels are not natively supported in ZeroClaw:")
+        lines.append("# WARNING: The following OpenClaw channels are not natively supported in clawclawclaw:")
         for ch in unsupported:
             lines.append(f"#   - {ch}")
         lines.append("# Consider using the /api/chat endpoint for these channels instead.")
@@ -382,43 +382,43 @@ def generate_migration_notes(oc: dict) -> str:
     if unsupported:
         notes.append("")
         notes.append(f"⚠  UNSUPPORTED CHANNELS: {', '.join(unsupported)}")
-        notes.append("   These channels don't have native ZeroClaw integrations.")
+        notes.append("   These channels don't have native clawclawclaw integrations.")
         notes.append("   Options:")
         notes.append("     1. Use /api/chat as the backend for a custom integration")
         notes.append("     2. Use /v1/chat/completions (OpenAI compat shim) for drop-in replacement")
-        notes.append("     3. Check ZeroClaw's community channels for third-party integrations")
+        notes.append("     3. Check clawclawclaw's community channels for third-party integrations")
 
     # Check for skills
     if oc.get("skills"):
         notes.append("")
         notes.append("⚠  SKILLS: OpenClaw skills (UV Python scripts) are not directly compatible.")
-        notes.append("   ZeroClaw skills use a different format. You'll need to port them.")
+        notes.append("   clawclawclaw skills use a different format. You'll need to port them.")
         notes.append("   See: docs/skills-migration.md (if available)")
 
     # Check for workflows
     if oc.get("workflows"):
         notes.append("")
-        notes.append("⚠  WORKFLOWS: OpenClaw workflows need to be converted to ZeroClaw's")
+        notes.append("⚠  WORKFLOWS: OpenClaw workflows need to be converted to clawclawclaw's")
         notes.append("   scheduler format ([scheduler] section in config.toml).")
 
     # API key handling
     notes.append("")
     notes.append("🔑 API KEYS:")
     notes.append("   Set your provider API key via environment variable:")
-    notes.append("     export ZEROCLAW_API_KEY='sk-...'")
+    notes.append("     export CLAWCLAWCLAW_API_KEY='sk-...'")
     notes.append("   Or uncomment the api_key line in config.toml")
 
     # Pairing
     notes.append("")
     notes.append("🔐 PAIRING:")
-    notes.append("   Run your ZeroClaw instance and pair using:")
+    notes.append("   Run your clawclawclaw instance and pair using:")
     notes.append("     curl -X POST http://localhost:42617/pair \\")
     notes.append("       -H 'X-Pairing-Code: <your-code>'")
 
     # Endpoint changes
     notes.append("")
     notes.append("🔗 ENDPOINT CHANGES:")
-    notes.append("   OpenClaw endpoint         → ZeroClaw equivalent")
+    notes.append("   OpenClaw endpoint         → clawclawclaw equivalent")
     notes.append("   ─────────────────────────────────────────────────")
     notes.append("   POST /v1/chat/completions → POST /v1/chat/completions (compat shim)")
     notes.append("   (none)                    → POST /api/chat (recommended, native)")
@@ -432,7 +432,7 @@ def generate_migration_notes(oc: dict) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Convert OpenClaw config to ZeroClaw format"
+        description="Convert OpenClaw config to clawclawclaw format"
     )
     parser.add_argument(
         "input",

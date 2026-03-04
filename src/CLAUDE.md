@@ -171,7 +171,7 @@ Use Git worktrees to isolate every active task stream safely and predictably:
 - Run validation commands inside the corresponding worktree before commit/PR.
 - Name worktrees clearly by scope (for example: `wt/ci-hardening`, `wt/provider-fix`).
 - After PR merge/close (or task abandonment), remove stale worktrees/branches and prune refs (`git worktree prune`, `git fetch --prune`).
-- Local Codex automation may use one-command cleanup helper: `~/.codex/skills/zeroclaw-pr-issue-automation/scripts/cleanup_track.sh --repo-dir <repo_dir> --worktree <worktree_path> --branch <branch_name>`.
+- Local Codex automation may use one-command cleanup helper: `~/.codex/skills/clawclawclaw-pr-issue-automation/scripts/cleanup_track.sh --repo-dir <repo_dir> --worktree <worktree_path> --branch <branch_name>`.
 - PR checkpoint rules from section 6.1 still apply to worktree-based development.
 
 ### 6.3 Code Naming Contract (Required)
@@ -183,7 +183,7 @@ Apply these naming rules for all code changes unless a subsystem has a stronger 
 - Keep trait implementer naming explicit and predictable: `<ProviderName>Provider`, `<ChannelName>Channel`, `<ToolName>Tool`, `<BackendName>Memory`.
 - Keep factory registration keys stable, lowercase, and user-facing (for example `"openai"`, `"discord"`, `"shell"`), and avoid alias sprawl without migration need.
 - Name tests by behavior/outcome (`<subject>_<expected_behavior>`) and keep fixture identifiers neutral/project-scoped.
-- If identity-like naming is required in tests/examples, use ZeroClaw-native labels only (`ZeroClawAgent`, `zeroclaw_user`, `zeroclaw_node`).
+- If identity-like naming is required in tests/examples, use clawclawclaw-native labels only (`ZeroClawAgent`, `clawclawclaw_user`, `clawclawclaw_node`).
 
 ### 6.4 Architecture Boundary Contract (Required)
 

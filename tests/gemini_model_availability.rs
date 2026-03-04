@@ -9,9 +9,9 @@
 //! Or via the helper script:
 //!   ./dev/test_models.sh
 
-use zeroclaw::providers::create_provider_with_options;
-use zeroclaw::providers::traits::Provider;
-use zeroclaw::providers::ProviderRuntimeOptions;
+use clawclawclaw::providers::create_provider_with_options;
+use clawclawclaw::providers::traits::Provider;
+use clawclawclaw::providers::ProviderRuntimeOptions;
 
 /// All Gemini models that should be available via OAuth.
 /// Models available via OAuth (cloudcode-pa).

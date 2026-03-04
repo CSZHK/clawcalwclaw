@@ -349,7 +349,7 @@ mod tests {
     #[test]
     fn identity_section_with_aieos_includes_workspace_files() {
         let workspace =
-            std::env::temp_dir().join(format!("zeroclaw_prompt_test_{}", uuid::Uuid::new_v4()));
+            std::env::temp_dir().join(format!("clawclawclaw_prompt_test_{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&workspace).unwrap();
         std::fs::write(
             workspace.join("AGENTS.md"),
@@ -393,7 +393,7 @@ mod tests {
     #[test]
     fn identity_section_openclaw_injects_extra_files() {
         let workspace = std::env::temp_dir().join(format!(
-            "zeroclaw_prompt_extra_files_test_{}",
+            "clawclawclaw_prompt_extra_files_test_{}",
             uuid::Uuid::new_v4()
         ));
         std::fs::create_dir_all(workspace.join("memory")).unwrap();
@@ -437,7 +437,7 @@ mod tests {
     #[test]
     fn identity_section_openclaw_rejects_unsafe_extra_files() {
         let workspace = std::env::temp_dir().join(format!(
-            "zeroclaw_prompt_extra_files_unsafe_test_{}",
+            "clawclawclaw_prompt_extra_files_unsafe_test_{}",
             uuid::Uuid::new_v4()
         ));
         std::fs::create_dir_all(&workspace).unwrap();

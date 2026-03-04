@@ -4,8 +4,8 @@
 FROM rust:1.93-slim@sha256:7e6fa79cf81be23fd45d857f75f583d80cfdbb11c91fa06180fd747fda37a61d AS builder
 
 WORKDIR /app
-ARG ZEROCLAW_CARGO_FEATURES=""
-ARG ZEROCLAW_CARGO_ALL_FEATURES="false"
+ARG CLAWCLAWCLAW_CARGO_FEATURES=""
+ARG CLAWCLAWCLAW_CARGO_ALL_FEATURES="false"
 
 # Install build dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -19,26 +19,26 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY Cargo.toml Cargo.lock ./
 COPY build.rs build.rs
 COPY crates/robot-kit/Cargo.toml crates/robot-kit/Cargo.toml
-COPY crates/zeroclaw-types/Cargo.toml crates/zeroclaw-types/Cargo.toml
-COPY crates/zeroclaw-core/Cargo.toml crates/zeroclaw-core/Cargo.toml
+COPY crates/clawclawclaw-types/Cargo.toml crates/clawclawclaw-types/Cargo.toml
+COPY crates/clawclawclaw-core/Cargo.toml crates/clawclawclaw-core/Cargo.toml
 # Create dummy targets declared in Cargo.toml so manifest parsing succeeds.
-RUN mkdir -p src benches crates/robot-kit/src crates/zeroclaw-types/src crates/zeroclaw-core/src \
+RUN mkdir -p src benches crates/robot-kit/src crates/clawclawclaw-types/src crates/clawclawclaw-core/src \
     && echo "fn main() {}" > src/main.rs \
     && echo "fn main() {}" > benches/agent_benchmarks.rs \
     && echo "pub fn placeholder() {}" > crates/robot-kit/src/lib.rs \
-    && echo "pub fn placeholder() {}" > crates/zeroclaw-types/src/lib.rs \
-    && echo "pub fn placeholder() {}" > crates/zeroclaw-core/src/lib.rs
-RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
-    --mount=type=cache,id=zeroclaw-target,target=/app/target,sharing=locked \
-    if [ "$ZEROCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
+    && echo "pub fn placeholder() {}" > crates/clawclawclaw-types/src/lib.rs \
+    && echo "pub fn placeholder() {}" > crates/clawclawclaw-core/src/lib.rs
+RUN --mount=type=cache,id=clawclawclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,id=clawclawclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
+    --mount=type=cache,id=clawclawclaw-target,target=/app/target,sharing=locked \
+    if [ "$CLAWCLAWCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
       cargo build --release --locked --all-features; \
-    elif [ -n "$ZEROCLAW_CARGO_FEATURES" ]; then \
-      cargo build --release --locked --features "$ZEROCLAW_CARGO_FEATURES"; \
+    elif [ -n "$CLAWCLAWCLAW_CARGO_FEATURES" ]; then \
+      cargo build --release --locked --features "$CLAWCLAWCLAW_CARGO_FEATURES"; \
     else \
       cargo build --release --locked; \
     fi
-RUN rm -rf src benches crates/robot-kit/src crates/zeroclaw-types/src crates/zeroclaw-core/src
+RUN rm -rf src benches crates/robot-kit/src crates/clawclawclaw-types/src crates/clawclawclaw-core/src
 
 # 2. Copy only build-relevant source paths (avoid cache-busting on docs/tests/scripts)
 COPY src/ src/
@@ -56,33 +56,33 @@ RUN mkdir -p web/dist && \
         '  <head>' \
         '    <meta charset="utf-8" />' \
         '    <meta name="viewport" content="width=device-width,initial-scale=1" />' \
-        '    <title>ZeroClaw Dashboard</title>' \
+        '    <title>clawclawclaw Dashboard</title>' \
         '  </head>' \
         '  <body>' \
-        '    <h1>ZeroClaw Dashboard Unavailable</h1>' \
+        '    <h1>clawclawclaw Dashboard Unavailable</h1>' \
         '    <p>Frontend assets are not bundled in this build. Build the web UI to populate <code>web/dist</code>.</p>' \
         '  </body>' \
         '</html>' > web/dist/index.html; \
     fi
-RUN --mount=type=cache,id=zeroclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
-    --mount=type=cache,id=zeroclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
-    --mount=type=cache,id=zeroclaw-target,target=/app/target,sharing=locked \
-    if [ "$ZEROCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
+RUN --mount=type=cache,id=clawclawclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
+    --mount=type=cache,id=clawclawclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
+    --mount=type=cache,id=clawclawclaw-target,target=/app/target,sharing=locked \
+    if [ "$CLAWCLAWCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
       cargo build --release --locked --all-features; \
-    elif [ -n "$ZEROCLAW_CARGO_FEATURES" ]; then \
-      cargo build --release --locked --features "$ZEROCLAW_CARGO_FEATURES"; \
+    elif [ -n "$CLAWCLAWCLAW_CARGO_FEATURES" ]; then \
+      cargo build --release --locked --features "$CLAWCLAWCLAW_CARGO_FEATURES"; \
     else \
       cargo build --release --locked; \
     fi && \
-    cp target/release/zeroclaw /app/zeroclaw && \
-    strip /app/zeroclaw
+    cp target/release/clawclawclaw /app/clawclawclaw && \
+    strip /app/clawclawclaw
 
 # Prepare runtime directory structure and default config inline (no extra stage)
-RUN mkdir -p /zeroclaw-data/.zeroclaw /zeroclaw-data/workspace && \
-    cat > /zeroclaw-data/.zeroclaw/config.toml <<EOF && \
-    chown -R 65534:65534 /zeroclaw-data
-workspace_dir = "/zeroclaw-data/workspace"
-config_path = "/zeroclaw-data/.zeroclaw/config.toml"
+RUN mkdir -p /clawclawclaw-data/.clawclawclaw /clawclawclaw-data/workspace && \
+    cat > /clawclawclaw-data/.clawclawclaw/config.toml <<EOF && \
+    chown -R 65534:65534 /clawclawclaw-data
+workspace_dir = "/clawclawclaw-data/workspace"
+config_path = "/clawclawclaw-data/.clawclawclaw/config.toml"
 api_key = ""
 default_provider = "openrouter"
 default_model = "anthropic/claude-sonnet-4-20250514"
@@ -103,49 +103,49 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /zeroclaw-data /zeroclaw-data
-COPY --from=builder /app/zeroclaw /usr/local/bin/zeroclaw
+COPY --from=builder /clawclawclaw-data /clawclawclaw-data
+COPY --from=builder /app/clawclawclaw /usr/local/bin/clawclawclaw
 
 # Overwrite minimal config with DEV template (Ollama defaults)
-COPY dev/config.template.toml /zeroclaw-data/.zeroclaw/config.toml
-RUN chown 65534:65534 /zeroclaw-data/.zeroclaw/config.toml
+COPY dev/config.template.toml /clawclawclaw-data/.clawclawclaw/config.toml
+RUN chown 65534:65534 /clawclawclaw-data/.clawclawclaw/config.toml
 
 # Environment setup
 # Use consistent workspace path
-ENV ZEROCLAW_WORKSPACE=/zeroclaw-data/workspace
-ENV HOME=/zeroclaw-data
+ENV CLAWCLAWCLAW_WORKSPACE=/clawclawclaw-data/workspace
+ENV HOME=/clawclawclaw-data
 # Defaults for local dev (Ollama) - matches config.template.toml
 ENV PROVIDER="ollama"
-ENV ZEROCLAW_MODEL="llama3.2"
-ENV ZEROCLAW_GATEWAY_PORT=42617
+ENV CLAWCLAWCLAW_MODEL="llama3.2"
+ENV CLAWCLAWCLAW_GATEWAY_PORT=42617
 
 # Note: API_KEY is intentionally NOT set here to avoid confusion.
 # It is set in config.toml as the Ollama URL.
 
-WORKDIR /zeroclaw-data
+WORKDIR /clawclawclaw-data
 USER 65534:65534
 EXPOSE 42617
-ENTRYPOINT ["zeroclaw"]
+ENTRYPOINT ["clawclawclaw"]
 CMD ["gateway"]
 
 # ── Stage 3: Production Runtime (Distroless) ─────────────────
 FROM gcr.io/distroless/cc-debian13:nonroot@sha256:84fcd3c223b144b0cb6edc5ecc75641819842a9679a3a58fd6294bec47532bf7 AS release
 
-COPY --from=builder /app/zeroclaw /usr/local/bin/zeroclaw
-COPY --from=builder /zeroclaw-data /zeroclaw-data
+COPY --from=builder /app/clawclawclaw /usr/local/bin/clawclawclaw
+COPY --from=builder /clawclawclaw-data /clawclawclaw-data
 
 # Environment setup
-ENV ZEROCLAW_WORKSPACE=/zeroclaw-data/workspace
-ENV HOME=/zeroclaw-data
+ENV CLAWCLAWCLAW_WORKSPACE=/clawclawclaw-data/workspace
+ENV HOME=/clawclawclaw-data
 # Default provider and model are set in config.toml, not here,
 # so config file edits are not silently overridden
 #ENV PROVIDER=
-ENV ZEROCLAW_GATEWAY_PORT=42617
+ENV CLAWCLAWCLAW_GATEWAY_PORT=42617
 
 # API_KEY must be provided at runtime!
 
-WORKDIR /zeroclaw-data
+WORKDIR /clawclawclaw-data
 USER 65534:65534
 EXPOSE 42617
-ENTRYPOINT ["zeroclaw"]
+ENTRYPOINT ["clawclawclaw"]
 CMD ["gateway"]

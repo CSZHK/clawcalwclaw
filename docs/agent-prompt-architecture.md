@@ -7,7 +7,7 @@
 
 ## 概述
 
-ZeroClaw agent 的系统提示词通过 **Section 组合流水线** 构建：`SystemPromptBuilder` 持有一组有序的 `PromptSection` 实现，`build()` 时依次调用各 section，将非空输出 `trim_end + "\n\n"` 拼接为最终系统提示词。
+clawclawclaw agent 的系统提示词通过 **Section 组合流水线** 构建：`SystemPromptBuilder` 持有一组有序的 `PromptSection` 实现，`build()` 时依次调用各 section，将非空输出 `trim_end + "\n\n"` 拼接为最终系统提示词。
 
 ---
 

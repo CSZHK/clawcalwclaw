@@ -1,4 +1,4 @@
-//! Task Classifier for ZeroClaw Economic Agents
+//! Task Classifier for clawclawclaw Economic Agents
 //!
 //! Classifies work instructions into 44 BLS occupations with wage data
 //! to estimate task value for agent economics.
@@ -12,7 +12,7 @@
 //! ## Example
 //!
 //! ```rust,ignore
-//! use zeroclaw::economic::classifier::{TaskClassifier, OccupationCategory};
+//! use clawclawclaw::economic::classifier::{TaskClassifier, OccupationCategory};
 //!
 //! let classifier = TaskClassifier::new();
 //! let result = classifier.classify("Write a REST API in Rust").await?;

@@ -1,6 +1,6 @@
 # Πρώτα Βήματα (Getting Started)
 
-Οδηγίες για την αρχική εγκατάσταση και την εξοικείωση με το οικοσύστημα του ZeroClaw.
+Οδηγίες για την αρχική εγκατάσταση και την εξοικείωση με το οικοσύστημα του clawclawclaw.
 
 ---
 
@@ -16,10 +16,10 @@
 
 | Σενάριο Χρήσης | Εντολή CLI |
 |:---|:---|
-| Διαθέτω API Key και επιθυμώ άμεση ρύθμιση | `zeroclaw onboard --api-key sk-... --provider openrouter` |
-| Επιθυμώ διαδραστική καθοδήγηση (Step-by-step) | `zeroclaw onboard --interactive` |
-| Επιθυμώ μόνο τη ρύθμιση καναλιών επικοινωνίας | `zeroclaw onboard --channels-only` |
-| Επιθυμώ πλήρη αντικατάσταση υπαρχουσών ρυθμίσεων | `zeroclaw onboard --force` |
+| Διαθέτω API Key και επιθυμώ άμεση ρύθμιση | `clawclawclaw onboard --api-key sk-... --provider openrouter` |
+| Επιθυμώ διαδραστική καθοδήγηση (Step-by-step) | `clawclawclaw onboard --interactive` |
+| Επιθυμώ μόνο τη ρύθμιση καναλιών επικοινωνίας | `clawclawclaw onboard --channels-only` |
+| Επιθυμώ πλήρη αντικατάσταση υπαρχουσών ρυθμίσεων | `clawclawclaw onboard --force` |
 
 ---
 
@@ -27,7 +27,7 @@
 
 - **Ασφάλεια Ρυθμίσεων**: Το σύστημα απαιτεί επιβεβαίωση για την τροποποίηση υπαρχουσών ρυθμίσεων (εκτός αν χρησιμοποιηθεί το `--force`).
 - **Cloud Providers**: Μοντέλα όπως το Ollama Cloud απαιτούν τον ορισμό των `api_url` και `api_key`.
-- **Έλεγχος Υγείας**: Μετά την εγκατάσταση, εκτελέστε τις εντολές `zeroclaw status` και `zeroclaw doctor` για την επαλήθευση της σωστής λειτουργίας.
+- **Έλεγχος Υγείας**: Μετά την εγκατάσταση, εκτελέστε τις εντολές `clawclawclaw status` και `clawclawclaw doctor` για την επαλήθευση της σωστής λειτουργίας.
 
 ---
 

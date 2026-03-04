@@ -1,15 +1,15 @@
-package ai.zeroclaw.android.tile
+package ai.clawclawclaw.android.tile
 
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import ai.zeroclaw.android.MainActivity
-import ai.zeroclaw.android.service.ZeroClawService
+import ai.clawclawclaw.android.MainActivity
+import ai.clawclawclaw.android.service.ZeroClawService
 
 /**
- * Quick Settings tile for ZeroClaw.
+ * Quick Settings tile for clawclawclaw.
  *
  * Allows users to:
  * - See agent status at a glance
@@ -59,11 +59,11 @@ class ZeroClawTileService : TileService() {
         val tile = qsTile ?: return
 
         // TODO: Check actual agent status from bridge
-        // val isRunning = ZeroClawBridge.isRunning()
+        // val isRunning = ClawclawclawBridge.isRunning()
         val isRunning = isServiceRunning()
 
         tile.state = if (isRunning) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-        tile.label = "ZeroClaw"
+        tile.label = "clawclawclaw"
         tile.subtitle = if (isRunning) "Running" else "Stopped"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -98,7 +98,7 @@ async fn run_loop(
     );
     state.push_chat_message(
         TuiRole::System,
-        "ZeroClaw TUI ready. Press i to edit, Enter to send, Ctrl+C to cancel, q to quit.",
+        "clawclawclaw TUI ready. Press i to edit, Enter to send, Ctrl+C to cancel, q to quit.",
     );
 
     let (delta_tx, mut delta_rx) = tokio::sync::mpsc::channel::<String>(DELTA_CHANNEL_BUFFER);
@@ -557,7 +557,7 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         auth_profile_override: None,
         provider_api_url: config.api_url.clone(),
         provider_transport: config.effective_provider_transport(),
-        zeroclaw_dir: config.config_path.parent().map(std::path::PathBuf::from),
+        clawclawclaw_dir: config.config_path.parent().map(std::path::PathBuf::from),
         secrets_encrypt: config.secrets.encrypt,
         reasoning_enabled: config.runtime.reasoning_enabled,
         reasoning_level: config.effective_provider_reasoning_level(),

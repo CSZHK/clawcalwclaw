@@ -288,7 +288,7 @@ impl Channel for DingTalkChannel {
     async fn send(&self, message: &SendMessage) -> anyhow::Result<()> {
         let token = self.get_access_token().await?;
 
-        let title = message.subject.as_deref().unwrap_or("ZeroClaw");
+        let title = message.subject.as_deref().unwrap_or("clawclawclaw");
 
         let msg_param = serde_json::json!({
             "text": message.content,

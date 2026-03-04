@@ -156,7 +156,7 @@ impl GitHubChannel {
                 .bearer_auth(&self.access_token)
                 .header("Accept", "application/vnd.github+json")
                 .header("X-GitHub-Api-Version", GITHUB_API_VERSION)
-                .header("User-Agent", "ZeroClaw-GitHub-Channel")
+                .header("User-Agent", "clawclawclaw-GitHub-Channel")
                 .json(&payload)
                 .send()
                 .await?;
@@ -476,7 +476,7 @@ impl Channel for GitHubChannel {
             .bearer_auth(&self.access_token)
             .header("Accept", "application/vnd.github+json")
             .header("X-GitHub-Api-Version", GITHUB_API_VERSION)
-            .header("User-Agent", "ZeroClaw-GitHub-Channel")
+            .header("User-Agent", "clawclawclaw-GitHub-Channel")
             .send()
             .await
             .map(|resp| resp.status().is_success())
@@ -514,7 +514,7 @@ mod tests {
         GitHubChannel::new(
             "ghp_test".to_string(),
             None,
-            vec!["zeroclaw-labs/zeroclaw".to_string()],
+            vec!["CSZHK/clawcalwclaw".to_string()],
         )
     }
 
@@ -545,19 +545,19 @@ mod tests {
         let ch = make_channel();
         let payload = serde_json::json!({
             "action": "created",
-            "repository": { "full_name": "zeroclaw-labs/zeroclaw" },
+            "repository": { "full_name": "CSZHK/clawcalwclaw" },
             "issue": { "number": 2079, "title": "GitHub as a native channel" },
             "comment": {
                 "id": 12345,
                 "body": "please add this",
                 "created_at": "2026-02-27T14:00:00Z",
-                "html_url": "https://github.com/zeroclaw-labs/zeroclaw/issues/2079#issuecomment-12345",
+                "html_url": "https://github.com/CSZHK/clawcalwclaw/issues/2079#issuecomment-12345",
                 "user": { "login": "alice", "type": "User" }
             }
         });
         let msgs = ch.parse_webhook_payload("issue_comment", &payload);
         assert_eq!(msgs.len(), 1);
-        assert_eq!(msgs[0].reply_target, "zeroclaw-labs/zeroclaw#2079");
+        assert_eq!(msgs[0].reply_target, "CSZHK/clawcalwclaw#2079");
         assert_eq!(msgs[0].sender, "alice");
         assert_eq!(msgs[0].thread_ts.as_deref(), Some("12345"));
         assert!(msgs[0].content.contains("please add this"));
@@ -568,12 +568,12 @@ mod tests {
         let ch = make_channel();
         let payload = serde_json::json!({
             "action": "created",
-            "repository": { "full_name": "zeroclaw-labs/zeroclaw" },
+            "repository": { "full_name": "CSZHK/clawcalwclaw" },
             "issue": { "number": 1, "title": "x" },
             "comment": {
                 "id": 3,
                 "body": "bot note",
-                "user": { "login": "zeroclaw-bot[bot]", "type": "Bot" }
+                "user": { "login": "clawclawclaw-bot[bot]", "type": "Bot" }
             }
         });
         let msgs = ch.parse_webhook_payload("issue_comment", &payload);
@@ -598,20 +598,20 @@ mod tests {
         let ch = make_channel();
         let payload = serde_json::json!({
             "action": "created",
-            "repository": { "full_name": "zeroclaw-labs/zeroclaw" },
+            "repository": { "full_name": "CSZHK/clawcalwclaw" },
             "pull_request": { "number": 2118, "title": "Add github channel" },
             "comment": {
                 "id": 9001,
                 "body": "nit: rename this variable",
                 "path": "src/channels/github.rs",
                 "created_at": "2026-02-27T14:00:00Z",
-                "html_url": "https://github.com/zeroclaw-labs/zeroclaw/pull/2118#discussion_r9001",
+                "html_url": "https://github.com/CSZHK/clawcalwclaw/pull/2118#discussion_r9001",
                 "user": { "login": "bob", "type": "User" }
             }
         });
         let msgs = ch.parse_webhook_payload("pull_request_review_comment", &payload);
         assert_eq!(msgs.len(), 1);
-        assert_eq!(msgs[0].reply_target, "zeroclaw-labs/zeroclaw#2118");
+        assert_eq!(msgs[0].reply_target, "CSZHK/clawcalwclaw#2118");
         assert_eq!(msgs[0].sender, "bob");
         assert!(msgs[0].content.contains("nit: rename this variable"));
     }
@@ -619,8 +619,8 @@ mod tests {
     #[test]
     fn parse_issue_recipient_format() {
         assert_eq!(
-            GitHubChannel::parse_issue_recipient("zeroclaw-labs/zeroclaw#12"),
-            Some(("zeroclaw-labs/zeroclaw", 12))
+            GitHubChannel::parse_issue_recipient("CSZHK/clawcalwclaw#12"),
+            Some(("CSZHK/clawcalwclaw", 12))
         );
         assert!(GitHubChannel::parse_issue_recipient("bad").is_none());
         assert!(GitHubChannel::parse_issue_recipient("owner/repo#0").is_none());
@@ -628,8 +628,8 @@ mod tests {
 
     #[test]
     fn allowlist_supports_wildcards() {
-        let ch = GitHubChannel::new("t".into(), None, vec!["zeroclaw-labs/*".into()]);
-        assert!(ch.repo_is_allowed("zeroclaw-labs/zeroclaw"));
+        let ch = GitHubChannel::new("t".into(), None, vec!["clawclawclaw-labs/*".into()]);
+        assert!(ch.repo_is_allowed("CSZHK/clawcalwclaw"));
         assert!(!ch.repo_is_allowed("other/repo"));
         let all = GitHubChannel::new("t".into(), None, vec!["*".into()]);
         assert!(all.repo_is_allowed("anything/repo"));

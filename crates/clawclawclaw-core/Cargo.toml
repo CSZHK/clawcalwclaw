@@ -1,5 +1,5 @@
 [package]
-name = "zeroclaw-core"
+name = "clawclawclaw-core"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -9,4 +9,4 @@ description = "Core contracts and boundaries for staged multi-crate extraction."
 path = "src/lib.rs"
 
 [dependencies]
-zeroclaw-types = { path = "../zeroclaw-types" }
+clawclawclaw-types = { path = "../clawclawclaw-types" }

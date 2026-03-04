@@ -43,7 +43,7 @@ pub fn render(frame: &mut Frame<'_>, area: Rect, state: &TuiState) {
 
     if lines.is_empty() {
         lines.push(Line::from(Span::raw(
-            "Start typing in the input box to chat with ZeroClaw.",
+            "Start typing in the input box to chat with clawclawclaw.",
         )));
     }
 

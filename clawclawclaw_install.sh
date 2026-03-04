@@ -34,7 +34,7 @@ run_pacman() {
     return $?
   fi
 
-  PACMAN_CFG_TMP="$(mktemp /tmp/zeroclaw-pacman.XXXXXX.conf)"
+  PACMAN_CFG_TMP="$(mktemp /tmp/clawclawclaw-pacman.XXXXXX.conf)"
   cp /etc/pacman.conf "$PACMAN_CFG_TMP"
   if ! grep -Eq '^[[:space:]]*DisableSandboxSyscalls([[:space:]]|$)' "$PACMAN_CFG_TMP"; then
     printf '\nDisableSandboxSyscalls\n' >> "$PACMAN_CFG_TMP"

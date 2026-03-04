@@ -42,7 +42,7 @@ class AgentTeamOrchestrationEvalTest(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, msg=proc.stderr)
 
             payload = json.loads(Path(out.name).read_text(encoding="utf-8"))
-            self.assertEqual(payload["schema_version"], "zeroclaw.agent-team-eval.v1")
+            self.assertEqual(payload["schema_version"], "clawclawclaw.agent-team-eval.v1")
             self.assertEqual(payload["budget_profile"], "medium")
             self.assertIn("results", payload)
             self.assertEqual(len(payload["results"]), 4)

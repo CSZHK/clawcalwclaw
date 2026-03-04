@@ -2,7 +2,7 @@
 //!
 //! AIEOS (AI Entity Object Specification) is a standardization framework for
 //! portable AI identity. This module handles loading and converting AIEOS v1.1
-//! JSON to ZeroClaw's system prompt format.
+//! JSON to clawclawclaw's system prompt format.
 
 use crate::config::IdentityConfig;
 use anyhow::{Context, Result};
@@ -22,7 +22,7 @@ const IDENTITY_BACKENDS: [IdentityBackendProfile; 2] = [
     IdentityBackendProfile {
         key: "openclaw",
         label: "OpenClaw (Markdown workspace identity files)",
-        description: "Classic ZeroClaw layout with IDENTITY.md, SOUL.md, USER.md, and friends.",
+        description: "Classic clawclawclaw layout with IDENTITY.md, SOUL.md, USER.md, and friends.",
     },
     IdentityBackendProfile {
         key: "aieos",
@@ -41,7 +41,7 @@ pub fn default_aieos_identity_path() -> &'static str {
 
 pub fn generate_default_aieos_json(agent_name: &str, user_name: &str) -> String {
     let resolved_agent_name = if agent_name.trim().is_empty() {
-        "ZeroClaw"
+        "clawclawclaw"
     } else {
         agent_name.trim()
     };
@@ -58,9 +58,9 @@ pub fn generate_default_aieos_json(agent_name: &str, user_name: &str) -> String 
                 "full": resolved_agent_name
             },
             "bio": format!(
-                "{resolved_agent_name} is a ZeroClaw assistant focused on helping {resolved_user_name} get work done efficiently."
+                "{resolved_agent_name} is a clawclawclaw assistant focused on helping {resolved_user_name} get work done efficiently."
             ),
-            "origin": "ZeroClaw",
+            "origin": "clawclawclaw",
             "residence": "Workspace"
         },
         "linguistics": {
@@ -793,7 +793,7 @@ fn non_empty_list_at(value: &Value, path: &[&str]) -> Option<Vec<String>> {
 /// Convert AIEOS identity to a system prompt string.
 ///
 /// Formats the AIEOS data into a structured markdown prompt compatible
-/// with ZeroClaw's agent system.
+/// with clawclawclaw's agent system.
 pub fn aieos_to_system_prompt(identity: &AieosIdentity) -> String {
     use std::fmt::Write;
     let mut prompt = String::new();
@@ -1065,7 +1065,7 @@ mod tests {
     use super::*;
 
     fn test_workspace_dir() -> PathBuf {
-        std::env::temp_dir().join("zeroclaw-test-identity")
+        std::env::temp_dir().join("clawclawclaw-test-identity")
     }
 
     #[test]

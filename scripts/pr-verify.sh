@@ -8,7 +8,7 @@ Usage:
 
 Examples:
   scripts/pr-verify.sh 2293
-  scripts/pr-verify.sh 2293 zeroclaw-labs/zeroclaw
+  scripts/pr-verify.sh 2293 CSZHK/clawcalwclaw
 
 Description:
   Verifies PR merge state using GitHub REST API (low-rate path) and
@@ -49,7 +49,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -lt 1 ]]; then
 fi
 
 PR_NUMBER="$1"
-REPO="${2:-zeroclaw-labs/zeroclaw}"
+REPO="${2:-CSZHK/clawcalwclaw}"
 BASE_REMOTE="${BASE_REMOTE:-origin}"
 
 require_cmd gh
