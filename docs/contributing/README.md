@@ -9,6 +9,7 @@ For contributors, reviewers, and maintainers.
 - Reviewer playbook: [../reviewer-playbook.md](../reviewer-playbook.md)
 - CI map and ownership: [../ci-map.md](../ci-map.md)
 - Actions source policy: [../actions-source-policy.md](../actions-source-policy.md)
+- TUI testing guide: [../tui-testing.md](../tui-testing.md)
 
 ## Suggested Reading Order
 
@@ -16,3 +17,4 @@ For contributors, reviewers, and maintainers.
 2. `docs/pr-workflow.md`
 3. `docs/reviewer-playbook.md`
 4. `docs/ci-map.md`
+5. `docs/tui-testing.md` (if touching TUI code)

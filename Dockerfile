@@ -6,6 +6,8 @@ FROM rust:1.93-slim@sha256:7e6fa79cf81be23fd45d857f75f583d80cfdbb11c91fa06180fd7
 WORKDIR /app
 ARG CLAWCLAWCLAW_CARGO_FEATURES=""
 ARG CLAWCLAWCLAW_CARGO_ALL_FEATURES="false"
+ARG CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL=""
+ARG CLAWCLAWCLAW_CARGO_REGISTRY_INDEX=""
 
 # Install build dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -31,6 +33,12 @@ RUN mkdir -p src benches crates/robot-kit/src crates/clawclawclaw-types/src crat
 RUN --mount=type=cache,id=clawclawclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=clawclawclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=clawclawclaw-target,target=/app/target,sharing=locked \
+    if [ -n "$CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL" ]; then \
+      export CARGO_REGISTRIES_CRATES_IO_PROTOCOL="$CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL"; \
+    fi; \
+    if [ -n "$CLAWCLAWCLAW_CARGO_REGISTRY_INDEX" ]; then \
+      export CARGO_REGISTRIES_CRATES_IO_INDEX="$CLAWCLAWCLAW_CARGO_REGISTRY_INDEX"; \
+    fi; \
     if [ "$CLAWCLAWCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
       cargo build --release --locked --all-features; \
     elif [ -n "$CLAWCLAWCLAW_CARGO_FEATURES" ]; then \
@@ -67,6 +75,12 @@ RUN mkdir -p web/dist && \
 RUN --mount=type=cache,id=clawclawclaw-cargo-registry,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,id=clawclawclaw-cargo-git,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=cache,id=clawclawclaw-target,target=/app/target,sharing=locked \
+    if [ -n "$CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL" ]; then \
+      export CARGO_REGISTRIES_CRATES_IO_PROTOCOL="$CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL"; \
+    fi; \
+    if [ -n "$CLAWCLAWCLAW_CARGO_REGISTRY_INDEX" ]; then \
+      export CARGO_REGISTRIES_CRATES_IO_INDEX="$CLAWCLAWCLAW_CARGO_REGISTRY_INDEX"; \
+    fi; \
     if [ "$CLAWCLAWCLAW_CARGO_ALL_FEATURES" = "true" ]; then \
       cargo build --release --locked --all-features; \
     elif [ -n "$CLAWCLAWCLAW_CARGO_FEATURES" ]; then \

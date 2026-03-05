@@ -386,6 +386,7 @@ Notes:
 
 - Local Docker-based CI is strongly recommended when Docker is available.
 - Contributors are not blocked from opening a PR if local Docker CI is unavailable; in that case run the most relevant native checks and document what was run.
+- To avoid saturating shared/dev hosts, prefer constrained local Rust build parallelism by default (for example `CARGO_BUILD_JOBS=2 cargo build ...` or `cargo build -j 2 ...`). Increase concurrency only when explicitly needed.
 
 Additional expectations by change type:
 

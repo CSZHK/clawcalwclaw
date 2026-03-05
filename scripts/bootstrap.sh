@@ -39,6 +39,7 @@ Options:
   --prefer-prebuilt          Try latest release binary first; fallback to source build on miss
   --prebuilt-only            Install only from latest release binary (no source build fallback)
   --force-source-build       Disable prebuilt flow and always build from source
+  --use-rsproxy              Force Rust/Cargo mirror acceleration via rsproxy.cn (default behavior)
   --cargo-features <list>    Extra Cargo features for local source build/install (comma-separated)
   --onboard                  Run onboarding after install
   --interactive-onboard      Run interactive onboarding (implies --onboard)
@@ -94,6 +95,15 @@ Environment:
   CLAWCLAWCLAW_MODEL             Used when --model is not provided
   CLAWCLAWCLAW_BOOTSTRAP_MIN_RAM_MB   Minimum RAM threshold for source build preflight (default: 2048)
   CLAWCLAWCLAW_BOOTSTRAP_MIN_DISK_MB  Minimum free disk threshold for source build preflight (default: 6144)
+  CLAWCLAWCLAW_BOOTSTRAP_MIRROR       Rust mirror profile (`rsproxy` or `none`, default: `rsproxy`)
+  CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL
+                            Cargo registry protocol override (e.g. sparse)
+  CLAWCLAWCLAW_CARGO_REGISTRY_INDEX
+                            Cargo registry index override URL (e.g. sparse+https://rsproxy.cn/index/)
+  CLAWCLAWCLAW_RUSTUP_DIST_SERVER
+                            rustup dist server override URL (e.g. https://rsproxy.cn)
+  CLAWCLAWCLAW_RUSTUP_UPDATE_ROOT
+                            rustup update root override URL (e.g. https://rsproxy.cn/rustup)
   CLAWCLAWCLAW_DISABLE_ALPINE_AUTO_DEPS
                             Set to 1 to disable Alpine auto-install of missing prerequisites
 USAGE
@@ -584,6 +594,56 @@ install_rust_toolchain() {
     error "Rust installation completed but cargo is still unavailable in PATH."
     error "Run: source \"$HOME/.cargo/env\""
     exit 1
+  fi
+}
+
+configure_rust_mirror_env() {
+  local mirror_profile="${1:-}"
+  local normalized_profile
+
+  normalized_profile="$(printf '%s' "$mirror_profile" | tr '[:upper:]' '[:lower:]')"
+  case "$normalized_profile" in
+    ""|none)
+      ;;
+    rsproxy)
+      if [[ -z "$CARGO_REGISTRY_PROTOCOL_OVERRIDE" ]]; then
+        CARGO_REGISTRY_PROTOCOL_OVERRIDE="sparse"
+      fi
+      if [[ -z "$CARGO_REGISTRY_INDEX_OVERRIDE" ]]; then
+        CARGO_REGISTRY_INDEX_OVERRIDE="sparse+https://rsproxy.cn/index/"
+      fi
+      if [[ -z "$RUSTUP_DIST_SERVER_OVERRIDE" ]]; then
+        RUSTUP_DIST_SERVER_OVERRIDE="https://rsproxy.cn"
+      fi
+      if [[ -z "$RUSTUP_UPDATE_ROOT_OVERRIDE" ]]; then
+        RUSTUP_UPDATE_ROOT_OVERRIDE="https://rsproxy.cn/rustup"
+      fi
+      ;;
+    *)
+      error "unsupported mirror profile: $mirror_profile"
+      error "supported values: rsproxy, none"
+      exit 1
+      ;;
+  esac
+
+  if [[ -n "$CARGO_REGISTRY_PROTOCOL_OVERRIDE" ]]; then
+    export CARGO_REGISTRIES_CRATES_IO_PROTOCOL="$CARGO_REGISTRY_PROTOCOL_OVERRIDE"
+    info "Using Cargo registry protocol: $CARGO_REGISTRY_PROTOCOL_OVERRIDE"
+  fi
+
+  if [[ -n "$CARGO_REGISTRY_INDEX_OVERRIDE" ]]; then
+    export CARGO_REGISTRIES_CRATES_IO_INDEX="$CARGO_REGISTRY_INDEX_OVERRIDE"
+    info "Using Cargo registry index mirror: $CARGO_REGISTRY_INDEX_OVERRIDE"
+  fi
+
+  if [[ -n "$RUSTUP_DIST_SERVER_OVERRIDE" ]]; then
+    export RUSTUP_DIST_SERVER="$RUSTUP_DIST_SERVER_OVERRIDE"
+    info "Using rustup dist mirror: $RUSTUP_DIST_SERVER_OVERRIDE"
+  fi
+
+  if [[ -n "$RUSTUP_UPDATE_ROOT_OVERRIDE" ]]; then
+    export RUSTUP_UPDATE_ROOT="$RUSTUP_UPDATE_ROOT_OVERRIDE"
+    info "Using rustup update mirror: $RUSTUP_UPDATE_ROOT_OVERRIDE"
   fi
 }
 
@@ -1142,6 +1202,12 @@ run_docker_bootstrap() {
       info "Docker build features: $docker_build_features"
       docker_build_args+=(--build-arg "CLAWCLAWCLAW_CARGO_FEATURES=$docker_build_features")
     fi
+    if [[ -n "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL:-}" ]]; then
+      docker_build_args+=(--build-arg "CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL=$CARGO_REGISTRIES_CRATES_IO_PROTOCOL")
+    fi
+    if [[ -n "${CARGO_REGISTRIES_CRATES_IO_INDEX:-}" ]]; then
+      docker_build_args+=(--build-arg "CLAWCLAWCLAW_CARGO_REGISTRY_INDEX=$CARGO_REGISTRIES_CRATES_IO_INDEX")
+    fi
     docker_build_args+=("$WORK_DIR")
     "$CONTAINER_CLI" "${docker_build_args[@]}"
   else
@@ -1310,6 +1376,7 @@ INSTALL_RUST=false
 PREFER_PREBUILT=false
 PREBUILT_ONLY=false
 FORCE_SOURCE_BUILD=false
+USE_RSPROXY=false
 RUN_ONBOARD=false
 INTERACTIVE_ONBOARD=false
 SKIP_BUILD=false
@@ -1322,6 +1389,11 @@ MODEL="${CLAWCLAWCLAW_MODEL:-}"
 LOCAL_CARGO_FEATURES="${CLAWCLAWCLAW_CARGO_FEATURES:-}"
 LOCAL_CONFIG_PATH="${CLAWCLAWCLAW_CONFIG_PATH:-$HOME/.clawclawclaw/config.toml}"
 AUTO_CONFIG_FEATURES=""
+RUST_MIRROR_PROFILE="${CLAWCLAWCLAW_BOOTSTRAP_MIRROR:-rsproxy}"
+CARGO_REGISTRY_PROTOCOL_OVERRIDE="${CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL:-}"
+CARGO_REGISTRY_INDEX_OVERRIDE="${CLAWCLAWCLAW_CARGO_REGISTRY_INDEX:-}"
+RUSTUP_DIST_SERVER_OVERRIDE="${CLAWCLAWCLAW_RUSTUP_DIST_SERVER:-}"
+RUSTUP_UPDATE_ROOT_OVERRIDE="${CLAWCLAWCLAW_RUSTUP_UPDATE_ROOT:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -1379,6 +1451,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --force-source-build)
       FORCE_SOURCE_BUILD=true
+      shift
+      ;;
+    --use-rsproxy)
+      USE_RSPROXY=true
       shift
       ;;
     --cargo-features)
@@ -1460,6 +1536,12 @@ if [[ "$DOCKER_MODE" == true && "$GUIDED_MODE" == "on" ]]; then
   warn "--guided is ignored with --docker."
   GUIDED_MODE="off"
 fi
+
+if [[ "$USE_RSPROXY" == true ]]; then
+  RUST_MIRROR_PROFILE="rsproxy"
+fi
+
+configure_rust_mirror_env "$RUST_MIRROR_PROFILE"
 
 if [[ "$DOCKER_RESET" == true && "$DOCKER_MODE" == false ]]; then
   error "--docker-reset requires --docker."

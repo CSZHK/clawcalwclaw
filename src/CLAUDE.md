@@ -264,5 +264,9 @@ Additional expectations by change type:
     - if touching bootstrap docs/scripts, run `bash -n bootstrap.sh scripts/bootstrap.sh scripts/install.sh`
 - **Workflow changes**: validate YAML syntax; run workflow lint/sanity checks when available.
 - **Security/runtime/gateway/tools**: include at least one boundary/failure-mode validation.
+- **TUI changes** (`src/tui/**`):
+    - run L1 unit tests: `cargo test --lib tui`
+    - run L2 render/event tests: `CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test --test tui_event_handling_test`
+    - see `docs/tui-testing.md` for full test strategy
 
 If full checks are impractical, run the most relevant subset and document what was skipped and why.

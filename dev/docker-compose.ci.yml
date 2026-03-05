@@ -5,12 +5,21 @@ services:
         build:
             context: ..
             dockerfile: dev/ci/Dockerfile
+            args:
+                CLAWCLAWCLAW_CARGO_REGISTRY_PROTOCOL: ${CARGO_REGISTRIES_CRATES_IO_PROTOCOL:-}
+                CLAWCLAWCLAW_CARGO_REGISTRY_INDEX: ${CARGO_REGISTRIES_CRATES_IO_INDEX:-}
+                CLAWCLAWCLAW_RUSTUP_DIST_SERVER: ${RUSTUP_DIST_SERVER:-}
+                CLAWCLAWCLAW_RUSTUP_UPDATE_ROOT: ${RUSTUP_UPDATE_ROOT:-}
         container_name: clawclawclaw-local-ci
         working_dir: /workspace
         environment:
             - CARGO_TERM_COLOR=always
             - PATH=/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
             - CARGO_TARGET_DIR=/ci-target
+            - CARGO_REGISTRIES_CRATES_IO_PROTOCOL=${CARGO_REGISTRIES_CRATES_IO_PROTOCOL:-}
+            - CARGO_REGISTRIES_CRATES_IO_INDEX=${CARGO_REGISTRIES_CRATES_IO_INDEX:-}
+            - RUSTUP_DIST_SERVER=${RUSTUP_DIST_SERVER:-}
+            - RUSTUP_UPDATE_ROOT=${RUSTUP_UPDATE_ROOT:-}
         volumes:
             - ..:/workspace
             - cargo-registry:/usr/local/cargo/registry

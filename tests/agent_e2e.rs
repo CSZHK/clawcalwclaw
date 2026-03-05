@@ -9,8 +9,6 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
-use serde_json::json;
-use std::sync::{Arc, Mutex};
 use clawclawclaw::agent::agent::Agent;
 use clawclawclaw::agent::dispatcher::{NativeToolDispatcher, XmlToolDispatcher};
 use clawclawclaw::agent::memory_loader::MemoryLoader;
@@ -23,6 +21,8 @@ use clawclawclaw::providers::{
     ChatRequest, ChatResponse, ConversationMessage, Provider, ProviderRuntimeOptions, ToolCall,
 };
 use clawclawclaw::tools::{Tool, ToolResult};
+use serde_json::json;
+use std::sync::{Arc, Mutex};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mock infrastructure
@@ -736,12 +736,12 @@ async fn e2e_live_openai_codex_multi_turn() {
 #[tokio::test]
 #[ignore = "requires live provider API key"]
 async fn e2e_live_research_phase() {
-    use std::sync::Arc;
     use clawclawclaw::agent::research::{run_research_phase, should_trigger};
     use clawclawclaw::config::{ResearchPhaseConfig, ResearchTrigger};
     use clawclawclaw::observability::NoopObserver;
     use clawclawclaw::providers::openai_codex::OpenAiCodexProvider;
     use clawclawclaw::tools::{Tool, ToolResult};
+    use std::sync::Arc;
 
     // ── Test should_trigger ──
     let config = ResearchPhaseConfig {

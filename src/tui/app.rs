@@ -45,6 +45,7 @@ struct AgentTaskResult {
 }
 
 struct TuiRuntimeContext {
+    config: Config,
     provider_name: String,
     model_name: String,
     provider: Arc<dyn Provider>,
@@ -57,6 +58,7 @@ struct TuiRuntimeContext {
     cost_enforcement: Option<crate::agent::loop_::CostEnforcementContext>,
     temperature: f64,
     history: Vec<ChatMessage>,
+    canary_tokens_enabled: bool,
 }
 
 pub async fn run(config: &Config) -> Result<()> {
@@ -100,6 +102,12 @@ async fn run_loop(
         TuiRole::System,
         "clawclawclaw TUI ready. Press i to edit, Enter to send, Ctrl+C to cancel, q to quit.",
     );
+    if is_provider_api_key_missing(&runtime_ctx) {
+        state.push_chat_message(
+            TuiRole::System,
+            missing_api_key_guidance(&runtime_ctx.provider_name),
+        );
+    }
 
     let (delta_tx, mut delta_rx) = tokio::sync::mpsc::channel::<String>(DELTA_CHANNEL_BUFFER);
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<AgentTaskResult>();
@@ -130,7 +138,8 @@ async fn run_loop(
                             &mut active_request_id,
                             &mut next_request_id,
                             &mut last_ctrl_c_at,
-                        )?;
+                        )
+                        .await?;
                     }
                     Some(Err(error)) => {
                         state.push_chat_message(TuiRole::Error, format!("Input error: {error}"));
@@ -160,7 +169,8 @@ async fn run_loop(
                     }
                     Err(error) => {
                         state.finish_streaming_assistant();
-                        state.push_chat_message(TuiRole::Error, format!("Agent error: {error}"));
+                        let friendly = friendly_error_message(&error, &runtime_ctx.provider_name);
+                        state.push_chat_message(TuiRole::Error, friendly);
                     }
                 }
             }
@@ -180,7 +190,7 @@ async fn run_loop(
     Ok(())
 }
 
-fn handle_terminal_event(
+async fn handle_terminal_event(
     event: Event,
     state: &mut TuiState,
     runtime_ctx: &mut TuiRuntimeContext,
@@ -206,7 +216,8 @@ fn handle_terminal_event(
                 active_request_id,
                 next_request_id,
                 last_ctrl_c_at,
-            )?;
+            )
+            .await?;
             if !handled && state.mode == InputMode::Editing {
                 handle_editing_text_input(key, state);
             }
@@ -224,7 +235,7 @@ fn handle_terminal_event(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn handle_key_event(
+async fn handle_key_event(
     key: KeyEvent,
     state: &mut TuiState,
     runtime_ctx: &mut TuiRuntimeContext,
@@ -301,7 +312,8 @@ fn handle_key_event(
                         active_request_cancel,
                         active_request_id,
                         next_request_id,
-                    )?;
+                    )
+                    .await?;
                 }
                 Ok(true)
             }
@@ -394,7 +406,7 @@ fn finalize_assistant_output(state: &mut TuiState, output: String) {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn submit_user_message(
+async fn submit_user_message(
     state: &mut TuiState,
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
@@ -407,6 +419,81 @@ fn submit_user_message(
     let user_text = sanitized.trim().to_string();
     if user_text.is_empty() {
         state.input_buffer.clear();
+        return Ok(());
+    }
+
+    match parse_setup_command(&user_text) {
+        SetupCommand::SetApiKey(api_key) => {
+            state.input_buffer.clear();
+            let config_path = runtime_ctx.config.config_path.display().to_string();
+            match apply_inline_api_key_setup(runtime_ctx, &api_key).await {
+                Ok(()) => {
+                    state.provider_id = runtime_ctx.provider_name.clone();
+                    state.model_id = runtime_ctx.model_name.clone();
+                    state.push_chat_message(
+                        TuiRole::System,
+                        format!(
+                            "API key saved to {} and runtime reloaded. You can continue chatting now.",
+                            config_path
+                        ),
+                    );
+                }
+                Err(error) => {
+                    state.push_chat_message(
+                        TuiRole::Error,
+                        format!("Failed to apply API key: {error}"),
+                    );
+                }
+            }
+            return Ok(());
+        }
+        SetupCommand::ShowHelp => {
+            state.input_buffer.clear();
+            state.push_chat_message(
+                TuiRole::System,
+                missing_api_key_guidance(&runtime_ctx.provider_name),
+            );
+            return Ok(());
+        }
+        SetupCommand::InvalidUsage(message) => {
+            state.input_buffer.clear();
+            state.push_chat_message(TuiRole::Error, message);
+            return Ok(());
+        }
+        SetupCommand::None => {}
+    }
+
+    if is_provider_api_key_missing(runtime_ctx) {
+        state.input_buffer.clear();
+        if let Some(api_key) = parse_inline_api_key(&user_text) {
+            let config_path = runtime_ctx.config.config_path.display().to_string();
+            match apply_inline_api_key_setup(runtime_ctx, &api_key).await {
+                Ok(()) => {
+                    state.provider_id = runtime_ctx.provider_name.clone();
+                    state.model_id = runtime_ctx.model_name.clone();
+                    state.push_chat_message(
+                        TuiRole::System,
+                        format!(
+                            "API key saved to {} and runtime reloaded. You can continue chatting now.",
+                            config_path
+                        ),
+                    );
+                }
+                Err(error) => {
+                    state.push_chat_message(
+                        TuiRole::Error,
+                        format!("Failed to apply API key: {error}"),
+                    );
+                }
+            }
+            return Ok(());
+        }
+        state.note_submitted_input(&user_text);
+        state.push_chat_message(TuiRole::User, user_text);
+        state.push_chat_message(
+            TuiRole::Error,
+            missing_api_key_guidance(&runtime_ctx.provider_name),
+        );
         return Ok(());
     }
 
@@ -434,6 +521,7 @@ fn submit_user_message(
     let safety_heartbeat = runtime_ctx.safety_heartbeat.clone();
     let cost_enforcement = runtime_ctx.cost_enforcement.clone();
     let temperature = runtime_ctx.temperature;
+    let canary_tokens_enabled = runtime_ctx.canary_tokens_enabled;
 
     let cancel = CancellationToken::new();
     let request_id = *next_request_id;
@@ -467,6 +555,7 @@ fn submit_user_message(
                 &[],
                 ProgressMode::Verbose,
                 safety_heartbeat,
+                canary_tokens_enabled,
             ),
         )
         .await
@@ -492,6 +581,145 @@ fn trigger_quit(
     }
     *active_request_id = None;
     state.should_quit = true;
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum SetupCommand {
+    SetApiKey(String),
+    ShowHelp,
+    InvalidUsage(String),
+    None,
+}
+
+fn parse_setup_command(input: &str) -> SetupCommand {
+    let trimmed = input.trim();
+    if matches!(trimmed, "/setup" | "/help-setup" | "/setup-help") {
+        return SetupCommand::ShowHelp;
+    }
+
+    let Some(rest) = trimmed.strip_prefix("/setup-key") else {
+        return SetupCommand::None;
+    };
+    if !rest.is_empty() && !rest.starts_with(' ') && !rest.starts_with('=') {
+        return SetupCommand::None;
+    }
+    let raw_key = rest.trim_start_matches([' ', '=']).trim();
+    if raw_key.is_empty() {
+        return SetupCommand::InvalidUsage("Usage: /setup-key <YOUR_API_KEY>".to_string());
+    }
+    let normalized_key = normalize_api_key(raw_key);
+    if normalized_key.is_empty() {
+        return SetupCommand::InvalidUsage("Usage: /setup-key <YOUR_API_KEY>".to_string());
+    }
+    SetupCommand::SetApiKey(normalized_key)
+}
+
+fn normalize_api_key(input: &str) -> String {
+    input
+        .trim()
+        .trim_matches('"')
+        .trim_matches('\'')
+        .trim()
+        .to_string()
+}
+
+fn parse_inline_api_key(input: &str) -> Option<String> {
+    let normalized = normalize_api_key(input);
+    if normalized.is_empty() {
+        return None;
+    }
+    if !looks_like_api_key(&normalized) {
+        return None;
+    }
+    Some(normalized)
+}
+
+fn looks_like_api_key(candidate: &str) -> bool {
+    if candidate.len() < 20 {
+        return false;
+    }
+    if candidate.chars().any(char::is_whitespace) {
+        return false;
+    }
+    if !candidate
+        .chars()
+        .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '-' | '_' | '.' | '/' | '='))
+    {
+        return false;
+    }
+    candidate.starts_with("sk-")
+        || candidate.starts_with("rk-")
+        || candidate.starts_with("or-")
+        || candidate.starts_with("gsk_")
+        || candidate.starts_with("xai-")
+        || candidate.starts_with("AIza")
+        || candidate.starts_with("ya29.")
+        || candidate.contains('-')
+        || candidate.contains('_')
+}
+
+fn provider_requires_api_key(provider_name: &str) -> bool {
+    !matches!(
+        provider_name,
+        "bedrock" | "aws-bedrock" | "ollama" | "llamacpp" | "llama.cpp" | "sglang" | "vllm"
+    )
+}
+
+fn is_provider_api_key_missing(runtime_ctx: &TuiRuntimeContext) -> bool {
+    provider_requires_api_key(&runtime_ctx.provider_name)
+        && !providers::has_provider_credential(
+            &runtime_ctx.provider_name,
+            runtime_ctx.config.api_key.as_deref(),
+        )
+}
+
+fn provider_api_key_env_var(provider_name: &str) -> &'static str {
+    match provider_name {
+        "openrouter" => "OPENROUTER_API_KEY",
+        "openai" | "openai-codex" => "OPENAI_API_KEY",
+        "anthropic" => "ANTHROPIC_API_KEY",
+        "gemini" | "google" | "google-gemini" => "GEMINI_API_KEY",
+        "deepseek" => "DEEPSEEK_API_KEY",
+        "groq" => "GROQ_API_KEY",
+        "mistral" => "MISTRAL_API_KEY",
+        "xai" | "grok" => "XAI_API_KEY",
+        "together" | "together-ai" => "TOGETHER_API_KEY",
+        "qwen" | "qwen-intl" | "dashscope-us" => "DASHSCOPE_API_KEY",
+        _ => "API_KEY",
+    }
+}
+
+fn missing_api_key_guidance(provider_name: &str) -> String {
+    let env_var = provider_api_key_env_var(provider_name);
+    format!(
+        "⚠️  API key not configured for `{provider_name}`\n\n\
+        Quick setup (no restart needed):\n\
+        1. Paste your API key directly and press Enter\n\
+        2. Or run: /setup-key <YOUR_API_KEY>\n\
+        3. Env var option: {env_var}\n\n\
+        You can still run `clawclawclaw onboard` later for full setup."
+    )
+}
+
+async fn apply_inline_api_key_setup(
+    runtime_ctx: &mut TuiRuntimeContext,
+    api_key: &str,
+) -> Result<()> {
+    let api_key = normalize_api_key(api_key);
+    if api_key.is_empty() {
+        anyhow::bail!("API key cannot be empty");
+    }
+
+    runtime_ctx.config.api_key = Some(api_key);
+    runtime_ctx.config.save().await?;
+
+    let preserved_history = std::mem::take(&mut runtime_ctx.history);
+    let mut refreshed_ctx = bootstrap_runtime(&runtime_ctx.config).await?;
+    if !preserved_history.is_empty() {
+        refreshed_ctx.history = preserved_history;
+    }
+    *runtime_ctx = refreshed_ctx;
+    Ok(())
 }
 
 async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
@@ -619,6 +847,7 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
     let cost_enforcement = create_cost_enforcement_context(&config.cost, &config.workspace_dir);
 
     Ok(TuiRuntimeContext {
+        config: config.clone(),
         provider_name,
         model_name,
         provider,
@@ -631,5 +860,121 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         cost_enforcement,
         temperature: config.default_temperature,
         history,
+        canary_tokens_enabled: config.security.canary_tokens,
     })
+}
+
+/// Convert technical error messages to user-friendly TUI messages.
+fn friendly_error_message(error: &str, provider_name: &str) -> String {
+    // Detect common configuration errors and provide actionable guidance
+    if error.contains("API key not set") || error.contains("API key not configured") {
+        return missing_api_key_guidance(provider_name);
+    }
+
+    if error.contains("All providers/models failed") {
+        // Extract the first meaningful error from the attempts list
+        let first_error = error
+            .lines()
+            .skip(1) // Skip "All providers/models failed. Attempts:"
+            .find_map(|line| {
+                if line.contains("error=") {
+                    let error_part = line.split("error=").nth(1)?;
+                    // Truncate long errors
+                    let truncated = if error_part.len() > 100 {
+                        format!("{}...", &error_part[..100])
+                    } else {
+                        error_part.to_string()
+                    };
+                    Some(truncated)
+                } else {
+                    None
+                }
+            });
+
+        if let Some(specific_error) = first_error {
+            // Recursively process the specific error
+            return friendly_error_message(&specific_error, provider_name);
+        }
+
+        return format!(
+            "⚠️  All model providers failed\n\n\
+            Please check your configuration:\n\
+            • Run: clawclawclaw doctor\n\
+            • Verify API keys are set correctly\n\
+            • Update credentials inline with /setup-key <YOUR_API_KEY>"
+        )
+        .to_string();
+    }
+
+    if error.contains("rate limit") || error.contains("429") {
+        return format!(
+            "⚠️  Rate limit exceeded\n\n\
+            The AI service is temporarily limiting requests.\n\
+            Please wait a moment and try again."
+        )
+        .to_string();
+    }
+
+    if error.contains("timeout") || error.contains("timed out") {
+        return format!(
+            "⚠️  Request timed out\n\n\
+            The AI service took too long to respond.\n\
+            Please try again."
+        )
+        .to_string();
+    }
+
+    if error.contains("network") || error.contains("connection") || error.contains("DNS") {
+        return format!(
+            "⚠️  Network error\n\n\
+            Could not connect to the AI service.\n\
+            Please check your internet connection."
+        )
+        .to_string();
+    }
+
+    // For unknown errors, show a truncated version
+    let truncated = if error.len() > 200 {
+        format!("{}...", &error[..200])
+    } else {
+        error.to_string()
+    };
+
+    format!(
+        "⚠️  Error\n\n{}\n\nYou can retry after fixing the issue.",
+        truncated
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{looks_like_api_key, parse_inline_api_key, parse_setup_command, SetupCommand};
+
+    #[test]
+    fn parse_setup_key_command_extracts_key() {
+        assert_eq!(
+            parse_setup_command("/setup-key sk-test_value_123"),
+            SetupCommand::SetApiKey("sk-test_value_123".to_string())
+        );
+        assert_eq!(
+            parse_setup_command("/setup-key=sk-test_value_123"),
+            SetupCommand::SetApiKey("sk-test_value_123".to_string())
+        );
+    }
+
+    #[test]
+    fn parse_setup_key_command_validates_usage() {
+        assert_eq!(
+            parse_setup_command("/setup-key"),
+            SetupCommand::InvalidUsage("Usage: /setup-key <YOUR_API_KEY>".to_string())
+        );
+    }
+
+    #[test]
+    fn inline_api_key_detection_accepts_common_patterns() {
+        assert!(looks_like_api_key("sk-test_value_123456789012345"));
+        assert!(looks_like_api_key("AIzaSyA-test-value-1234567890"));
+        assert!(parse_inline_api_key("sk-test_value_123456789012345").is_some());
+        assert!(parse_inline_api_key("hello world").is_none());
+    }
 }

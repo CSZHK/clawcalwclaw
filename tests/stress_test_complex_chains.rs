@@ -3,9 +3,9 @@
 //! Tests circuit breaker behavior with realistic multi-tier provider fallback
 //! chains under sustained load.
 
+use clawclawclaw::providers::health::ProviderHealthTracker;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use clawclawclaw::providers::health::ProviderHealthTracker;
 
 /// Simulates a provider with configurable failure pattern
 struct ProviderSimulator {

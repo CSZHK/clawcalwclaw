@@ -2583,7 +2583,8 @@ mod tests {
 
     #[test]
     fn cli_parses_estop_default_engage() {
-        let cli = Cli::try_parse_from(["clawclawclaw", "estop"]).expect("estop command should parse");
+        let cli =
+            Cli::try_parse_from(["clawclawclaw", "estop"]).expect("estop command should parse");
 
         match cli.command {
             Commands::Estop {
@@ -2603,8 +2604,9 @@ mod tests {
 
     #[test]
     fn cli_parses_estop_resume_domain() {
-        let cli = Cli::try_parse_from(["clawclawclaw", "estop", "resume", "--domain", "*.chase.com"])
-            .expect("estop resume command should parse");
+        let cli =
+            Cli::try_parse_from(["clawclawclaw", "estop", "resume", "--domain", "*.chase.com"])
+                .expect("estop resume command should parse");
 
         match cli.command {
             Commands::Estop {
@@ -2636,8 +2638,8 @@ mod tests {
 
     #[test]
     fn config_cli_parses_show_get_set_subcommands() {
-        let show =
-            Cli::try_parse_from(["clawclawclaw", "config", "show"]).expect("config show should parse");
+        let show = Cli::try_parse_from(["clawclawclaw", "config", "show"])
+            .expect("config show should parse");
         match show.command {
             Commands::Config {
                 config_command: ConfigCommands::Show,

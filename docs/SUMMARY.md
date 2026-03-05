@@ -97,6 +97,7 @@ Last refreshed: **March 3, 2026**.
 - [ci-blacksmith.md](ci-blacksmith.md)
 - [actions-source-policy.md](actions-source-policy.md)
 - [cargo-slicer-speedup.md](cargo-slicer-speedup.md)
+- [tui-testing.md](tui-testing.md)
 
 ### 7) SOP Runtime & Procedures
 

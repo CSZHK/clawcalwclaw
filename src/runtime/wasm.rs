@@ -695,9 +695,10 @@ impl RuntimeAdapter for WasmRuntime {
     }
 
     fn storage_path(&self) -> PathBuf {
-        self.workspace_dir
-            .as_ref()
-            .map_or_else(|| PathBuf::from(".clawclawclaw"), |w| w.join(".clawclawclaw"))
+        self.workspace_dir.as_ref().map_or_else(
+            || PathBuf::from(".clawclawclaw"),
+            |w| w.join(".clawclawclaw"),
+        )
     }
 
     fn supports_long_running(&self) -> bool {

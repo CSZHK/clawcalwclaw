@@ -676,7 +676,8 @@ mod tests {
         assert!(allowed.success);
 
         let _ =
-            tokio::fs::remove_file(std::env::temp_dir().join("clawclawclaw_shell_approval_test")).await;
+            tokio::fs::remove_file(std::env::temp_dir().join("clawclawclaw_shell_approval_test"))
+                .await;
     }
 
     // ── §5.2 Shell timeout enforcement tests ─────────────────

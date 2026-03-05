@@ -12,8 +12,11 @@ use std::path::Path;
 use super::traits::PluginCapability;
 
 const SUPPORTED_WIT_MAJOR: u64 = 1;
-const SUPPORTED_WIT_PACKAGES: [&str; 3] =
-    ["clawclawclaw:hooks", "clawclawclaw:tools", "clawclawclaw:providers"];
+const SUPPORTED_WIT_PACKAGES: [&str; 3] = [
+    "clawclawclaw:hooks",
+    "clawclawclaw:tools",
+    "clawclawclaw:providers",
+];
 
 /// Validation profile for plugin manifests.
 ///
@@ -198,7 +201,9 @@ pub fn validate_manifest_with_profile(
         }
     }
     if !manifest.tools.is_empty() && !declared_wit_packages.contains("clawclawclaw:tools") {
-        anyhow::bail!("plugin tools require wit package 'clawclawclaw:tools@{SUPPORTED_WIT_MAJOR}.x'");
+        anyhow::bail!(
+            "plugin tools require wit package 'clawclawclaw:tools@{SUPPORTED_WIT_MAJOR}.x'"
+        );
     }
     if !manifest.providers.is_empty() && !declared_wit_packages.contains("clawclawclaw:providers") {
         anyhow::bail!(

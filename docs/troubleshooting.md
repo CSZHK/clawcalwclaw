@@ -409,6 +409,103 @@ curl -fsSL https://raw.githubusercontent.com/CSZHK/clawcalwclaw/main/scripts/ins
 
 `install.sh` is a compatibility entry and forwards/falls back to bootstrap behavior.
 
+## TUI Issues
+
+### TUI won't start / terminal not supported
+
+Symptoms:
+
+- `cargo run --bin clawclawclaw --features tui-ratatui` fails with terminal errors
+- TUI renders incorrectly or not at all
+
+Fix:
+
+1. Ensure terminal supports true color and alternate screen:
+
+```bash
+# Check terminal capabilities
+echo $TERM
+infocmp $TERM | grep -E "colors|cup|smcup"
+```
+
+2. Try setting TERM explicitly:
+
+```bash
+TERM=xterm-256color cargo run --bin clawclawclaw --features tui-ratatui
+```
+
+3. For SSH sessions, ensure PTY allocation:
+
+```bash
+ssh -t user@host  # Note the -t flag
+```
+
+### TUI tests fail to compile
+
+Symptoms:
+
+- `cargo test --features tui-ratatui` fails with feature errors
+
+Fix:
+
+Ensure `tui-ratatui` feature is specified:
+
+```bash
+CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test
+```
+
+### TUI tests timeout / hang
+
+Symptoms:
+
+- E2E tests hang indefinitely
+- Tests exceed 30-second startup timeout
+
+Fix:
+
+1. First run compiles the binary (slow). Run again after compilation:
+
+```bash
+# First run (compiles binary, may timeout)
+CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_e2e_pty -- --test-threads=1 --ignored
+
+# Second run (uses cached binary)
+CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_e2e_pty -- --test-threads=1 --ignored
+```
+
+2. Limit CPU to reduce resource contention:
+
+```bash
+CARGO_BUILD_JOBS=1 cargo test --features tui-ratatui -- --test-threads=1
+```
+
+3. Run L1/L2 tests instead (faster):
+
+```bash
+cargo test --lib tui  # L1 unit tests (seconds)
+CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test --test tui_event_handling_test  # L2 (minutes)
+```
+
+### TUI keyboard input not working
+
+Symptoms:
+
+- Key presses don't register
+- Wrong characters appear
+
+Fix:
+
+1. Ensure terminal raw mode is supported
+2. Check for terminal multiplexer conflicts (tmux/screen)
+3. Try without multiplexer:
+
+```bash
+# Exit tmux/screen and run directly
+cargo run --bin clawclawclaw --features tui-ratatui
+```
+
+For detailed TUI testing guide, see [tui-testing.md](tui-testing.md).
+
 ## Still Stuck?
 
 Collect and include these outputs when filing an issue:

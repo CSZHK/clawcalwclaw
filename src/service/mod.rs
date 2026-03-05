@@ -142,7 +142,11 @@ fn start_linux(init_system: InitSystem) -> Result<()> {
     match init_system {
         InitSystem::Systemd => {
             run_checked(Command::new("systemctl").args(["--user", "daemon-reload"]))?;
-            run_checked(Command::new("systemctl").args(["--user", "start", "clawclawclaw.service"]))?;
+            run_checked(Command::new("systemctl").args([
+                "--user",
+                "start",
+                "clawclawclaw.service",
+            ]))?;
         }
         InitSystem::Openrc => {
             run_checked(Command::new("rc-service").args(["clawclawclaw", "start"]))?;
@@ -183,8 +187,11 @@ fn stop(config: &Config, init_system: InitSystem) -> Result<()> {
 fn stop_linux(init_system: InitSystem) -> Result<()> {
     match init_system {
         InitSystem::Systemd => {
-            let _ =
-                run_checked(Command::new("systemctl").args(["--user", "stop", "clawclawclaw.service"]));
+            let _ = run_checked(Command::new("systemctl").args([
+                "--user",
+                "stop",
+                "clawclawclaw.service",
+            ]));
         }
         InitSystem::Openrc => {
             let _ = run_checked(Command::new("rc-service").args(["clawclawclaw", "stop"]));
@@ -222,7 +229,11 @@ fn restart_linux(init_system: InitSystem) -> Result<()> {
     match init_system {
         InitSystem::Systemd => {
             run_checked(Command::new("systemctl").args(["--user", "daemon-reload"]))?;
-            run_checked(Command::new("systemctl").args(["--user", "restart", "clawclawclaw.service"]))?;
+            run_checked(Command::new("systemctl").args([
+                "--user",
+                "restart",
+                "clawclawclaw.service",
+            ]))?;
         }
         InitSystem::Openrc => {
             run_checked(Command::new("rc-service").args(["clawclawclaw", "restart"]))?;
@@ -455,7 +466,8 @@ fn install_linux_systemd(config: &Config) -> Result<()> {
 
     fs::write(&file, unit)?;
     let _ = run_checked(Command::new("systemctl").args(["--user", "daemon-reload"]));
-    let _ = run_checked(Command::new("systemctl").args(["--user", "enable", "clawclawclaw.service"]));
+    let _ =
+        run_checked(Command::new("systemctl").args(["--user", "enable", "clawclawclaw.service"]));
     println!("✅ Installed systemd user service: {}", file.display());
     println!("   Start with: clawclawclaw service start");
     Ok(())
@@ -489,7 +501,9 @@ fn current_uid() -> Option<u32> {
 /// Returns Ok if user doesn't exist (OpenRC will handle creation or fail gracefully).
 /// Returns error if user exists but has unexpected properties.
 fn check_clawclawclaw_user() -> Result<()> {
-    let output = Command::new("getent").args(["passwd", "clawclawclaw"]).output();
+    let output = Command::new("getent")
+        .args(["passwd", "clawclawclaw"])
+        .output();
     let is_alpine = Path::new("/etc/alpine-release").exists();
 
     let (del_cmd, add_cmd) = if is_alpine {
@@ -498,7 +512,10 @@ fn check_clawclawclaw_user() -> Result<()> {
             "addgroup -S clawclawclaw && adduser -S -s /sbin/nologin -H -D -G clawclawclaw clawclawclaw",
         )
     } else {
-        ("userdel clawclawclaw", "useradd -r -s /sbin/nologin clawclawclaw")
+        (
+            "userdel clawclawclaw",
+            "useradd -r -s /sbin/nologin clawclawclaw",
+        )
     };
 
     match output {
@@ -545,7 +562,9 @@ fn check_clawclawclaw_user() -> Result<()> {
 }
 
 fn ensure_clawclawclaw_user() -> Result<()> {
-    let output = Command::new("getent").args(["passwd", "clawclawclaw"]).output();
+    let output = Command::new("getent")
+        .args(["passwd", "clawclawclaw"])
+        .output();
     if let Ok(output) = output {
         if output.status.success() {
             return check_clawclawclaw_user();
@@ -555,7 +574,9 @@ fn ensure_clawclawclaw_user() -> Result<()> {
     let is_alpine = Path::new("/etc/alpine-release").exists();
 
     if is_alpine {
-        let group_output = Command::new("getent").args(["group", "clawclawclaw"]).output();
+        let group_output = Command::new("getent")
+            .args(["group", "clawclawclaw"])
+            .output();
         let group_exists = group_output.map(|o| o.status.success()).unwrap_or(false);
 
         if !group_exists {

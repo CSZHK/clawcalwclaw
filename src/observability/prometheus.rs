@@ -41,13 +41,19 @@ impl PrometheusObserver {
         .context("failed to create clawclawclaw_agent_starts_total counter")?;
 
         let llm_requests = IntCounterVec::new(
-            prometheus::Opts::new("clawclawclaw_llm_requests_total", "Total LLM provider requests"),
+            prometheus::Opts::new(
+                "clawclawclaw_llm_requests_total",
+                "Total LLM provider requests",
+            ),
             &["provider", "model", "success"],
         )
         .context("failed to create clawclawclaw_llm_requests_total counter")?;
 
         let tokens_input_total = IntCounterVec::new(
-            prometheus::Opts::new("clawclawclaw_tokens_input_total", "Total input tokens consumed"),
+            prometheus::Opts::new(
+                "clawclawclaw_tokens_input_total",
+                "Total input tokens consumed",
+            ),
             &["provider", "model"],
         )
         .context("failed to create clawclawclaw_tokens_input_total counter")?;
@@ -68,7 +74,10 @@ impl PrometheusObserver {
         .context("failed to create clawclawclaw_tool_calls_total counter")?;
 
         let channel_messages = IntCounterVec::new(
-            prometheus::Opts::new("clawclawclaw_channel_messages_total", "Total channel messages"),
+            prometheus::Opts::new(
+                "clawclawclaw_channel_messages_total",
+                "Total channel messages",
+            ),
             &["channel", "direction"],
         )
         .context("failed to create clawclawclaw_channel_messages_total counter")?;
@@ -82,9 +91,11 @@ impl PrometheusObserver {
         )
         .context("failed to create clawclawclaw_webhook_auth_failures_total counter")?;
 
-        let heartbeat_ticks =
-            prometheus::IntCounter::new("clawclawclaw_heartbeat_ticks_total", "Total heartbeat ticks")
-                .context("failed to create clawclawclaw_heartbeat_ticks_total counter")?;
+        let heartbeat_ticks = prometheus::IntCounter::new(
+            "clawclawclaw_heartbeat_ticks_total",
+            "Total heartbeat ticks",
+        )
+        .context("failed to create clawclawclaw_heartbeat_ticks_total counter")?;
 
         let errors = IntCounterVec::new(
             prometheus::Opts::new("clawclawclaw_errors_total", "Total errors by component"),

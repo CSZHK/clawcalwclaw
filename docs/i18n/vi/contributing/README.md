@@ -9,6 +9,7 @@ Dành cho contributor, reviewer và maintainer.
 - Sổ tay reviewer: [../reviewer-playbook.md](../reviewer-playbook.md)
 - Bản đồ CI và quyền sở hữu: [../ci-map.md](../ci-map.md)
 - Chính sách nguồn Actions: [../actions-source-policy.md](../actions-source-policy.md)
+- Hướng dẫn test TUI: [../tui-testing.md](../tui-testing.md)
 
 ## Thứ tự đọc được đề xuất
 
@@ -16,3 +17,4 @@ Dành cho contributor, reviewer và maintainer.
 2. `docs/pr-workflow.md`
 3. `docs/reviewer-playbook.md`
 4. `docs/ci-map.md`
+5. `docs/tui-testing.md` (nếu sửa code TUI)

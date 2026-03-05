@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
+use clawclawclaw::config::schema::McpServerConfig;
 use serde::Deserialize;
 use tracing_subscriber::EnvFilter;
-use clawclawclaw::config::schema::McpServerConfig;
 
 #[derive(Default, Deserialize)]
 struct FileMcp {

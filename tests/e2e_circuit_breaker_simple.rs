@@ -3,9 +3,9 @@
 //! Simulates a bot workflow where primary provider fails and circuit breaker
 //! ensures fallback to secondary provider.
 
+use clawclawclaw::providers::health::ProviderHealthTracker;
 use std::sync::Arc;
 use std::time::Duration;
-use clawclawclaw::providers::health::ProviderHealthTracker;
 
 /// Simulates a provider response scenario
 struct MockProviderScenario {

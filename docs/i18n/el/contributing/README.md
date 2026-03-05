@@ -11,6 +11,7 @@
 - **Εγχειρίδιο Αναθεωρητή**: [../reviewer-playbook.md](../reviewer-playbook.md)
 - **Χάρτης και Ιδιοκτησία CI**: [../ci-map.md](../ci-map.md)
 - **Πολιτική Ενεργειών (Actions)**: [../actions-source-policy.md](../actions-source-policy.md)
+- **Οδηγός Δοκιμών TUI**: [../tui-testing.md](../tui-testing.md)
 
 ---
 
@@ -20,3 +21,4 @@
 2. `docs/pr-workflow.md`
 3. `docs/reviewer-playbook.md`
 4. `docs/ci-map.md`
+5. `docs/tui-testing.md` (αν αγγίζετε κώδικα TUI)

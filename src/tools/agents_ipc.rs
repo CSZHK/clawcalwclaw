@@ -994,7 +994,9 @@ mod tests {
         // Agent B replies to Agent A
         let send_b = AgentsSendTool::new(db_b.clone(), security.clone());
         send_b
-            .execute(json!({"to_agent": "clawclawclaw_agent_a", "payload": "done: summary attached"}))
+            .execute(
+                json!({"to_agent": "clawclawclaw_agent_a", "payload": "done: summary attached"}),
+            )
             .await
             .unwrap();
 

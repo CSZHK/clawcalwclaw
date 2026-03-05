@@ -12,6 +12,29 @@ fi
 
 compose_cmd=(docker compose -f "$COMPOSE_FILE")
 SMOKE_CACHE_DIR="${SMOKE_CACHE_DIR:-.cache/buildx-smoke}"
+CI_MIRROR_PROFILE="${CLAWCLAWCLAW_CI_MIRROR:-${CLAWCLAWCLAW_BOOTSTRAP_MIRROR:-rsproxy}}"
+
+configure_ci_mirror_env() {
+  local normalized_profile
+  normalized_profile="$(printf '%s' "$CI_MIRROR_PROFILE" | tr '[:upper:]' '[:lower:]')"
+
+  case "$normalized_profile" in
+    ""|none)
+      return 0
+      ;;
+    rsproxy)
+      export CARGO_REGISTRIES_CRATES_IO_PROTOCOL="${CARGO_REGISTRIES_CRATES_IO_PROTOCOL:-sparse}"
+      export CARGO_REGISTRIES_CRATES_IO_INDEX="${CARGO_REGISTRIES_CRATES_IO_INDEX:-sparse+https://rsproxy.cn/index/}"
+      export RUSTUP_DIST_SERVER="${RUSTUP_DIST_SERVER:-https://rsproxy.cn}"
+      export RUSTUP_UPDATE_ROOT="${RUSTUP_UPDATE_ROOT:-https://rsproxy.cn/rustup}"
+      echo "Using CI Rust mirror profile: rsproxy"
+      ;;
+    *)
+      echo "❌ Unsupported CLAWCLAWCLAW_CI_MIRROR='$CI_MIRROR_PROFILE' (supported: rsproxy, none)."
+      exit 1
+      ;;
+  esac
+}
 
 run_in_ci() {
   local cmd="$1"
@@ -49,6 +72,7 @@ Commands:
   lint          Run rustfmt + clippy correctness gate (container only)
   lint-strict   Run rustfmt + full clippy warnings gate (container only)
   lint-delta    Run strict lint delta gate on changed Rust lines (container only)
+  tui           Run TUI-focused checks (feature build + TUI tests)
   test          Run cargo test (container only)
   build         Run release build smoke check (container only)
   audit         Run cargo audit (container only)
@@ -57,6 +81,10 @@ Commands:
   docker-smoke  Build and verify runtime image (host docker daemon)
   all           Run lint, test, build, security, docker-smoke
   clean         Remove local CI containers and volumes
+
+Environment:
+  CLAWCLAWCLAW_CI_MIRROR=rsproxy|none
+                Rust/Cargo mirror profile for local CI image and container runs (default: rsproxy).
 EOF
 }
 
@@ -64,6 +92,8 @@ if [ $# -lt 1 ]; then
   print_help
   exit 1
 fi
+
+configure_ci_mirror_env
 
 case "$1" in
   build-image)
@@ -84,6 +114,11 @@ case "$1" in
 
   lint-delta)
     run_in_ci "./scripts/ci/rust_strict_delta_gate.sh"
+    ;;
+
+  tui)
+    run_in_ci "cargo check --locked --features tui-ratatui"
+    run_in_ci "cargo test --locked --features tui-ratatui tui:: -- --test-threads=1"
     ;;
 
   test)

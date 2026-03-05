@@ -158,7 +158,8 @@ async fn openai_codex_second_vision_support() -> Result<()> {
         model_support_vision: None,
     };
 
-    let provider = clawclawclaw::providers::create_provider_with_options("openai-codex", None, &opts)?;
+    let provider =
+        clawclawclaw::providers::create_provider_with_options("openai-codex", None, &opts)?;
     let provider_name = "openai-codex:second";
     let model = "gpt-5.3-codex";
 

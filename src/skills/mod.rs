@@ -2387,7 +2387,9 @@ pub fn handle_command(command: crate::SkillCommands, config: &crate::config::Con
                         dest.display(),
                         files_written
                     );
-                    println!("  Run 'clawclawclaw skill list' to verify the new tools are available.");
+                    println!(
+                        "  Run 'clawclawclaw skill list' to verify the new tools are available."
+                    );
                 } else {
                     let (dest, files_scanned) = install_local_skill_source(
                         &source,
@@ -3189,8 +3191,12 @@ description = "Bare minimum"
     fn scaffold_skill_substitutes_name_placeholder() {
         let dir = tempfile::tempdir().unwrap();
         scaffold_skill("clawclawclaw_subst_test", "rust", dir.path()).unwrap();
-        let cargo_toml =
-            fs::read_to_string(dir.path().join("clawclawclaw_subst_test").join("Cargo.toml")).unwrap();
+        let cargo_toml = fs::read_to_string(
+            dir.path()
+                .join("clawclawclaw_subst_test")
+                .join("Cargo.toml"),
+        )
+        .unwrap();
         assert!(
             cargo_toml.contains("clawclawclaw_subst_test"),
             "Cargo.toml should contain skill name, got:\n{cargo_toml}"

@@ -7603,7 +7603,8 @@ fn apply_feishu_legacy_compat(
 
 impl Config {
     pub async fn load_or_init() -> Result<Self> {
-        let (default_clawclawclaw_dir, default_workspace_dir) = default_config_and_workspace_dirs()?;
+        let (default_clawclawclaw_dir, default_workspace_dir) =
+            default_config_and_workspace_dirs()?;
 
         let (clawclawclaw_dir, workspace_dir, resolution_source) =
             resolve_runtime_config_dirs(&default_clawclawclaw_dir, &default_workspace_dir).await?;
@@ -7663,7 +7664,8 @@ impl Config {
             // Set computed paths that are skipped during serialization
             config.config_path = config_path.clone();
             config.workspace_dir = workspace_dir;
-            let store = crate::security::SecretStore::new(&clawclawclaw_dir, config.secrets.encrypt);
+            let store =
+                crate::security::SecretStore::new(&clawclawclaw_dir, config.secrets.encrypt);
             decrypt_optional_secret(&store, &mut config.api_key, "config.api_key")?;
             for (profile_name, profile) in config.model_providers.iter_mut() {
                 let secret_path = format!("config.model_providers.{profile_name}.api_key");
@@ -8793,8 +8795,8 @@ impl Config {
             if !provider.is_empty() {
                 self.default_provider = Some(provider);
             }
-        } else if let Ok(provider) =
-            std::env::var("CLAWCLAWCLAW_MODEL_PROVIDER").or_else(|_| std::env::var("MODEL_PROVIDER"))
+        } else if let Ok(provider) = std::env::var("CLAWCLAWCLAW_MODEL_PROVIDER")
+            .or_else(|_| std::env::var("MODEL_PROVIDER"))
         {
             if !provider.is_empty() {
                 self.default_provider = Some(provider);
@@ -8887,7 +8889,8 @@ impl Config {
         }
 
         // Gateway host: CLAWCLAWCLAW_GATEWAY_HOST or HOST
-        if let Ok(host) = std::env::var("CLAWCLAWCLAW_GATEWAY_HOST").or_else(|_| std::env::var("HOST"))
+        if let Ok(host) =
+            std::env::var("CLAWCLAWCLAW_GATEWAY_HOST").or_else(|_| std::env::var("HOST"))
         {
             if !host.is_empty() {
                 self.gateway.host = host;
@@ -9125,8 +9128,9 @@ impl Config {
         }
 
         // Web search max tokens per page
-        if let Ok(max_tokens_per_page) = std::env::var("CLAWCLAWCLAW_WEB_SEARCH_MAX_TOKENS_PER_PAGE")
-            .or_else(|_| std::env::var("WEB_SEARCH_MAX_TOKENS_PER_PAGE"))
+        if let Ok(max_tokens_per_page) =
+            std::env::var("CLAWCLAWCLAW_WEB_SEARCH_MAX_TOKENS_PER_PAGE")
+                .or_else(|_| std::env::var("WEB_SEARCH_MAX_TOKENS_PER_PAGE"))
         {
             if let Ok(max_tokens_per_page) = max_tokens_per_page.parse::<u32>() {
                 if max_tokens_per_page > 0 {
@@ -12982,7 +12986,10 @@ provider_api = "not-a-real-mode"
         let base = std::env::var_os("HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|| std::env::current_dir().unwrap());
-        let non_temp_root = base.join(format!("clawclawclaw_marker_guard_{}", uuid::Uuid::new_v4()));
+        let non_temp_root = base.join(format!(
+            "clawclawclaw_marker_guard_{}",
+            uuid::Uuid::new_v4()
+        ));
         let default_config_dir = non_temp_root.join(".clawclawclaw");
         let default_workspace_dir = default_config_dir.join("workspace");
         let marker_config_dir = std::env::temp_dir().join(format!(
@@ -13100,7 +13107,10 @@ default_model = "legacy-default-profile"
 
         assert_eq!(config.config_path, new_config_dir.join("config.toml"));
         assert_eq!(config.workspace_dir, new_config_dir.join("workspace"));
-        assert_eq!(config.default_model.as_deref(), Some("legacy-default-profile"));
+        assert_eq!(
+            config.default_model.as_deref(),
+            Some("legacy-default-profile")
+        );
         assert!(new_config_dir.join("config.toml").exists());
 
         if let Some(home) = original_home {
@@ -13118,8 +13128,11 @@ default_model = "legacy-default-profile"
         let workspace_dir = root.join("workspace");
         let legacy_config_dir = root.join(".zeroclaw");
         std::fs::create_dir_all(&legacy_config_dir).unwrap();
-        std::fs::write(legacy_config_dir.join("config.toml"), "default_model = \"legacy\"\n")
-            .unwrap();
+        std::fs::write(
+            legacy_config_dir.join("config.toml"),
+            "default_model = \"legacy\"\n",
+        )
+        .unwrap();
 
         let (resolved_config_dir, resolved_workspace_dir) =
             resolve_config_dir_for_workspace(&workspace_dir);

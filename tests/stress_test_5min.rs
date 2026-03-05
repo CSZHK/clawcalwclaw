@@ -3,9 +3,9 @@
 //! Tests circuit breaker behavior over extended time periods with varying
 //! failure patterns.
 
+use clawclawclaw::providers::health::ProviderHealthTracker;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use clawclawclaw::providers::health::ProviderHealthTracker;
 
 #[test]
 #[ignore] // Run with: cargo test --release -- --ignored --test-threads=1

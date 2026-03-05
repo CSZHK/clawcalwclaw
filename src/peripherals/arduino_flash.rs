@@ -7,7 +7,8 @@ use anyhow::{Context, Result};
 use std::process::Command;
 
 /// clawclawclaw Arduino Uno base firmware (capabilities, gpio_read, gpio_write).
-const FIRMWARE_INO: &str = include_str!("../../firmware/clawclawclaw-arduino/clawclawclaw-arduino.ino");
+const FIRMWARE_INO: &str =
+    include_str!("../../firmware/clawclawclaw-arduino/clawclawclaw-arduino.ino");
 
 const FQBN: &str = "arduino:avr:uno";
 const SKETCH_NAME: &str = "clawclawclaw-arduino";
@@ -90,7 +91,8 @@ pub fn flash_arduino_firmware(port: &str) -> Result<()> {
     ensure_arduino_cli()?;
     ensure_avr_core()?;
 
-    let temp_dir = std::env::temp_dir().join(format!("clawclawclaw_flash_{}", uuid::Uuid::new_v4()));
+    let temp_dir =
+        std::env::temp_dir().join(format!("clawclawclaw_flash_{}", uuid::Uuid::new_v4()));
     let sketch_dir = temp_dir.join(SKETCH_NAME);
     let ino_path = sketch_dir.join(format!("{}.ino", SKETCH_NAME));
 
