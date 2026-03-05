@@ -369,7 +369,7 @@ tokio::task_local! {
     static SAFETY_HEARTBEAT_CONFIG: Option<SafetyHeartbeatConfig>;
     static TOOL_LOOP_PROGRESS_MODE: ProgressMode;
     static TOOL_LOOP_COST_ENFORCEMENT_CONTEXT: Option<CostEnforcementContext>;
-    static TOOL_LOOP_AGENT_EVENTS: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>;
+    static TOOL_LOOP_AGENT_EVENTS: Option<tokio::sync::mpsc::Sender<AgentEvent>>;
 }
 
 /// Structured events emitted from the agent loop to UI consumers (e.g. TUI).
@@ -398,14 +398,14 @@ pub(crate) enum AgentEvent {
 fn emit_agent_event(event: AgentEvent) {
     let _ = TOOL_LOOP_AGENT_EVENTS.try_with(|maybe_tx| {
         if let Some(tx) = maybe_tx {
-            let _ = tx.send(event);
+            let _ = tx.try_send(event);
         }
     });
 }
 
 /// Scope a future with an optional AgentEvent sender.
 pub(crate) async fn scope_agent_events<F>(
-    tx: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>,
+    tx: Option<tokio::sync::mpsc::Sender<AgentEvent>>,
     future: F,
 ) -> F::Output
 where

@@ -36,6 +36,7 @@ use super::terminal::{install_panic_hook, install_signal_handlers};
 use super::widgets;
 
 const DELTA_CHANNEL_BUFFER: usize = 256;
+const AGENT_EVENT_CHANNEL_BUFFER: usize = 256;
 const DOUBLE_CTRL_C_WINDOW: Duration = Duration::from_millis(300);
 
 #[derive(Debug)]
@@ -113,7 +114,8 @@ async fn run_loop(
 
     let (delta_tx, mut delta_rx) = tokio::sync::mpsc::channel::<String>(DELTA_CHANNEL_BUFFER);
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<AgentTaskResult>();
-    let (agent_event_tx, mut agent_event_rx) = tokio::sync::mpsc::unbounded_channel::<AgentEvent>();
+    let (agent_event_tx, mut agent_event_rx) =
+        tokio::sync::mpsc::channel::<AgentEvent>(AGENT_EVENT_CHANNEL_BUFFER);
     let (approval_prompt_tx, mut approval_prompt_rx) =
         tokio::sync::mpsc::unbounded_channel::<NonCliApprovalPrompt>();
     let mut event_stream = EventStream::new();
@@ -133,6 +135,7 @@ async fn run_loop(
             maybe_event = event_stream.next() => {
                 match maybe_event {
                     Some(Ok(event)) => {
+                        let is_resize = matches!(&event, Event::Resize(_, _));
                         handle_terminal_event(
                             event,
                             &mut state,
@@ -147,6 +150,9 @@ async fn run_loop(
                             &mut last_ctrl_c_at,
                         )
                         .await?;
+                        if is_resize {
+                            terminal.autoresize()?;
+                        }
                     }
                     Some(Err(error)) => {
                         state.push_chat_message(TuiRole::Error, format!("Input error: {error}"));
@@ -212,7 +218,7 @@ async fn handle_terminal_event(
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
-    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    agent_event_tx: &tokio::sync::mpsc::Sender<AgentEvent>,
     approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
@@ -242,7 +248,9 @@ async fn handle_terminal_event(
                 handle_editing_text_input(key, state);
             }
         }
-        Event::Resize(_, _) => {}
+        Event::Resize(width, height) => {
+            handle_tui_event(TuiEvent::Resize(width, height), state);
+        }
         Event::Paste(payload) => {
             if state.mode == InputMode::Editing {
                 super::widgets::input::append_sanitized_input(&mut state.input_buffer, &payload);
@@ -261,7 +269,7 @@ async fn handle_key_event(
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
-    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    agent_event_tx: &tokio::sync::mpsc::Sender<AgentEvent>,
     approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
@@ -431,11 +439,10 @@ fn handle_tui_event(event: TuiEvent, state: &mut TuiState) {
         TuiEvent::ProgressBlock { content } => {
             state.set_tool_running(content);
         }
-        TuiEvent::UserMessage { .. }
-        | TuiEvent::Cancel
-        | TuiEvent::Quit
-        | TuiEvent::Key(_)
-        | TuiEvent::Resize(_, _) => {}
+        TuiEvent::Resize(width, height) => {
+            let _ = (width, height);
+        }
+        TuiEvent::UserMessage { .. } | TuiEvent::Cancel | TuiEvent::Quit | TuiEvent::Key(_) => {}
     }
 }
 
@@ -518,7 +525,7 @@ async fn submit_user_message(
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
-    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    agent_event_tx: &tokio::sync::mpsc::Sender<AgentEvent>,
     approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
