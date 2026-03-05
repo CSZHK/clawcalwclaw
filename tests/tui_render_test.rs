@@ -120,6 +120,128 @@ mod tui_render {
     }
 
     #[test]
+    fn renders_structured_tool_panel_with_entries() {
+        use clawclawclaw::tui::state::ToolCallStatus;
+
+        let mut terminal = create_test_terminal((80, 24));
+        let mut state = TuiState::new("provider", "model");
+        state.add_tool_start("shell".to_string(), "ls -la".to_string());
+        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
+        state.complete_tool("file_read", true, 2);
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let buffer = terminal.backend().buffer();
+        let content = buffer
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+
+        // Tool panel title should be visible
+        assert!(
+            content.contains("Tools"),
+            "Tools panel should appear when structured entries exist"
+        );
+        // Tool names should appear
+        assert!(
+            content.contains("shell"),
+            "Tool name 'shell' should appear in panel"
+        );
+        assert!(
+            content.contains("file_read"),
+            "Tool name 'file_read' should appear in panel"
+        );
+    }
+
+    #[test]
+    fn renders_help_overlay_when_active() {
+        let mut terminal = create_test_terminal((80, 24));
+        let mut state = TuiState::new("provider", "model");
+        state.show_help = true;
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let buffer = terminal.backend().buffer();
+        let content = buffer
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+
+        // Help overlay should contain keybinding references
+        assert!(
+            content.contains("Esc") || content.contains("Help") || content.contains("Keybindings"),
+            "Help overlay should be visible when show_help is true"
+        );
+    }
+
+    #[test]
+    fn renders_approval_modal_when_pending() {
+        use clawclawclaw::tui::state::PendingApproval;
+
+        let mut terminal = create_test_terminal((80, 24));
+        let mut state = TuiState::new("provider", "model");
+        state.pending_approval = Some(PendingApproval {
+            request_id: "req-123".to_string(),
+            tool_name: "shell".to_string(),
+            arguments_summary: "rm -rf /tmp/test".to_string(),
+        });
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let buffer = terminal.backend().buffer();
+        let content = buffer
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+
+        assert!(
+            content.contains("Approval") || content.contains("shell"),
+            "Approval modal should show tool name"
+        );
+    }
+
+    #[test]
+    fn renders_token_cost_in_status_bar() {
+        let mut terminal = create_test_terminal((80, 24));
+        let mut state = TuiState::new("test-provider", "test-model");
+        state.accumulate_usage(Some(12345), Some(6789), Some(0.04));
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let buffer = terminal.backend().buffer();
+        let content = buffer
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+
+        assert!(
+            content.contains("tokens"),
+            "Status bar should display token count"
+        );
+        assert!(content.contains("$0.04"), "Status bar should display cost");
+    }
+
+    #[test]
     fn scroll_offset_affects_visible_messages() {
         let mut terminal = create_test_terminal((80, 10)); // Small height
         let mut state = TuiState::new("provider", "model");

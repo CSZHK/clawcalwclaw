@@ -369,6 +369,49 @@ tokio::task_local! {
     static SAFETY_HEARTBEAT_CONFIG: Option<SafetyHeartbeatConfig>;
     static TOOL_LOOP_PROGRESS_MODE: ProgressMode;
     static TOOL_LOOP_COST_ENFORCEMENT_CONTEXT: Option<CostEnforcementContext>;
+    static TOOL_LOOP_AGENT_EVENTS: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>;
+}
+
+/// Structured events emitted from the agent loop to UI consumers (e.g. TUI).
+///
+/// Sent via `TOOL_LOOP_AGENT_EVENTS` task-local. When no sender is installed
+/// (CLI mode, channel mode), events are silently dropped.
+#[derive(Debug, Clone)]
+pub(crate) enum AgentEvent {
+    /// A tool execution has started.
+    ToolStart { name: String, hint: String },
+    /// A tool execution has completed.
+    ToolComplete {
+        name: String,
+        success: bool,
+        duration_secs: u64,
+    },
+    /// Token usage from an LLM response.
+    Usage {
+        input_tokens: Option<u64>,
+        output_tokens: Option<u64>,
+        cost_usd: Option<f64>,
+    },
+}
+
+/// Try to send an AgentEvent via the task-local sender. No-op if no sender is installed.
+fn emit_agent_event(event: AgentEvent) {
+    let _ = TOOL_LOOP_AGENT_EVENTS.try_with(|maybe_tx| {
+        if let Some(tx) = maybe_tx {
+            let _ = tx.send(event);
+        }
+    });
+}
+
+/// Scope a future with an optional AgentEvent sender.
+pub(crate) async fn scope_agent_events<F>(
+    tx: Option<tokio::sync::mpsc::UnboundedSender<AgentEvent>>,
+    future: F,
+) -> F::Output
+where
+    F: Future,
+{
+    TOOL_LOOP_AGENT_EVENTS.scope(tx, future).await
 }
 
 /// Configuration for periodic safety-constraint re-injection (heartbeat).
@@ -1720,6 +1763,13 @@ pub async fn run_tool_call_loop(
                     output_tokens: resp_output_tokens,
                 });
 
+                // Emit structured usage event for TUI consumers.
+                emit_agent_event(AgentEvent::Usage {
+                    input_tokens: resp_input_tokens,
+                    output_tokens: resp_output_tokens,
+                    cost_usd: None, // Cost computed by TUI from session totals
+                });
+
                 // First try native structured tool calls (OpenAI-format).
                 // Fall back to text-based parsing (XML tags, markdown blocks,
                 // GLM format) only if the provider returned no native calls —
@@ -2282,6 +2332,10 @@ pub async fn run_tool_call_loop(
 
             let progress_idx = if should_emit_tool_progress(progress_mode) {
                 let hint = truncate_tool_args_for_progress(&tool_name, &tool_args, 60);
+                emit_agent_event(AgentEvent::ToolStart {
+                    name: tool_name.clone(),
+                    hint: hint.clone(),
+                });
                 let idx = progress_tracker.add(&tool_name, &hint);
                 if let Some(ref tx) = on_delta {
                     tracing::debug!(tool = %tool_name, "Sending progress start to draft");
@@ -2375,6 +2429,11 @@ pub async fn run_tool_call_loop(
             if let Some(idx) = progress_idx {
                 let secs = outcome.duration.as_secs();
                 progress_tracker.complete(*idx, outcome.success, secs);
+                emit_agent_event(AgentEvent::ToolComplete {
+                    name: call.name.clone(),
+                    success: outcome.success,
+                    duration_secs: secs,
+                });
                 if let Some(ref tx) = on_delta {
                     tracing::debug!(tool = %call.name, secs, "Sending progress complete to draft");
                     let _ = tx.send(progress_tracker.render_delta()).await;

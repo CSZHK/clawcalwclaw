@@ -9,7 +9,7 @@
 use std::io::{Read, Write};
 use std::time::Duration;
 
-use portable_pty::{CommandBuilder, native_pty_system, PtySize};
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 
 /// Maximum time to wait for TUI startup
 const STARTUP_TIMEOUT_SECS: u64 = 30;
@@ -18,7 +18,11 @@ const STARTUP_TIMEOUT_SECS: u64 = 30;
 const INTERACTION_TIMEOUT_SECS: u64 = 5;
 
 /// Helper to read with timeout
-fn read_with_timeout(reader: &mut Box<dyn Read + Send>, buf: &mut [u8], timeout_secs: u64) -> std::io::Result<usize> {
+fn read_with_timeout(
+    reader: &mut Box<dyn Read + Send>,
+    buf: &mut [u8],
+    timeout_secs: u64,
+) -> std::io::Result<usize> {
     let start = std::time::Instant::now();
     let timeout = Duration::from_secs(timeout_secs);
     let mut total = 0;
@@ -39,7 +43,10 @@ fn read_with_timeout(reader: &mut Box<dyn Read + Send>, buf: &mut [u8], timeout_
 }
 
 /// Helper to wait for child exit with timeout using try_wait
-fn wait_with_timeout(child: &mut Box<dyn portable_pty::Child + Send + Sync>, timeout_secs: u64) -> Option<portable_pty::ExitStatus> {
+fn wait_with_timeout(
+    child: &mut Box<dyn portable_pty::Child + Send + Sync>,
+    timeout_secs: u64,
+) -> Option<portable_pty::ExitStatus> {
     let start = std::time::Instant::now();
     let timeout = Duration::from_secs(timeout_secs);
 
@@ -93,7 +100,10 @@ mod tui_e2e {
 
         let mut child = pair.slave.spawn_command(cmd).expect("Failed to spawn TUI");
 
-        let mut reader = pair.master.try_clone_reader().expect("Failed to clone reader");
+        let mut reader = pair
+            .master
+            .try_clone_reader()
+            .expect("Failed to clone reader");
         let mut writer = pair.master.take_writer().expect("Failed to take writer");
 
         // Read startup output with timeout
@@ -155,7 +165,10 @@ mod tui_e2e {
 
         let mut child = pair.slave.spawn_command(cmd).expect("Failed to spawn TUI");
 
-        let mut reader = pair.master.try_clone_reader().expect("Failed to clone reader");
+        let mut reader = pair
+            .master
+            .try_clone_reader()
+            .expect("Failed to clone reader");
         let mut writer = pair.master.take_writer().expect("Failed to take writer");
 
         // Wait for startup
@@ -203,7 +216,10 @@ mod tui_e2e {
 
         let mut child = pair.slave.spawn_command(cmd).expect("Failed to spawn TUI");
 
-        let mut reader = pair.master.try_clone_reader().expect("Failed to clone reader");
+        let mut reader = pair
+            .master
+            .try_clone_reader()
+            .expect("Failed to clone reader");
         let mut writer = pair.master.take_writer().expect("Failed to take writer");
 
         // Wait for startup
@@ -217,15 +233,14 @@ mod tui_e2e {
         std::thread::sleep(Duration::from_millis(100));
 
         // Second Ctrl+C within 300ms triggers quit
-        writer.write_all(b"\x03").expect("Failed to send second Ctrl+C");
+        writer
+            .write_all(b"\x03")
+            .expect("Failed to send second Ctrl+C");
         writer.flush().expect("Failed to flush");
 
         // Wait for exit
         let exit_status = wait_with_timeout(&mut child, 3);
-        assert!(
-            exit_status.is_some(),
-            "TUI should exit after double Ctrl+C"
-        );
+        assert!(exit_status.is_some(), "TUI should exit after double Ctrl+C");
     }
 }
 

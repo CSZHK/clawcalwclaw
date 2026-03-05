@@ -1,6 +1,8 @@
 //! TUI widget composition and layout.
 
+pub mod approval;
 pub mod chat;
+pub mod help;
 pub mod input;
 pub mod sanitize;
 pub mod status;
@@ -10,10 +12,7 @@ use crate::tui::state::TuiState;
 use ratatui::prelude::*;
 
 pub fn render(frame: &mut Frame<'_>, state: &TuiState) -> Option<Position> {
-    let show_tools = state
-        .progress_block
-        .as_ref()
-        .is_some_and(|content| !content.trim().is_empty());
+    let show_tools = has_visible_tools(state);
     let input_height = input::preferred_height(&state.input_buffer);
 
     let mut constraints = vec![Constraint::Min(6)];
@@ -38,5 +37,25 @@ pub fn render(frame: &mut Frame<'_>, state: &TuiState) -> Option<Position> {
     let cursor = input::render(frame, areas[idx], state);
     idx += 1;
     status::render(frame, areas[idx], state);
+
+    // ── Overlay layer (rendered on top of everything) ──
+
+    if state.show_help {
+        help::render(frame, frame.area());
+    }
+
+    if state.pending_approval.is_some() {
+        approval::render(frame, frame.area(), state);
+    }
+
     cursor
+}
+
+/// Show the tools panel when there are structured tool entries or a non-empty progress block.
+fn has_visible_tools(state: &TuiState) -> bool {
+    !state.tool_calls.is_empty()
+        || state
+            .progress_block
+            .as_ref()
+            .is_some_and(|content| !content.trim().is_empty())
 }

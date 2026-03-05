@@ -15,6 +15,30 @@ pub enum TuiStatus {
     ToolRunning,
 }
 
+/// Status of a single tool call tracked in the structured tool panel.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ToolCallStatus {
+    Running,
+    Success(u64),
+    Failed(u64),
+}
+
+/// A structured tool call entry for the tool panel.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolCallEntry {
+    pub name: String,
+    pub hint: String,
+    pub status: ToolCallStatus,
+}
+
+/// Pending tool approval request displayed as a modal overlay.
+#[derive(Debug, Clone)]
+pub struct PendingApproval {
+    pub request_id: String,
+    pub tool_name: String,
+    pub arguments_summary: String,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TuiRole {
     User,
@@ -53,6 +77,21 @@ pub struct TuiState {
     pub model_id: String,
     pub awaiting_response: bool,
     pub streaming_assistant_idx: Option<usize>,
+
+    // ── Structured tool tracking (Feature 1) ──
+    pub tool_calls: Vec<ToolCallEntry>,
+
+    // ── Token/cost tracking (Feature 2) ──
+    pub session_input_tokens: u64,
+    pub session_output_tokens: u64,
+    pub session_cost_usd: f64,
+
+    // ── Help overlay (Feature 3) ──
+    pub show_help: bool,
+
+    // ── Tool approval (Feature 4) ──
+    pub pending_approval: Option<PendingApproval>,
+
     history_cursor: Option<usize>,
 }
 
@@ -72,6 +111,12 @@ impl TuiState {
             model_id: model_id.into(),
             awaiting_response: false,
             streaming_assistant_idx: None,
+            tool_calls: Vec::new(),
+            session_input_tokens: 0,
+            session_output_tokens: 0,
+            session_cost_usd: 0.0,
+            show_help: false,
+            pending_approval: None,
             history_cursor: None,
         }
     }
@@ -180,11 +225,66 @@ impl TuiState {
             InputMode::Editing => InputMode::Normal,
         };
     }
+
+    // ── Structured tool tracking ──
+
+    pub fn add_tool_start(&mut self, name: String, hint: String) {
+        self.tool_calls.push(ToolCallEntry {
+            name,
+            hint,
+            status: ToolCallStatus::Running,
+        });
+    }
+
+    pub fn complete_tool(&mut self, name: &str, success: bool, duration_secs: u64) {
+        // Find the last running entry with this name (handles parallel tools).
+        if let Some(entry) = self
+            .tool_calls
+            .iter_mut()
+            .rev()
+            .find(|e| e.name == name && e.status == ToolCallStatus::Running)
+        {
+            entry.status = if success {
+                ToolCallStatus::Success(duration_secs)
+            } else {
+                ToolCallStatus::Failed(duration_secs)
+            };
+        }
+    }
+
+    pub fn clear_tool_calls(&mut self) {
+        self.tool_calls.clear();
+    }
+
+    // ── Token/cost tracking ──
+
+    pub fn accumulate_usage(
+        &mut self,
+        input_tokens: Option<u64>,
+        output_tokens: Option<u64>,
+        cost_usd: Option<f64>,
+    ) {
+        if let Some(t) = input_tokens {
+            self.session_input_tokens = self.session_input_tokens.saturating_add(t);
+        }
+        if let Some(t) = output_tokens {
+            self.session_output_tokens = self.session_output_tokens.saturating_add(t);
+        }
+        if let Some(c) = cost_usd {
+            self.session_cost_usd += c;
+        }
+    }
+
+    // ── Help overlay ──
+
+    pub fn toggle_help(&mut self) {
+        self.show_help = !self.show_help;
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{InputMode, TuiRole, TuiState};
+    use super::{InputMode, ToolCallStatus, TuiRole, TuiState};
 
     #[test]
     fn push_message_appends_and_keeps_bottom_scroll() {
@@ -230,5 +330,44 @@ mod tests {
         assert_eq!(state.history_next().as_deref(), Some("second"));
         assert_eq!(state.history_next().as_deref(), Some("third"));
         assert_eq!(state.history_next().as_deref(), Some(""));
+    }
+
+    #[test]
+    fn tool_call_lifecycle_start_complete_clear() {
+        let mut state = TuiState::new("provider", "model");
+        state.add_tool_start("shell".to_string(), "ls -la".to_string());
+        assert_eq!(state.tool_calls.len(), 1);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
+
+        state.complete_tool("shell", true, 2);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(2));
+
+        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
+        state.complete_tool("file_read", false, 1);
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Failed(1));
+
+        state.clear_tool_calls();
+        assert!(state.tool_calls.is_empty());
+    }
+
+    #[test]
+    fn accumulate_usage_sums_correctly() {
+        let mut state = TuiState::new("provider", "model");
+        state.accumulate_usage(Some(100), Some(50), Some(0.01));
+        state.accumulate_usage(Some(200), Some(100), Some(0.02));
+        state.accumulate_usage(None, None, None);
+        assert_eq!(state.session_input_tokens, 300);
+        assert_eq!(state.session_output_tokens, 150);
+        assert!((state.session_cost_usd - 0.03).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn toggle_help_switches_visibility() {
+        let mut state = TuiState::new("provider", "model");
+        assert!(!state.show_help);
+        state.toggle_help();
+        assert!(state.show_help);
+        state.toggle_help();
+        assert!(!state.show_help);
     }
 }

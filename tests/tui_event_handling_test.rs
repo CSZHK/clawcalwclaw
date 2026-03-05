@@ -127,6 +127,103 @@ mod tui_event_handling {
         assert_eq!(state.scroll_offset, 0);
     }
 
+    /// Test structured tool call lifecycle via state
+    #[test]
+    fn structured_tool_lifecycle_through_state() {
+        use clawclawclaw::tui::state::ToolCallStatus;
+
+        let mut state = TuiState::new("provider", "model");
+
+        // Start two tools
+        state.add_tool_start("shell".to_string(), "ls -la".to_string());
+        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
+        assert_eq!(state.tool_calls.len(), 2);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Running);
+
+        // Complete one successfully, one with failure
+        state.complete_tool("shell", true, 3);
+        state.complete_tool("file_read", false, 1);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(3));
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Failed(1));
+
+        // Clear all
+        state.clear_tool_calls();
+        assert!(state.tool_calls.is_empty());
+    }
+
+    /// Test parallel tool calls with same name complete correctly (last running first)
+    #[test]
+    fn parallel_same_name_tools_complete_last_running() {
+        use clawclawclaw::tui::state::ToolCallStatus;
+
+        let mut state = TuiState::new("provider", "model");
+
+        // Two shell calls running simultaneously
+        state.add_tool_start("shell".to_string(), "cmd-1".to_string());
+        state.add_tool_start("shell".to_string(), "cmd-2".to_string());
+
+        // Complete should match the LAST running entry with that name
+        state.complete_tool("shell", true, 5);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Success(5));
+
+        state.complete_tool("shell", true, 7);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(7));
+    }
+
+    /// Test usage accumulation across multiple LLM calls
+    #[test]
+    fn usage_accumulation_across_multiple_calls() {
+        let mut state = TuiState::new("provider", "model");
+
+        state.accumulate_usage(Some(100), Some(50), Some(0.01));
+        state.accumulate_usage(Some(200), Some(100), Some(0.02));
+        state.accumulate_usage(None, None, None); // no-op
+        state.accumulate_usage(Some(50), None, Some(0.005));
+
+        assert_eq!(state.session_input_tokens, 350);
+        assert_eq!(state.session_output_tokens, 150);
+        assert!((state.session_cost_usd - 0.035).abs() < 1e-10);
+    }
+
+    /// Test help toggle does not interfere with other state
+    #[test]
+    fn help_toggle_isolated_from_other_state() {
+        let mut state = TuiState::new("provider", "model");
+        state.push_chat_message(TuiRole::User, "test");
+        state.mode = InputMode::Normal;
+
+        state.toggle_help();
+        assert!(state.show_help);
+        assert_eq!(state.mode, InputMode::Normal);
+        assert_eq!(state.messages.len(), 1);
+
+        state.toggle_help();
+        assert!(!state.show_help);
+    }
+
+    /// Test pending approval state management
+    #[test]
+    fn pending_approval_state_lifecycle() {
+        use clawclawclaw::tui::state::PendingApproval;
+
+        let mut state = TuiState::new("provider", "model");
+        assert!(state.pending_approval.is_none());
+
+        state.pending_approval = Some(PendingApproval {
+            request_id: "req-001".to_string(),
+            tool_name: "shell".to_string(),
+            arguments_summary: "rm -rf /tmp".to_string(),
+        });
+        assert!(state.pending_approval.is_some());
+        assert_eq!(state.pending_approval.as_ref().unwrap().tool_name, "shell");
+
+        // Simulating user approval clears the state
+        state.pending_approval = None;
+        assert!(state.pending_approval.is_none());
+    }
+
     /// Test status transitions
     #[test]
     fn status_transitions_correctly() {

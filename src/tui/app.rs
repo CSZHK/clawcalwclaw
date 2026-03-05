@@ -18,7 +18,8 @@ use tokio_util::sync::CancellationToken;
 
 use crate::agent::loop_::{
     build_shell_policy_instructions, build_tool_instructions, create_cost_enforcement_context,
-    run_tool_call_loop_with_non_cli_approval_context, scope_cost_enforcement_context,
+    run_tool_call_loop_with_non_cli_approval_context, scope_agent_events,
+    scope_cost_enforcement_context, AgentEvent, NonCliApprovalContext, NonCliApprovalPrompt,
     SafetyHeartbeatConfig,
 };
 use crate::config::{resolve_default_model_id, Config, ProgressMode};
@@ -56,6 +57,7 @@ struct TuiRuntimeContext {
     hooks: Option<Arc<crate::hooks::HookRunner>>,
     safety_heartbeat: Option<SafetyHeartbeatConfig>,
     cost_enforcement: Option<crate::agent::loop_::CostEnforcementContext>,
+    approval_manager: Arc<crate::approval::ApprovalManager>,
     temperature: f64,
     history: Vec<ChatMessage>,
     canary_tokens_enabled: bool,
@@ -111,6 +113,9 @@ async fn run_loop(
 
     let (delta_tx, mut delta_rx) = tokio::sync::mpsc::channel::<String>(DELTA_CHANNEL_BUFFER);
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<AgentTaskResult>();
+    let (agent_event_tx, mut agent_event_rx) = tokio::sync::mpsc::unbounded_channel::<AgentEvent>();
+    let (approval_prompt_tx, mut approval_prompt_rx) =
+        tokio::sync::mpsc::unbounded_channel::<NonCliApprovalPrompt>();
     let mut event_stream = EventStream::new();
     let mut active_request_cancel: Option<CancellationToken> = None;
     let mut active_request_id: Option<u64> = None;
@@ -134,6 +139,8 @@ async fn run_loop(
                             &mut runtime_ctx,
                             &delta_tx,
                             &result_tx,
+                            &agent_event_tx,
+                            &approval_prompt_tx,
                             &mut active_request_cancel,
                             &mut active_request_id,
                             &mut next_request_id,
@@ -152,6 +159,12 @@ async fn run_loop(
             Some(delta) = delta_rx.recv() => {
                 handle_tui_event(translate_delta(delta), &mut state);
             }
+            Some(agent_event) = agent_event_rx.recv() => {
+                handle_agent_event(agent_event, &mut state);
+            }
+            Some(prompt) = approval_prompt_rx.recv() => {
+                handle_approval_prompt(prompt, &mut state);
+            }
             Some(task_result) = result_rx.recv() => {
                 if active_request_id != Some(task_result.request_id) {
                     continue;
@@ -161,6 +174,8 @@ async fn run_loop(
                 state.awaiting_response = false;
                 state.set_idle();
                 state.clear_progress();
+                state.clear_tool_calls();
+                state.pending_approval = None;
 
                 runtime_ctx.history = task_result.history;
                 match task_result.output {
@@ -190,12 +205,15 @@ async fn run_loop(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn handle_terminal_event(
     event: Event,
     state: &mut TuiState,
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
+    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
     next_request_id: &mut u64,
@@ -212,6 +230,8 @@ async fn handle_terminal_event(
                 runtime_ctx,
                 delta_tx,
                 result_tx,
+                agent_event_tx,
+                approval_prompt_tx,
                 active_request_cancel,
                 active_request_id,
                 next_request_id,
@@ -241,6 +261,8 @@ async fn handle_key_event(
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
+    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
     next_request_id: &mut u64,
@@ -273,6 +295,31 @@ async fn handle_key_event(
         return Ok(true);
     }
 
+    // ── Approval modal intercepts keys before normal mode handling ──
+    if state.pending_approval.is_some() {
+        match key.code {
+            KeyCode::Char('y' | 'Y') => {
+                if let Some(approval) = state.pending_approval.take() {
+                    resolve_approval(&runtime_ctx.approval_manager, &approval.request_id, true);
+                }
+                return Ok(true);
+            }
+            KeyCode::Char('n' | 'N') => {
+                if let Some(approval) = state.pending_approval.take() {
+                    resolve_approval(&runtime_ctx.approval_manager, &approval.request_id, false);
+                }
+                return Ok(true);
+            }
+            _ => return Ok(true), // Swallow all other keys while modal is open
+        }
+    }
+
+    // ── Help overlay: close on any key ──
+    if state.show_help {
+        state.show_help = false;
+        return Ok(true);
+    }
+
     match state.mode {
         InputMode::Normal => match key.code {
             KeyCode::Char('q') => {
@@ -281,6 +328,10 @@ async fn handle_key_event(
             }
             KeyCode::Char('i') => {
                 state.mode = InputMode::Editing;
+                Ok(true)
+            }
+            KeyCode::Char('?') => {
+                state.toggle_help();
                 Ok(true)
             }
             KeyCode::PageUp => {
@@ -309,6 +360,8 @@ async fn handle_key_event(
                         runtime_ctx,
                         delta_tx,
                         result_tx,
+                        agent_event_tx,
+                        approval_prompt_tx,
                         active_request_cancel,
                         active_request_id,
                         next_request_id,
@@ -386,6 +439,60 @@ fn handle_tui_event(event: TuiEvent, state: &mut TuiState) {
     }
 }
 
+fn handle_agent_event(event: AgentEvent, state: &mut TuiState) {
+    match event {
+        AgentEvent::ToolStart { name, hint } => {
+            state.add_tool_start(name, hint);
+        }
+        AgentEvent::ToolComplete {
+            name,
+            success,
+            duration_secs,
+        } => {
+            state.complete_tool(&name, success, duration_secs);
+        }
+        AgentEvent::Usage {
+            input_tokens,
+            output_tokens,
+            cost_usd,
+        } => {
+            state.accumulate_usage(input_tokens, output_tokens, cost_usd);
+        }
+    }
+}
+
+fn handle_approval_prompt(prompt: NonCliApprovalPrompt, state: &mut TuiState) {
+    let args_summary = truncate_json_for_display(&prompt.arguments, 200);
+    state.pending_approval = Some(super::state::PendingApproval {
+        request_id: prompt.request_id,
+        tool_name: prompt.tool_name,
+        arguments_summary: args_summary,
+    });
+}
+
+fn resolve_approval(
+    approval_manager: &crate::approval::ApprovalManager,
+    request_id: &str,
+    approved: bool,
+) {
+    let decision = if approved {
+        crate::approval::ApprovalResponse::Yes
+    } else {
+        crate::approval::ApprovalResponse::No
+    };
+    approval_manager.record_non_cli_pending_resolution(request_id, decision);
+}
+
+/// Truncate a JSON value to a human-readable summary for the approval modal.
+fn truncate_json_for_display(value: &serde_json::Value, max_len: usize) -> String {
+    let raw = value.to_string();
+    if raw.len() <= max_len {
+        raw
+    } else {
+        format!("{}...", &raw[..max_len])
+    }
+}
+
 fn finalize_assistant_output(state: &mut TuiState, output: String) {
     if output.trim().is_empty() {
         state.finish_streaming_assistant();
@@ -411,6 +518,8 @@ async fn submit_user_message(
     runtime_ctx: &mut TuiRuntimeContext,
     delta_tx: &tokio::sync::mpsc::Sender<String>,
     result_tx: &tokio::sync::mpsc::UnboundedSender<AgentTaskResult>,
+    agent_event_tx: &tokio::sync::mpsc::UnboundedSender<AgentEvent>,
+    approval_prompt_tx: &tokio::sync::mpsc::UnboundedSender<NonCliApprovalPrompt>,
     active_request_cancel: &mut Option<CancellationToken>,
     active_request_id: &mut Option<u64>,
     next_request_id: &mut u64,
@@ -520,6 +629,7 @@ async fn submit_user_message(
     let hooks = runtime_ctx.hooks.clone();
     let safety_heartbeat = runtime_ctx.safety_heartbeat.clone();
     let cost_enforcement = runtime_ctx.cost_enforcement.clone();
+    let approval_manager = Arc::clone(&runtime_ctx.approval_manager);
     let temperature = runtime_ctx.temperature;
     let canary_tokens_enabled = runtime_ctx.canary_tokens_enabled;
 
@@ -531,31 +641,45 @@ async fn submit_user_message(
     let child_token = cancel.child_token();
     let delta_tx = delta_tx.clone();
     let result_tx = result_tx.clone();
+    let agent_event_tx = agent_event_tx.clone();
+    let approval_prompt_tx = approval_prompt_tx.clone();
+
+    // Build NonCliApprovalContext so the agent loop can request tool approvals
+    // via the TUI approval modal (same pattern used by Telegram/Discord channels).
+    let non_cli_approval_context = Some(NonCliApprovalContext {
+        sender: "tui-user".to_string(),
+        reply_target: "tui".to_string(),
+        prompt_tx: approval_prompt_tx,
+    });
 
     tokio::spawn(async move {
-        let run_result = scope_cost_enforcement_context(
-            cost_enforcement,
-            run_tool_call_loop_with_non_cli_approval_context(
-                provider.as_ref(),
-                &mut task_history,
-                tools_registry.as_slice(),
-                observer.as_ref(),
-                &provider_name,
-                &model_name,
-                temperature,
-                false,
-                None,
-                "tui",
-                None,
-                &multimodal,
-                max_tool_iterations,
-                Some(child_token),
-                Some(delta_tx),
-                hooks.as_deref(),
-                &[],
-                ProgressMode::Verbose,
-                safety_heartbeat,
-                canary_tokens_enabled,
+        #[allow(clippy::large_futures)]
+        let run_result = scope_agent_events(
+            Some(agent_event_tx),
+            scope_cost_enforcement_context(
+                cost_enforcement,
+                run_tool_call_loop_with_non_cli_approval_context(
+                    provider.as_ref(),
+                    &mut task_history,
+                    tools_registry.as_slice(),
+                    observer.as_ref(),
+                    &provider_name,
+                    &model_name,
+                    temperature,
+                    false,
+                    Some(approval_manager.as_ref()),
+                    "tui",
+                    non_cli_approval_context,
+                    &multimodal,
+                    max_tool_iterations,
+                    Some(child_token),
+                    Some(delta_tx),
+                    hooks.as_deref(),
+                    &[],
+                    ProgressMode::Verbose,
+                    safety_heartbeat,
+                    canary_tokens_enabled,
+                ),
             ),
         )
         .await
@@ -845,6 +969,9 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         None
     };
     let cost_enforcement = create_cost_enforcement_context(&config.cost, &config.workspace_dir);
+    let approval_manager = Arc::new(crate::approval::ApprovalManager::from_config(
+        &config.autonomy,
+    ));
 
     Ok(TuiRuntimeContext {
         config: config.clone(),
@@ -858,6 +985,7 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         hooks,
         safety_heartbeat,
         cost_enforcement,
+        approval_manager,
         temperature: config.default_temperature,
         history,
         canary_tokens_enabled: config.security.canary_tokens,
