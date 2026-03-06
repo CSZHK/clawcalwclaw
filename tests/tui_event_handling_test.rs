@@ -135,15 +135,15 @@ mod tui_event_handling {
         let mut state = TuiState::new("provider", "model");
 
         // Start two tools
-        state.add_tool_start("shell".to_string(), "ls -la".to_string());
-        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
+        state.add_tool_start(0, "shell".to_string(), "ls -la".to_string());
+        state.add_tool_start(1, "file_read".to_string(), "src/main.rs".to_string());
         assert_eq!(state.tool_calls.len(), 2);
         assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
         assert_eq!(state.tool_calls[1].status, ToolCallStatus::Running);
 
         // Complete one successfully, one with failure
-        state.complete_tool("shell", true, 3);
-        state.complete_tool("file_read", false, 1);
+        state.complete_tool(0, true, 3);
+        state.complete_tool(1, false, 1);
         assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(3));
         assert_eq!(state.tool_calls[1].status, ToolCallStatus::Failed(1));
 
@@ -152,24 +152,24 @@ mod tui_event_handling {
         assert!(state.tool_calls.is_empty());
     }
 
-    /// Test parallel tool calls with same name complete correctly (last running first)
+    /// Test parallel same-name tool calls complete by progress ID.
     #[test]
-    fn parallel_same_name_tools_complete_last_running() {
+    fn parallel_same_name_tools_complete_by_progress_id() {
         use clawclawclaw::tui::state::ToolCallStatus;
 
         let mut state = TuiState::new("provider", "model");
 
-        // Two shell calls running simultaneously
-        state.add_tool_start("shell".to_string(), "cmd-1".to_string());
-        state.add_tool_start("shell".to_string(), "cmd-2".to_string());
+        // Two shell calls running simultaneously with different progress IDs.
+        state.add_tool_start(10, "shell".to_string(), "cmd-1".to_string());
+        state.add_tool_start(11, "shell".to_string(), "cmd-2".to_string());
 
-        // Complete should match the LAST running entry with that name
-        state.complete_tool("shell", true, 5);
-        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
-        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Success(5));
+        // Completion must match the exact progress ID, not the shared tool name.
+        state.complete_tool(10, true, 5);
+        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(5));
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Running);
 
-        state.complete_tool("shell", true, 7);
-        assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(7));
+        state.complete_tool(11, true, 7);
+        assert_eq!(state.tool_calls[1].status, ToolCallStatus::Success(7));
     }
 
     /// Test usage accumulation across multiple LLM calls

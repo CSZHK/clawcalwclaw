@@ -379,15 +379,21 @@ tokio::task_local! {
 #[derive(Debug, Clone)]
 pub(crate) enum AgentEvent {
     /// A tool execution has started.
-    ToolStart { name: String, hint: String },
+    ToolStart {
+        progress_id: usize,
+        name: String,
+        hint: String,
+    },
     /// A tool execution has completed.
     ToolComplete {
-        name: String,
+        progress_id: usize,
         success: bool,
         duration_secs: u64,
     },
     /// Token usage from an LLM response.
     Usage {
+        provider: String,
+        model: String,
         input_tokens: Option<u64>,
         output_tokens: Option<u64>,
         cost_usd: Option<f64>,
@@ -512,7 +518,7 @@ fn estimate_prompt_tokens(
     char_estimate.saturating_add(framing_overhead)
 }
 
-fn lookup_model_pricing(
+pub(crate) fn lookup_model_pricing(
     prices: &HashMap<String, ModelPricing>,
     provider: &str,
     model: &str,
@@ -1765,9 +1771,11 @@ pub async fn run_tool_call_loop(
 
                 // Emit structured usage event for TUI consumers.
                 emit_agent_event(AgentEvent::Usage {
+                    provider: provider_name.to_string(),
+                    model: active_model.clone(),
                     input_tokens: resp_input_tokens,
                     output_tokens: resp_output_tokens,
-                    cost_usd: None, // Cost computed by TUI from session totals
+                    cost_usd: None,
                 });
 
                 // First try native structured tool calls (OpenAI-format).
@@ -2332,11 +2340,12 @@ pub async fn run_tool_call_loop(
 
             let progress_idx = if should_emit_tool_progress(progress_mode) {
                 let hint = truncate_tool_args_for_progress(&tool_name, &tool_args, 60);
+                let idx = progress_tracker.add(&tool_name, &hint);
                 emit_agent_event(AgentEvent::ToolStart {
+                    progress_id: idx,
                     name: tool_name.clone(),
                     hint: hint.clone(),
                 });
-                let idx = progress_tracker.add(&tool_name, &hint);
                 if let Some(ref tx) = on_delta {
                     tracing::debug!(tool = %tool_name, "Sending progress start to draft");
                     let _ = tx.send(progress_tracker.render_delta()).await;
@@ -2430,7 +2439,7 @@ pub async fn run_tool_call_loop(
                 let secs = outcome.duration.as_secs();
                 progress_tracker.complete(*idx, outcome.success, secs);
                 emit_agent_event(AgentEvent::ToolComplete {
-                    name: call.name.clone(),
+                    progress_id: *idx,
                     success: outcome.success,
                     duration_secs: secs,
                 });

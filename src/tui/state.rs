@@ -26,6 +26,7 @@ pub enum ToolCallStatus {
 /// A structured tool call entry for the tool panel.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ToolCallEntry {
+    pub id: usize,
     pub name: String,
     pub hint: String,
     pub status: ToolCallStatus,
@@ -228,22 +229,17 @@ impl TuiState {
 
     // ── Structured tool tracking ──
 
-    pub fn add_tool_start(&mut self, name: String, hint: String) {
+    pub fn add_tool_start(&mut self, id: usize, name: String, hint: String) {
         self.tool_calls.push(ToolCallEntry {
+            id,
             name,
             hint,
             status: ToolCallStatus::Running,
         });
     }
 
-    pub fn complete_tool(&mut self, name: &str, success: bool, duration_secs: u64) {
-        // Find the last running entry with this name (handles parallel tools).
-        if let Some(entry) = self
-            .tool_calls
-            .iter_mut()
-            .rev()
-            .find(|e| e.name == name && e.status == ToolCallStatus::Running)
-        {
+    pub fn complete_tool(&mut self, id: usize, success: bool, duration_secs: u64) {
+        if let Some(entry) = self.tool_calls.iter_mut().find(|entry| entry.id == id) {
             entry.status = if success {
                 ToolCallStatus::Success(duration_secs)
             } else {
@@ -335,15 +331,15 @@ mod tests {
     #[test]
     fn tool_call_lifecycle_start_complete_clear() {
         let mut state = TuiState::new("provider", "model");
-        state.add_tool_start("shell".to_string(), "ls -la".to_string());
+        state.add_tool_start(0, "shell".to_string(), "ls -la".to_string());
         assert_eq!(state.tool_calls.len(), 1);
         assert_eq!(state.tool_calls[0].status, ToolCallStatus::Running);
 
-        state.complete_tool("shell", true, 2);
+        state.complete_tool(0, true, 2);
         assert_eq!(state.tool_calls[0].status, ToolCallStatus::Success(2));
 
-        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
-        state.complete_tool("file_read", false, 1);
+        state.add_tool_start(1, "file_read".to_string(), "src/main.rs".to_string());
+        state.complete_tool(1, false, 1);
         assert_eq!(state.tool_calls[1].status, ToolCallStatus::Failed(1));
 
         state.clear_tool_calls();

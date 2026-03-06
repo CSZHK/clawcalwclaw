@@ -121,13 +121,11 @@ mod tui_render {
 
     #[test]
     fn renders_structured_tool_panel_with_entries() {
-        use clawclawclaw::tui::state::ToolCallStatus;
-
         let mut terminal = create_test_terminal((80, 24));
         let mut state = TuiState::new("provider", "model");
-        state.add_tool_start("shell".to_string(), "ls -la".to_string());
-        state.add_tool_start("file_read".to_string(), "src/main.rs".to_string());
-        state.complete_tool("file_read", true, 2);
+        state.add_tool_start(0, "shell".to_string(), "ls -la".to_string());
+        state.add_tool_start(1, "file_read".to_string(), "src/main.rs".to_string());
+        state.complete_tool(1, true, 2);
 
         terminal
             .draw(|frame| {

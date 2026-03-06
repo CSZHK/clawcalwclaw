@@ -18,7 +18,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::agent::loop_::{
     build_shell_policy_instructions, build_tool_instructions, create_cost_enforcement_context,
-    run_tool_call_loop_with_non_cli_approval_context, scope_agent_events,
+    lookup_model_pricing, run_tool_call_loop_with_non_cli_approval_context, scope_agent_events,
     scope_cost_enforcement_context, AgentEvent, NonCliApprovalContext, NonCliApprovalPrompt,
     SafetyHeartbeatConfig,
 };
@@ -29,6 +29,7 @@ use crate::providers::{self, ChatMessage, Provider};
 use crate::runtime;
 use crate::security::SecurityPolicy;
 use crate::tools::{self, Tool};
+use crate::util::truncate_with_ellipsis;
 
 use super::events::{translate_delta, TuiEvent};
 use super::state::{InputMode, TuiRole, TuiState};
@@ -166,7 +167,7 @@ async fn run_loop(
                 handle_tui_event(translate_delta(delta), &mut state);
             }
             Some(agent_event) = agent_event_rx.recv() => {
-                handle_agent_event(agent_event, &mut state);
+                handle_agent_event(agent_event, &mut state, &runtime_ctx);
             }
             Some(prompt) = approval_prompt_rx.recv() => {
                 handle_approval_prompt(prompt, &mut state);
@@ -446,24 +447,39 @@ fn handle_tui_event(event: TuiEvent, state: &mut TuiState) {
     }
 }
 
-fn handle_agent_event(event: AgentEvent, state: &mut TuiState) {
+fn handle_agent_event(event: AgentEvent, state: &mut TuiState, runtime_ctx: &TuiRuntimeContext) {
     match event {
-        AgentEvent::ToolStart { name, hint } => {
-            state.add_tool_start(name, hint);
+        AgentEvent::ToolStart {
+            progress_id,
+            name,
+            hint,
+        } => {
+            state.add_tool_start(progress_id, name, hint);
         }
         AgentEvent::ToolComplete {
-            name,
+            progress_id,
             success,
             duration_secs,
         } => {
-            state.complete_tool(&name, success, duration_secs);
+            state.complete_tool(progress_id, success, duration_secs);
         }
         AgentEvent::Usage {
+            provider,
+            model,
             input_tokens,
             output_tokens,
             cost_usd,
         } => {
-            state.accumulate_usage(input_tokens, output_tokens, cost_usd);
+            let estimated_cost = cost_usd.or_else(|| {
+                estimate_usage_cost(
+                    &runtime_ctx.config.cost.prices,
+                    &provider,
+                    &model,
+                    input_tokens,
+                    output_tokens,
+                )
+            });
+            state.accumulate_usage(input_tokens, output_tokens, estimated_cost);
         }
     }
 }
@@ -490,14 +506,26 @@ fn resolve_approval(
     approval_manager.record_non_cli_pending_resolution(request_id, decision);
 }
 
+fn estimate_usage_cost(
+    prices: &std::collections::HashMap<String, crate::config::schema::ModelPricing>,
+    provider: &str,
+    model: &str,
+    input_tokens: Option<u64>,
+    output_tokens: Option<u64>,
+) -> Option<f64> {
+    if input_tokens.is_none() && output_tokens.is_none() {
+        return None;
+    }
+
+    let (input_price, output_price) = lookup_model_pricing(prices, provider, model);
+    let input_cost = (input_tokens.unwrap_or(0) as f64 / 1_000_000.0) * input_price.max(0.0);
+    let output_cost = (output_tokens.unwrap_or(0) as f64 / 1_000_000.0) * output_price.max(0.0);
+    Some(input_cost + output_cost)
+}
+
 /// Truncate a JSON value to a human-readable summary for the approval modal.
 fn truncate_json_for_display(value: &serde_json::Value, max_len: usize) -> String {
-    let raw = value.to_string();
-    if raw.len() <= max_len {
-        raw
-    } else {
-        format!("{}...", &raw[..max_len])
-    }
+    truncate_with_ellipsis(&value.to_string(), max_len)
 }
 
 fn finalize_assistant_output(state: &mut TuiState, output: String) {
@@ -1015,11 +1043,7 @@ fn friendly_error_message(error: &str, provider_name: &str) -> String {
                 if line.contains("error=") {
                     let error_part = line.split("error=").nth(1)?;
                     // Truncate long errors
-                    let truncated = if error_part.len() > 100 {
-                        format!("{}...", &error_part[..100])
-                    } else {
-                        error_part.to_string()
-                    };
+                    let truncated = truncate_with_ellipsis(error_part, 100);
                     Some(truncated)
                 } else {
                     None
@@ -1069,11 +1093,7 @@ fn friendly_error_message(error: &str, provider_name: &str) -> String {
     }
 
     // For unknown errors, show a truncated version
-    let truncated = if error.len() > 200 {
-        format!("{}...", &error[..200])
-    } else {
-        error.to_string()
-    };
+    let truncated = truncate_with_ellipsis(error, 200);
 
     format!(
         "⚠️  Error\n\n{}\n\nYou can retry after fixing the issue.",
@@ -1083,7 +1103,14 @@ fn friendly_error_message(error: &str, provider_name: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{looks_like_api_key, parse_inline_api_key, parse_setup_command, SetupCommand};
+    use std::collections::HashMap;
+
+    use crate::config::schema::ModelPricing;
+
+    use super::{
+        estimate_usage_cost, looks_like_api_key, parse_inline_api_key, parse_setup_command,
+        truncate_json_for_display, SetupCommand,
+    };
 
     #[test]
     fn parse_setup_key_command_extracts_key() {
@@ -1111,5 +1138,38 @@ mod tests {
         assert!(looks_like_api_key("AIzaSyA-test-value-1234567890"));
         assert!(parse_inline_api_key("sk-test_value_123456789012345").is_some());
         assert!(parse_inline_api_key("hello world").is_none());
+    }
+
+    #[test]
+    fn truncate_json_for_display_preserves_utf8_boundaries() {
+        let value = serde_json::Value::String("你好😀世界你好😀世界".to_string());
+
+        let truncated = truncate_json_for_display(&value, 4);
+
+        assert!(truncated.ends_with("..."));
+        assert!(truncated.contains("你好"));
+    }
+
+    #[test]
+    fn estimate_usage_cost_uses_model_pricing() {
+        let mut prices = HashMap::new();
+        prices.insert(
+            "anthropic/claude-sonnet".to_string(),
+            ModelPricing {
+                input: 3.0,
+                output: 15.0,
+            },
+        );
+
+        let cost = estimate_usage_cost(
+            &prices,
+            "anthropic",
+            "claude-sonnet",
+            Some(1_000),
+            Some(500),
+        )
+        .expect("cost should be estimated");
+
+        assert!((cost - 0.0105).abs() < 0.0001);
     }
 }
