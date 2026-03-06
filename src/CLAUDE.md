@@ -135,6 +135,7 @@ Use these tiers when deciding validation depth and review rigor.
 
 - **Low risk**: docs/chore/tests-only changes
 - **Medium risk**: most `src/**` behavior changes without boundary/security impact
+- **Medium-High risk**: `src/tui/terminal.rs` (terminal lifecycle, panic hooks, signal handlers), `src/tui/events.rs` (sentinel protocol — silent misroute on error)
 - **High risk**: `src/security/**`, `src/runtime/**`, `src/gateway/**`, `src/tools/**`, `.github/workflows/**`, access-control boundaries
 
 When uncertain, classify as higher risk.
@@ -225,6 +226,10 @@ Use these rules to keep the trait/factory architecture stable under growth.
 - Peripherals expose `tools()` — each tool delegates to the hardware (GPIO, sensors, etc.).
 - Register board type in config schema if needed.
 - See `docs/hardware-peripherals-design.md` for protocol and firmware notes.
+
+### 7.7 Adding a TUI Widget
+
+See [`src/tui/CLAUDE.md`](tui/CLAUDE.md) section 7.7 for the full playbook.
 
 ### 7.5 Security / Runtime / Gateway Changes
 

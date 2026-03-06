@@ -6,6 +6,7 @@ Scope: entire repository.
 ## Quick Navigation
 
 - [Code Conventions & Architecture](src/CLAUDE.md) — engineering principles, naming, boundary contracts, change playbooks, validation
+- [TUI Subsystem Rules](src/tui/CLAUDE.md) — sentinel protocol, terminal lifecycle, widget playbook
 - [Documentation System](docs/CLAUDE.md) — docs IA, i18n contract, runtime-contract references
 - [PR / CI / Collaboration](.github/CLAUDE.md) — branch flow, PR discipline, attribution templates
 
