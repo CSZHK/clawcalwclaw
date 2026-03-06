@@ -2,7 +2,7 @@
 
 Status: implementation-spec draft  
 Type: narrow follow-up design note  
-Refs: `docs/plans/2026-03-06-tui-agent-workbench-proposal.md`, `docs/plan/rust-tui-plan-high-level.md`
+Refs: `docs/plans/2026-03-06-tui-agent-workbench-proposal.md`, `docs/plans/2026-03-06-tui-workbench-implementation-checklist.md`, `docs/plan/rust-tui-plan-high-level.md`
 
 ---
 

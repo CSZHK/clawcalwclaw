@@ -4,6 +4,9 @@ Time-bound project status snapshots for planning documentation and operations wo
 
 ## Current Snapshot
 
+- [../plans/2026-03-06-tui-agent-workbench-proposal.md](../plans/2026-03-06-tui-agent-workbench-proposal.md)
+- [../plans/2026-03-06-tui-workbench-bridge-contracts.md](../plans/2026-03-06-tui-workbench-bridge-contracts.md)
+- [../plans/2026-03-06-tui-workbench-implementation-checklist.md](../plans/2026-03-06-tui-workbench-implementation-checklist.md)
 - [../project-triage-snapshot-2026-02-18.md](../project-triage-snapshot-2026-02-18.md)
 - [../docs-audit-2026-02-24.md](../docs-audit-2026-02-24.md)
 - [m4-5-rfi-spike-2026-02-28.md](m4-5-rfi-spike-2026-02-28.md)

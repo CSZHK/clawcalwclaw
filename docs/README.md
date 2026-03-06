@@ -42,6 +42,7 @@ Installation source-of-truth: keep install/run instructions in repository docs a
 - Contributing/reviewing/CI workflow? → [contributing/README.md](contributing/README.md)
 - Building automated SOP workflows? → [sop/README.md](sop/README.md)
 - Want the full map? → [SUMMARY.md](SUMMARY.md)
+- Working on the TUI workbench track? → [plans/2026-03-06-tui-workbench-implementation-checklist.md](plans/2026-03-06-tui-workbench-implementation-checklist.md)
 
 ## Collections (Recommended)
 

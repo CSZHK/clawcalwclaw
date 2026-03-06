@@ -120,5 +120,8 @@ Last refreshed: **March 3, 2026**.
 - [project/m4-5-rfi-spike-2026-02-28.md](project/m4-5-rfi-spike-2026-02-28.md)
 - [project/f1-3-agent-lifecycle-state-machine-rfi-2026-03-01.md](project/f1-3-agent-lifecycle-state-machine-rfi-2026-03-01.md)
 - [project/q0-3-stop-reason-state-machine-rfi-2026-03-01.md](project/q0-3-stop-reason-state-machine-rfi-2026-03-01.md)
+- [plans/2026-03-06-tui-agent-workbench-proposal.md](plans/2026-03-06-tui-agent-workbench-proposal.md)
+- [plans/2026-03-06-tui-workbench-bridge-contracts.md](plans/2026-03-06-tui-workbench-bridge-contracts.md)
+- [plans/2026-03-06-tui-workbench-implementation-checklist.md](plans/2026-03-06-tui-workbench-implementation-checklist.md)
 - [i18n-gap-backlog.md](i18n-gap-backlog.md)
 - [docs-inventory.md](docs-inventory.md)

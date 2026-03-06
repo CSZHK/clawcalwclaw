@@ -12,7 +12,7 @@ This document is a new implementation-oriented proposal for the TUI workbench tr
 
 It is intentionally **parallel to**, not a replacement for, the broader TUI workbench vision draft. The goal here is to turn the high-level direction into a smaller set of repository-aligned decisions, explicit constraints, phased delivery boundaries, and validation gates.
 
-This proposal is also intended to complement the existing TUI implementation plan in `docs/plan/rust-tui-plan-high-level.md` and the runtime lifecycle/state-machine RFIs in `docs/project/f1-3-agent-lifecycle-state-machine-rfi-2026-03-01.md` and `docs/project/q0-3-stop-reason-state-machine-rfi-2026-03-01.md`.
+This proposal is also intended to complement the existing TUI implementation plan in `docs/plan/rust-tui-plan-high-level.md`, the runtime lifecycle/state-machine RFIs in `docs/project/f1-3-agent-lifecycle-state-machine-rfi-2026-03-01.md` and `docs/project/q0-3-stop-reason-state-machine-rfi-2026-03-01.md`, and the file-scoped delivery checklist in `docs/plans/2026-03-06-tui-workbench-implementation-checklist.md`.
 
 ---
 
