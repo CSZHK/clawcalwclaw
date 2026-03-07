@@ -14,7 +14,8 @@ use tokio::task::JoinHandle;
 const SESSION_MAX_AGE_SECS: i64 = 3600;
 
 /// Status of a sub-agent session.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SubAgentStatus {
     Running,
     Completed,
@@ -30,6 +31,16 @@ impl SubAgentStatus {
             SubAgentStatus::Completed => "completed",
             SubAgentStatus::Failed => "failed",
             SubAgentStatus::Killed => "killed",
+        }
+    }
+
+    pub fn from_filter(value: &str) -> Option<Self> {
+        match value {
+            "running" => Some(SubAgentStatus::Running),
+            "completed" => Some(SubAgentStatus::Completed),
+            "failed" => Some(SubAgentStatus::Failed),
+            "killed" => Some(SubAgentStatus::Killed),
+            _ => None,
         }
     }
 }
@@ -174,16 +185,25 @@ impl SubAgentRegistry {
     /// Also performs lazy cleanup of old completed sessions.
     /// pub fn list.
     pub fn list(&self, status_filter: Option<&str>) -> Vec<SubAgentSessionInfo> {
+        let typed_filter = match status_filter {
+            None | Some("all") => None,
+            Some(filter) => SubAgentStatus::from_filter(filter),
+        };
+
+        self.list_by_status(typed_filter)
+    }
+
+    pub fn list_by_status(
+        &self,
+        status_filter: Option<SubAgentStatus>,
+    ) -> Vec<SubAgentSessionInfo> {
         self.cleanup_old_sessions();
 
         let sessions = self.sessions.read();
         sessions
             .values()
             .filter(|s| match status_filter {
-                Some("running") => s.status == SubAgentStatus::Running,
-                Some("completed") => s.status == SubAgentStatus::Completed,
-                Some("failed") => s.status == SubAgentStatus::Failed,
-                Some("killed") => s.status == SubAgentStatus::Killed,
+                Some(status) => s.status == status,
                 _ => true,
             })
             .map(|s| {
@@ -194,7 +214,7 @@ impl SubAgentRegistry {
                     session_id: s.id.clone(),
                     agent: s.agent_name.clone(),
                     task: truncate_task(&s.task, 100),
-                    status: s.status.as_str().to_string(),
+                    status: s.status,
                     started_at: s.started_at.to_rfc3339(),
                     completed_at: s.completed_at.map(|t| t.to_rfc3339()),
                     duration_ms,
@@ -260,7 +280,7 @@ pub struct SubAgentSessionInfo {
     pub session_id: String,
     pub agent: String,
     pub task: String,
-    pub status: String,
+    pub status: SubAgentStatus,
     pub started_at: String,
     pub completed_at: Option<String>,
     pub duration_ms: Option<u64>,
@@ -302,7 +322,7 @@ mod tests {
         registry.insert(make_session("s1", "researcher", "find info"));
         registry.insert(make_session("s2", "coder", "write code"));
 
-        let all = registry.list(Some("all"));
+        let all = registry.list_by_status(None);
         assert_eq!(all.len(), 2);
     }
 
@@ -393,11 +413,11 @@ mod tests {
             },
         );
 
-        let running = registry.list(Some("running"));
+        let running = registry.list_by_status(Some(SubAgentStatus::Running));
         assert_eq!(running.len(), 1);
         assert_eq!(running[0].session_id, "s2");
 
-        let completed = registry.list(Some("completed"));
+        let completed = registry.list_by_status(Some(SubAgentStatus::Completed));
         assert_eq!(completed.len(), 1);
         assert_eq!(completed[0].session_id, "s1");
     }
@@ -464,10 +484,19 @@ mod tests {
         );
 
         // List triggers cleanup
-        let all = registry.list(Some("all"));
+        let all = registry.list_by_status(None);
         // Old session should be cleaned up, recent should remain
         assert_eq!(all.len(), 1);
         assert_eq!(all[0].session_id, "recent");
+    }
+
+    #[test]
+    fn registry_list_string_wrapper_preserves_all_behavior() {
+        let registry = SubAgentRegistry::new();
+        registry.insert(make_session("s1", "researcher", "find info"));
+
+        assert_eq!(registry.list(Some("all")).len(), 1);
+        assert_eq!(registry.list(Some("unknown-filter")).len(), 1);
     }
 
     #[test]
@@ -504,7 +533,7 @@ mod tests {
     #[test]
     fn registry_default() {
         let registry = SubAgentRegistry::default();
-        assert_eq!(registry.list(None).len(), 0);
+        assert_eq!(registry.list_by_status(None).len(), 0);
     }
 
     #[test]
@@ -530,7 +559,7 @@ mod tests {
             h.join().unwrap();
         }
 
-        assert_eq!(registry.list(Some("all")).len(), 10);
+        assert_eq!(registry.list_by_status(None).len(), 10);
     }
 
     #[test]
@@ -539,7 +568,7 @@ mod tests {
             session_id: "test-id".to_string(),
             agent: "researcher".to_string(),
             task: "find info".to_string(),
-            status: "running".to_string(),
+            status: SubAgentStatus::Running,
             started_at: "2024-01-01T00:00:00Z".to_string(),
             completed_at: None,
             duration_ms: None,

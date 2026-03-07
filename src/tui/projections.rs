@@ -3,12 +3,13 @@
 //! This module consumes typed authority handles and safe telemetry summaries to
 //! build render-ready view models. It does not mutate runtime authority state.
 
+use chrono::Local;
 use std::collections::HashMap;
 use std::sync::Arc;
-use chrono::Local;
 
 use crate::goals::engine::{GoalEngine, GoalPriority, GoalState, StepStatus};
 use crate::observability::traits::{Observer, ObserverEvent, ObserverMetric};
+use crate::tools::subagent_registry::SubAgentStatus;
 use crate::tools::{
     SubAgentRegistry, SubagentObserverFactory, TaskPlanSnapshotItem, TaskPlanSnapshotStatus,
     TaskPlanTool,
@@ -84,8 +85,11 @@ pub async fn build_task_board_view(
         .map(project_session_task)
         .collect::<Vec<_>>();
 
-    let mut merged_items = durable_items.clone();
-    merged_items.extend(session_items.clone());
+    let merged_items = durable_items
+        .iter()
+        .cloned()
+        .chain(session_items.iter().cloned())
+        .collect();
 
     TaskBoardView {
         durable_items,
@@ -252,8 +256,10 @@ impl SubagentTelemetryCache {
                 entry.last_event_summary = Some(format!("Error in {component}"));
                 entry.error_summary = Some(truncate_with_ellipsis(&message, 120));
             }
-            ObserverEvent::TurnComplete | ObserverEvent::ChannelMessage { .. }
-            | ObserverEvent::WebhookAuthFailure { .. } | ObserverEvent::HeartbeatTick => {}
+            ObserverEvent::TurnComplete
+            | ObserverEvent::ChannelMessage { .. }
+            | ObserverEvent::WebhookAuthFailure { .. }
+            | ObserverEvent::HeartbeatTick => {}
         }
     }
 
@@ -342,7 +348,7 @@ pub fn build_subagent_pane_view(
 ) -> SubAgentPaneView {
     let refreshed_at = Local::now().format("%H:%M:%S").to_string();
     let items = registry
-        .list(Some("all"))
+        .list_by_status(None)
         .into_iter()
         .map(|session| {
             let telemetry_summary = telemetry.summary(&session.session_id);
@@ -357,18 +363,19 @@ pub fn build_subagent_pane_view(
             SubAgentProjectionItem {
                 session_id: session.session_id.clone(),
                 agent_name: session.agent,
-                status: match session.status.as_str() {
-                    "running" => SubAgentViewStatus::Running,
-                    "completed" => SubAgentViewStatus::Completed,
-                    "failed" => SubAgentViewStatus::Failed,
-                    _ => SubAgentViewStatus::Killed,
+                status: match session.status {
+                    SubAgentStatus::Running => SubAgentViewStatus::Running,
+                    SubAgentStatus::Completed => SubAgentViewStatus::Completed,
+                    SubAgentStatus::Failed => SubAgentViewStatus::Failed,
+                    SubAgentStatus::Killed => SubAgentViewStatus::Killed,
                 },
                 task_summary: session.task,
                 started_at: session.started_at,
                 completed_at: session.completed_at,
                 last_event_summary: telemetry_summary
                     .and_then(|summary| summary.last_event_summary.clone()),
-                last_tool_name: telemetry_summary.and_then(|summary| summary.last_tool_name.clone()),
+                last_tool_name: telemetry_summary
+                    .and_then(|summary| summary.last_tool_name.clone()),
                 input_tokens: telemetry_summary.and_then(|summary| summary.input_tokens),
                 output_tokens: telemetry_summary.and_then(|summary| summary.output_tokens),
                 error_summary,
@@ -376,7 +383,10 @@ pub fn build_subagent_pane_view(
         })
         .collect();
 
-    SubAgentPaneView { items, refreshed_at }
+    SubAgentPaneView {
+        items,
+        refreshed_at,
+    }
 }
 
 #[cfg(test)]
@@ -449,10 +459,43 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn task_board_view_keeps_durable_items_before_session_items() {
+        let tmp = TempDir::new().unwrap();
+        let goal_engine = GoalEngine::new(tmp.path());
+        goal_engine.save_state(&sample_goal_state()).await.unwrap();
+
+        let task_plan = TaskPlanTool::new(Arc::new(SecurityPolicy::default()));
+        task_plan
+            .execute(serde_json::json!({
+                "action": "create",
+                "tasks": [{"title": "Design bridge", "status": "in_progress"}]
+            }))
+            .await
+            .unwrap();
+
+        let view = build_task_board_view(&goal_engine, Some(&task_plan)).await;
+        assert_eq!(view.merged_items.len(), 3);
+        assert!(matches!(
+            view.merged_items[0].authority,
+            TaskAuthorityKey::GoalStep { .. }
+        ));
+        assert!(matches!(
+            view.merged_items[1].authority,
+            TaskAuthorityKey::GoalStep { .. }
+        ));
+        assert!(matches!(
+            view.merged_items[2].authority,
+            TaskAuthorityKey::SessionTask { .. }
+        ));
+    }
+
+    #[tokio::test]
     async fn task_board_view_reports_goal_load_failures() {
         let tmp = TempDir::new().unwrap();
         let goal_engine = GoalEngine::new(tmp.path());
-        tokio::fs::create_dir_all(tmp.path().join("state")).await.unwrap();
+        tokio::fs::create_dir_all(tmp.path().join("state"))
+            .await
+            .unwrap();
         tokio::fs::write(tmp.path().join("state").join("goals.json"), b"not-json")
             .await
             .unwrap();
@@ -542,7 +585,10 @@ mod tests {
 
         let view = build_subagent_pane_view(&registry, &SubagentTelemetryCache::default());
         assert_eq!(view.items[0].status, SubAgentViewStatus::Failed);
-        assert_eq!(view.items[0].error_summary.as_deref(), Some("runtime exploded"));
+        assert_eq!(
+            view.items[0].error_summary.as_deref(),
+            Some("runtime exploded")
+        );
     }
 
     #[test]

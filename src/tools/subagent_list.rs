@@ -3,7 +3,7 @@
 //! Implements the `subagent_list` tool for querying running and completed
 //! sub-agent sessions with optional status filtering.
 
-use super::subagent_registry::SubAgentRegistry;
+use super::subagent_registry::{SubAgentRegistry, SubAgentStatus};
 use super::traits::{Tool, ToolResult};
 use async_trait::async_trait;
 use serde_json::json;
@@ -70,7 +70,24 @@ impl Tool for SubAgentListTool {
             }
         }
 
-        let sessions = self.registry.list(status_filter);
+        let typed_filter = match status_filter {
+            None | Some("") | Some("all") => None,
+            Some(filter) => match SubAgentStatus::from_filter(filter) {
+                Some(status) => Some(status),
+                None => {
+                    return Ok(ToolResult {
+                        success: false,
+                        output: String::new(),
+                        error: Some(format!(
+                            "Invalid status filter '{filter}'. \
+                             Must be one of: running, completed, failed, killed, all"
+                        )),
+                    });
+                }
+            },
+        };
+
+        let sessions = self.registry.list_by_status(typed_filter);
 
         Ok(ToolResult {
             success: true,
