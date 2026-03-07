@@ -38,6 +38,7 @@ Merge-blocking checks should stay small and deterministic. Optional checks are u
     - Additional behavior: on PRs, lanes only run when `ci:full` or `ci:feature-matrix` label is applied (push-to-dev and schedules run unconditionally)
     - Additional behavior: each lane emits machine-readable result artifacts; summary lane aggregates owner routing from `.github/release/nightly-owner-routing.json`
     - Additional behavior: supports `compile` (merge-gate) and `nightly` (integration-oriented) profiles with bounded retry policy and trend snapshot artifact (`nightly-history.json`)
+    - Additional behavior: `ci-run.yml` now includes a dedicated `tui-automation` lane for `tui_changed` diffs. That lane runs TUI L1/L2 checks, builds the binary, and uploads tmux + VHS artifacts as `.ascii`, `.gif`, and `.mp4`.
     - Additional behavior: required-check mapping is anchored to stable job name `Feature Matrix Summary`; lane jobs stay informational
 - `.github/workflows/nightly-all-features.yml` (`Nightly All-Features`)
     - Purpose: legacy/dev-only nightly template; primary nightly signal is emitted by `feature-matrix.yml` nightly profile

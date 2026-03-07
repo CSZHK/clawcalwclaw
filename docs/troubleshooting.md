@@ -415,7 +415,7 @@ curl -fsSL https://raw.githubusercontent.com/CSZHK/clawcalwclaw/main/scripts/ins
 
 Symptoms:
 
-- `cargo run --bin clawclawclaw --features tui-ratatui` fails with terminal errors
+- `cargo run --bin clawclawclaw --features tui-ratatui -- tui` fails with terminal errors
 - TUI renders incorrectly or not at all
 
 Fix:
@@ -428,16 +428,16 @@ echo $TERM
 infocmp $TERM | grep -E "colors|cup|smcup"
 ```
 
-2. Try setting TERM explicitly:
+2. Try setting `TERM` explicitly:
 
 ```bash
-TERM=xterm-256color cargo run --bin clawclawclaw --features tui-ratatui
+TERM=xterm-256color cargo run --bin clawclawclaw --features tui-ratatui -- tui
 ```
 
 3. For SSH sessions, ensure PTY allocation:
 
 ```bash
-ssh -t user@host  # Note the -t flag
+ssh -t user@host
 ```
 
 ### TUI tests fail to compile
@@ -445,66 +445,146 @@ ssh -t user@host  # Note the -t flag
 Symptoms:
 
 - `cargo test --features tui-ratatui` fails with feature errors
+- `cargo run --features tui-ratatui -- tui` fails because the binary was built without the TUI feature
 
 Fix:
 
-Ensure `tui-ratatui` feature is specified:
+Ensure `tui-ratatui` is enabled on every TUI build or test command:
 
 ```bash
 CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test
+CARGO_BUILD_JOBS=2 cargo build --locked --features tui-ratatui --bin clawclawclaw
 ```
+
+### tmux / VHS capture prerequisites missing
+
+Symptoms:
+
+- `vhs: command not found`
+- `ttyd: command not found`
+- `tmux: command not found`
+- `ffmpeg: command not found`
+
+Fix:
+
+1. Check each dependency explicitly:
+
+```bash
+command -v tmux
+command -v vhs
+command -v ttyd
+command -v ffmpeg
+```
+
+2. Install the missing tools with your package manager or the upstream release for your platform.
+3. Keep the tape preflight strict so missing tools fail fast:
+
+```text
+Require tmux
+Require ttyd
+Require ffmpeg
+```
+
+### VHS capture exits before artifacts are written
+
+Symptoms:
+
+- `vhs` exits before the TUI appears
+- only one artifact is created
+- `.mp4` is missing even though `.ascii` or `.gif` exists
+
+Fix:
+
+1. Build the binary before recording:
+
+```bash
+CARGO_BUILD_JOBS=2 cargo build --locked --features tui-ratatui --bin clawclawclaw
+```
+
+2. Confirm the tape declares every required output explicitly:
+
+```text
+Output artifacts/tui/tui-smoke.ascii
+Output artifacts/tui/tui-smoke.gif
+Output artifacts/tui/tui-smoke.mp4
+```
+
+3. If `.mp4` is missing, verify `ffmpeg` is on `PATH` and rerun `vhs`.
+4. If `vhs` reports a missing program, fix that dependency first instead of retrying the same tape.
+
+### tmux session fails or exits immediately
+
+Symptoms:
+
+- `tmux attach -t zeroclaw-tui` prints `can't find session`
+- the session opens and closes before you can inspect the TUI
+
+Fix:
+
+1. Start the session explicitly and verify it exists:
+
+```bash
+tmux new-session -d -s zeroclaw-tui 'TERM=xterm-256color target/debug/clawclawclaw tui'
+tmux ls
+```
+
+2. If the session still exits, inspect the last pane output:
+
+```bash
+tmux capture-pane -pt zeroclaw-tui | tail -n 40
+```
+
+3. Rebuild the binary first if the pane shows a startup or feature-gate failure.
 
 ### TUI tests timeout / hang
 
 Symptoms:
 
-- E2E tests hang indefinitely
-- Tests exceed 30-second startup timeout
+- the TUI capture stalls before it exits
+- the binary takes too long to build on the first run
 
 Fix:
 
-1. First run compiles the binary (slow). Run again after compilation:
+1. Compile first, then record:
 
 ```bash
-# First run (compiles binary, may timeout)
-CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_e2e_pty -- --test-threads=1 --ignored
-
-# Second run (uses cached binary)
-CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_e2e_pty -- --test-threads=1 --ignored
+CARGO_BUILD_JOBS=2 cargo build --locked --features tui-ratatui --bin clawclawclaw
+vhs /tmp/zeroclaw-tui-smoke.tape
 ```
 
-2. Limit CPU to reduce resource contention:
+2. Limit CPU to reduce resource contention during local build/test runs:
 
 ```bash
 CARGO_BUILD_JOBS=1 cargo test --features tui-ratatui -- --test-threads=1
 ```
 
-3. Run L1/L2 tests instead (faster):
+3. Fall back to the fast L1/L2 suite while debugging the capture environment:
 
 ```bash
-cargo test --lib tui  # L1 unit tests (seconds)
-CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test --test tui_event_handling_test  # L2 (minutes)
+cargo test --lib tui
+CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui --test tui_render_test --test tui_event_handling_test
 ```
 
 ### TUI keyboard input not working
 
 Symptoms:
 
-- Key presses don't register
-- Wrong characters appear
+- key presses do not register
+- the wrong characters appear in the TUI
+- the problem only happens inside tmux or a tape run
 
 Fix:
 
-1. Ensure terminal raw mode is supported
-2. Check for terminal multiplexer conflicts (tmux/screen)
-3. Try without multiplexer:
+1. Confirm the TUI works outside capture tooling first:
 
 ```bash
-# Exit tmux/screen and run directly
-cargo run --bin clawclawclaw --features tui-ratatui
+TERM=xterm-256color cargo run --bin clawclawclaw --features tui-ratatui -- tui
 ```
 
-For detailed TUI testing guide, see [tui-testing.md](tui-testing.md).
+2. If direct execution works, retry the tmux flow with the minimal smoke tape from `docs/tui-testing.md`.
+3. Prefer single-key exits such as `q` in the tape instead of relying on extra shell input while the TUI owns raw mode.
+
+For the full TUI testing flow, see [tui-testing.md](tui-testing.md).
 
 ## Still Stuck?
 

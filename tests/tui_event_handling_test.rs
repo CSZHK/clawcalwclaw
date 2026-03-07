@@ -6,7 +6,24 @@
 #[cfg(feature = "tui-ratatui")]
 mod tui_event_handling {
     use clawclawclaw::tui::events::{translate_delta, TuiEvent};
-    use clawclawclaw::tui::state::{InputMode, TuiRole, TuiState};
+    use clawclawclaw::tui::projections::{
+        SubAgentPaneView, SubAgentProjectionItem, SubAgentViewStatus, TaskAuthorityKey,
+        TaskBoardItem, TaskBoardStatus, TaskBoardView,
+    };
+    use clawclawclaw::tui::state::{
+        ApprovalQueueItem, ApprovalQueueStatus, InputMode, TuiRole, TuiState,
+    };
+
+    fn approval_item(request_id: &str, status: ApprovalQueueStatus) -> ApprovalQueueItem {
+        ApprovalQueueItem {
+            request_id: request_id.to_string(),
+            tool_name: "shell".to_string(),
+            arguments_summary: "rm -rf /tmp".to_string(),
+            requested_at: "10:00:00".to_string(),
+            status,
+            status_message: None,
+        }
+    }
 
     /// Test that streaming deltas accumulate correctly in state
     #[test]
@@ -206,19 +223,10 @@ mod tui_event_handling {
     /// Test pending approval state management
     #[test]
     fn pending_approval_state_lifecycle() {
-        use clawclawclaw::tui::state::{ApprovalQueueItem, ApprovalQueueStatus};
-
         let mut state = TuiState::new("provider", "model");
         assert!(state.approval_queue.is_empty());
 
-        state.enqueue_approval(ApprovalQueueItem {
-            request_id: "req-001".to_string(),
-            tool_name: "shell".to_string(),
-            arguments_summary: "rm -rf /tmp".to_string(),
-            requested_at: "10:00:00".to_string(),
-            status: ApprovalQueueStatus::Pending,
-            status_message: None,
-        });
+        state.enqueue_approval(approval_item("req-001", ApprovalQueueStatus::Pending));
         assert_eq!(state.approval_queue.len(), 1);
         assert_eq!(state.active_approval().unwrap().tool_name, "shell");
 
@@ -227,9 +235,109 @@ mod tui_event_handling {
             ApprovalQueueStatus::Denied,
             Some("Denied".to_string()),
         );
-        assert_eq!(state.active_approval().unwrap().status, ApprovalQueueStatus::Denied);
+        assert_eq!(
+            state.active_approval().unwrap().status,
+            ApprovalQueueStatus::Denied
+        );
         state.dismiss_approval("req-001");
         assert!(state.approval_queue.is_empty());
+    }
+
+    /// Test terminal approval statuses remain tracked until explicit cleanup.
+    #[test]
+    fn terminal_approval_statuses_remain_dismissable_until_cleared() {
+        let mut state = TuiState::new("provider", "model");
+        state.enqueue_approval(approval_item("req-pending", ApprovalQueueStatus::Pending));
+        state.enqueue_approval(approval_item("req-approved", ApprovalQueueStatus::Approved));
+        state.enqueue_approval(approval_item("req-denied", ApprovalQueueStatus::Denied));
+        state.enqueue_approval(approval_item("req-failed", ApprovalQueueStatus::Failed));
+        state.enqueue_approval(approval_item("req-expired", ApprovalQueueStatus::Expired));
+
+        assert_eq!(state.active_pending_request_id(), Some("req-pending"));
+        assert!(ApprovalQueueStatus::Approved.is_terminal());
+        assert!(ApprovalQueueStatus::Denied.is_terminal());
+        assert!(ApprovalQueueStatus::Failed.is_terminal());
+        assert!(ApprovalQueueStatus::Expired.is_terminal());
+
+        state.clear_terminal_approvals();
+
+        assert_eq!(state.approval_queue.len(), 1);
+        assert_eq!(state.active_pending_request_id(), Some("req-pending"));
+
+        state.update_approval_status(
+            "req-pending",
+            ApprovalQueueStatus::Approved,
+            Some("Approved in TUI".to_string()),
+        );
+        assert_eq!(
+            state.active_approval().unwrap().status,
+            ApprovalQueueStatus::Approved
+        );
+
+        state.dismiss_approval("req-pending");
+        assert!(state.approval_queue.is_empty());
+    }
+
+    /// Test help visibility changes do not drop workbench snapshots.
+    #[test]
+    fn help_toggle_preserves_workbench_snapshots() {
+        let task_board_view = TaskBoardView {
+            durable_items: vec![TaskBoardItem {
+                authority: TaskAuthorityKey::GoalStep {
+                    goal_id: "goal-1".to_string(),
+                    step_id: "step-1".to_string(),
+                },
+                title: "Design bridge".to_string(),
+                status: TaskBoardStatus::InProgress,
+                priority_label: Some("High".to_string()),
+                group_label: "Workbench".to_string(),
+                detail_summary: None,
+            }],
+            merged_items: vec![TaskBoardItem {
+                authority: TaskAuthorityKey::GoalStep {
+                    goal_id: "goal-1".to_string(),
+                    step_id: "step-1".to_string(),
+                },
+                title: "Design bridge".to_string(),
+                status: TaskBoardStatus::InProgress,
+                priority_label: Some("High".to_string()),
+                group_label: "Workbench".to_string(),
+                detail_summary: None,
+            }],
+            session_items: Vec::new(),
+            refreshed_at: "10:00:00".to_string(),
+            error_summary: None,
+        };
+        let subagent_view = SubAgentPaneView {
+            items: vec![SubAgentProjectionItem {
+                session_id: "s1".to_string(),
+                agent_name: "reviewer".to_string(),
+                status: SubAgentViewStatus::Running,
+                task_summary: "Check overlay routing".to_string(),
+                started_at: "10:00:01".to_string(),
+                completed_at: None,
+                last_event_summary: Some("Running shell".to_string()),
+                last_tool_name: Some("shell".to_string()),
+                input_tokens: None,
+                output_tokens: None,
+                error_summary: None,
+            }],
+            refreshed_at: "10:00:02".to_string(),
+        };
+
+        let mut state = TuiState::new("provider", "model");
+        state.set_task_board_view(Some(task_board_view.clone()));
+        state.set_subagent_pane_view(Some(subagent_view.clone()));
+
+        state.toggle_help();
+        assert!(state.show_help);
+        assert_eq!(state.task_board_view.as_ref(), Some(&task_board_view));
+        assert_eq!(state.subagent_pane_view.as_ref(), Some(&subagent_view));
+
+        state.toggle_help();
+        assert!(!state.show_help);
+        assert_eq!(state.task_board_view.as_ref(), Some(&task_board_view));
+        assert_eq!(state.subagent_pane_view.as_ref(), Some(&subagent_view));
     }
 
     /// Test status transitions

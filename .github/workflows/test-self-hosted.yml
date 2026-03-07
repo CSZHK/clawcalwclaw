@@ -14,6 +14,7 @@ jobs:
     runs-on: [self-hosted, Linux, X64, aws-india, blacksmith-2vcpu-ubuntu-2404, hetzner]
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Check runner info
         run: |
           echo "Runner: $(hostname)"
@@ -49,6 +50,16 @@ jobs:
           else
             echo "Docker: <not installed>"
           fi
+          if command -v tmux >/dev/null 2>&1; then
+            echo "tmux: $(tmux -V)"
+          else
+            echo "tmux: <not installed>"
+          fi
+          if command -v ffmpeg >/dev/null 2>&1; then
+            echo "FFmpeg: $(ffmpeg -version | head -n1)"
+          else
+            echo "FFmpeg: <not installed>"
+          fi
       - name: Verify compiler + disk prerequisites
         shell: bash
         run: |
@@ -57,6 +68,16 @@ jobs:
 
           if ! command -v cc >/dev/null 2>&1; then
             echo "::error::Missing 'cc'. Install build-essential (or gcc/clang + symlink)."
+            failed=1
+          fi
+
+          if ! command -v tmux >/dev/null 2>&1; then
+            echo "::error::Missing 'tmux'. Install tmux for TUI automation lanes."
+            failed=1
+          fi
+
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            echo "::error::Missing 'ffmpeg'. Install ffmpeg for VHS GIF/MP4 rendering."
             failed=1
           fi
 
@@ -78,6 +99,17 @@ jobs:
           if [ "${failed}" -ne 0 ]; then
             exit 1
           fi
+      - name: Install pinned VHS + ttyd smoke tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool_dir="${RUNNER_TEMP}/tui-ci-bin"
+          mkdir -p "${tool_dir}"
+          ./scripts/ci/install_vhs.sh "${tool_dir}"
+          ./scripts/ci/install_ttyd.sh "${tool_dir}"
+          export PATH="${tool_dir}:$PATH"
+          vhs --version
+          ttyd --version | head -n1
       - name: Test Docker
         shell: bash
         run: |

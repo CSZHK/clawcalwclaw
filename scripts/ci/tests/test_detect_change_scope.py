@@ -151,6 +151,44 @@ class DetectChangeScopeTest(unittest.TestCase):
         self.assertEqual(out["docs_only"], "false")
         self.assertEqual(out["base_sha"], common_base)
 
+    def test_tui_source_change_sets_tui_changed(self) -> None:
+        (self.tmp / "README.md").write_text("# base\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "README.md"], "git add README.md")
+        base_sha = self._commit("base")
+
+        (self.tmp / "src" / "tui").mkdir(parents=True, exist_ok=True)
+        (self.tmp / "src" / "tui" / "app.rs").write_text("pub fn render() {}\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "src/tui/app.rs"], "git add src/tui/app.rs")
+        self._commit("feat: tui app change")
+
+        out = self._run_scope(event_name="push", base_sha=base_sha)
+        self.assertEqual(out["rust_changed"], "true")
+        self.assertEqual(out["tui_changed"], "true")
+        self.assertEqual(out["workflow_changed"], "false")
+        self.assertEqual(out["ci_cd_changed"], "false")
+
+    def test_tui_ci_plumbing_change_sets_tui_changed_without_rust(self) -> None:
+        (self.tmp / "README.md").write_text("# base\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "README.md"], "git add README.md")
+        base_sha = self._commit("base")
+
+        (self.tmp / "scripts" / "ci").mkdir(parents=True, exist_ok=True)
+        (self.tmp / "scripts" / "ci" / "run_tui_tmux_capture.sh").write_text(
+            "#!/usr/bin/env bash\necho ci\n",
+            encoding="utf-8",
+        )
+        self._assert_cmd_ok(
+            ["git", "add", "scripts/ci/run_tui_tmux_capture.sh"],
+            "git add scripts/ci/run_tui_tmux_capture.sh",
+        )
+        self._commit("ci: add tui capture helper")
+
+        out = self._run_scope(event_name="push", base_sha=base_sha)
+        self.assertEqual(out["rust_changed"], "false")
+        self.assertEqual(out["tui_changed"], "true")
+        self.assertEqual(out["workflow_changed"], "false")
+        self.assertEqual(out["ci_cd_changed"], "true")
+
 
 if __name__ == "__main__":
     unittest.main()

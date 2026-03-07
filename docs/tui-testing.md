@@ -1,135 +1,165 @@
 # TUI Testing Guide
 
-This document describes how to test the Terminal User Interface (TUI) module of clawclawclaw.
+This document describes how to validate the Terminal User Interface (TUI) module of clawclawclaw.
 
 ## Test Architecture
 
 The TUI module uses a three-level testing strategy:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                     TUI 测试金字塔                            │
+│                        TUI Testing Pyramid                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│                     ┌───────┐                                   │
-│                     │  E2E  │ ← portable-pty, 真实终端           │
-│                     │  3个  │ ← #[ignore], 需显式运行             │
-│                     └───┬───┘                                   │
-│                         │                                       │
-│               ┌─────────┴─────────┐                              │
-│               │   集成测试 (L2)    │                              │
-│               │  渲染 5 + 事件 8   │ ← TestBackend (无真实终端)    │
-│               │  --features tui    │ ← 中等速度                   │
-│               └─────────┴─────────┘                              │
-│                         │                                       │
-│     ┌───────────────────────┴───────────────────────┐     │
-│     │            单元测试 (L1)                │     │
-│     │   state 6 + events 5 = 11个测试       │     │
-│     │   无feature依赖，毫秒级完成          │     │
-│     └───────────────────────────────────────┘     │
+│                     ┌──────────────────────┐                    │
+│                     │      L3 Capture      │                    │
+│                     │ tmux + VHS artifacts │                    │
+│                     │ .ascii + .gif + .mp4│                    │
+│                     └──────────┬───────────┘                    │
+│                                │                                │
+│               ┌────────────────┴───────────────┐                │
+│               │         Integration (L2)       │                │
+│               │ render + event handling tests  │                │
+│               │ `--features tui-ratatui`       │                │
+│               └────────────────┬───────────────┘                │
+│                                │                                │
+│      ┌─────────────────────────┴─────────────────────────┐      │
+│      │                    Unit Tests (L1)                │      │
+│      │           pure state + event translation          │      │
+│      └───────────────────────────────────────────────────┘      │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Test Files
+## Test Surfaces
 
-| Level | File | Tests | Description |
-|-------|------|-------|-------------|
-| L1 | `src/tui/state.rs` | 6 | State manipulation (pure logic) |
-| L1 | `src/tui/events.rs` | 5 | Event translation (pure logic) |
-| L2 | `tests/tui_render_test.rs` | 5 | Widget rendering (TestBackend) |
-| L2 | `tests/tui_event_handling_test.rs` | 8 | Event handling + state machine |
-| L3 | `tests/tui_e2e_pty.rs` | 3 | Real terminal E2E (portable-pty) |
+| Level | Surface | Command / Artifact | Description |
+| --- | --- | --- | --- |
+| L1 | `src/tui/state.rs`, `src/tui/events.rs` | `cargo test --lib tui` | Pure logic and event translation |
+| L2 | `tests/tui_render_test.rs`, `tests/tui_event_handling_test.rs` | `cargo test --features tui-ratatui --test tui_render_test --test tui_event_handling_test` | Widget rendering and event/state transitions |
+| L3 | `tmux` + `vhs` capture flow | `artifacts/tui/*.ascii`, `artifacts/tui/*.gif`, `artifacts/tui/*.mp4` | Real terminal evidence for smoke scenarios and reviewer-friendly playback |
+
+The repository still contains `tests/tui_e2e_pty.rs` as a manual tmux harness, but the merge-blocking source of truth is the `tui-automation` CI lane plus `scripts/ci/run_tui_tmux_capture.sh`.
 
 ## Running Tests
 
-### Quick Tests (Recommended for Daily Development)
+### Quick Tests for Daily Development
 
 ```bash
-# L1 单元测试 - 秒级完成，无额外依赖
 cargo test --lib tui
 
-# L2 渲染 + 事件测试 - 需要ratatui feature
 CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui \
     --test tui_render_test --test tui_event_handling_test
 ```
 
-### Full Test Suite
+### Focused Container Check
+
+`dev/ci.sh` already provides a focused TUI helper for local containerized verification:
 
 ```bash
-# 运行所有TUI测试 (L1 + L2)
-CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui tui
+./dev/ci.sh tui
 ```
 
-### E2E Tests (Manual/CI Only)
-
-E2E tests are marked with `#[ignore]` because they require compiling the full binary and spawning a real terminal process.
+That helper currently runs:
 
 ```bash
-# 显式运行E2E测试
-CARGO_BUILD_JOBS=2 cargo test --features tui-ratatui \
-    --test tui_e2e_pty -- --test-threads=1 --ignored
+cargo check --locked --features tui-ratatui
+cargo test --locked --features tui-ratatui tui:: -- --test-threads=1
 ```
 
-### Manual Interactive Testing
+### Manual Interactive Run
 
 ```bash
-# 直接启动TUI进行手动测试
-cargo run --bin clawclawclaw --features tui-ratatui
-
-# 快捷键:
-# i     → 进入输入模式
-# Esc   → 退出输入模式
-# Enter → 发送消息
-# q     → 退出TUI
-# Ctrl+C ×2 → 强制退出
+cargo run --bin clawclawclaw --features tui-ratatui -- tui
 ```
 
-## CPU Usage Control
+Useful shortcuts during manual testing:
 
-All test commands include `CARGO_BUILD_JOBS=2` to limit compilation parallelism and avoid saturating shared development hosts.
+- `i` enters input mode
+- `Esc` exits input mode
+- `Enter` sends a message
+- `q` exits the TUI
+- `Ctrl+C` twice forces termination
 
-For test execution, use `--test-threads=1` or `--test-threads=2` to control parallelism.
+### L3 Smoke Capture with tmux + VHS
 
-## CI Integration
+This is the same flow used by the dedicated CI lane when `tui_changed` is true, and it remains the recommended local command for reviewer-friendly artifact capture.
 
-TUI tests are integrated into the CI pipeline:
+#### 1. Check capture dependencies
 
-- **L1 tests**: Run automatically in `ci-run.yml` (no feature flag needed)
-- **L2 tests**: Run in `feature-matrix.yml` with `tui-ratatui` feature
-- **L3 tests**: Manual dispatch only (not in automatic CI)
+```bash
+command -v tmux
+command -v vhs
+command -v ttyd
+command -v ffmpeg
+```
 
-## Adding New TUI Tests
+#### 2. Build the TUI binary once
 
-When adding new TUI functionality:
+```bash
+CARGO_BUILD_JOBS=2 cargo build --locked --features tui-ratatui --bin clawclawclaw
+```
 
-1. **Unit tests**: Add to `src/tui/state.rs` or `src/tui/events.rs` for pure logic
-2. **Render tests**: Add to `tests/tui_render_test.rs` for widget rendering
-3. **Event tests**: Add to `tests/tui_event_handling_test.rs` for state transitions
-4. **E2E tests**: Add to `tests/tui_e2e_pty.rs` only for critical user flows (mark with `#[ignore]`)
+#### 3. Record the smoke flow and emit all artifacts
+
+```bash
+mkdir -p artifacts/tui
+
+cat > /tmp/zeroclaw-tui-smoke.tape <<'__TAPE__'
+Output artifacts/tui/tui-smoke.ascii
+Output artifacts/tui/tui-smoke.gif
+Output artifacts/tui/tui-smoke.mp4
+Require tmux
+Require ttyd
+Require ffmpeg
+
+Set Shell "bash"
+Set TypingSpeed 0ms
+Set Width 1200
+Set Height 800
+
+Type "tmux new-session -d -s zeroclaw-tui 'TERM=xterm-256color target/debug/clawclawclaw tui'"
+Enter
+Type "tmux attach -t zeroclaw-tui"
+Enter
+Sleep 3s
+Type "q"
+Sleep 1s
+Type "exit"
+Enter
+__TAPE__
+
+vhs /tmp/zeroclaw-tui-smoke.tape
+```
+
+This produces the canonical artifact bundle:
+
+- `artifacts/tui/tui-smoke.ascii`
+- `artifacts/tui/tui-smoke.gif`
+- `artifacts/tui/tui-smoke.mp4`
+
+If you need provider-specific coverage, replace `target/debug/clawclawclaw tui` in the tape with the exact invocation you want to capture, for example `target/debug/clawclawclaw tui --provider openai --model gpt-5`.
+
+## CI Expectations
+
+Current repository behavior and expectations are intentionally split:
+
+- `ci-run.yml` remains the merge-blocking baseline and runs generic Rust validation plus `cargo test --locked --verbose`.
+- `feature-matrix.yml` currently validates feature compilation lanes, but it does not yet define a dedicated `tui-ratatui` artifact-capture lane.
+- `./dev/ci.sh tui` is the current focused pre-PR helper for TUI-specific build/test coverage.
+- L3 capture should stay opt-in or manual until a dedicated self-hosted lane exists, because `tmux`, `vhs`, `ttyd`, and `ffmpeg` are not guaranteed on default runners.
+- When a TUI capture lane is used locally or in CI, it should upload the full reviewer bundle: `.ascii`, `.gif`, and `.mp4`.
+
+## Adding New TUI Coverage
+
+When adding or changing TUI behavior:
+
+1. Add or update L1 tests for pure state and event logic.
+2. Add or update L2 tests for rendering and state transitions.
+3. Refresh the tmux + VHS smoke tape or scenario steps when the user-visible flow changes.
+4. Keep artifact names stable and easy to diff under `artifacts/tui/`.
+5. Prefer small, deterministic capture flows that are easy to rerun on self-hosted or manual CI jobs.
 
 ## Troubleshooting
 
-### Test Compilation Errors
-
-If tests fail to compile, ensure:
-- `--features tui-ratatui` is specified for L2/L3 tests
-- `portable-pty` is in `[dev-dependencies]`
-
-### Test Timeouts
-
-E2E tests have built-in timeouts:
-- Startup timeout: 30 seconds
-- Interaction timeout: 5 seconds
-
-If tests timeout, check:
-- Binary compilation is slow (first run)
-- Terminal initialization issues
-- Provider configuration problems
-
-### Flaky Tests
-
-If E2E tests are flaky:
-1. Increase timeouts in test constants
-2. Check for race conditions in async code
-3. Ensure proper cleanup in test teardown
+See [troubleshooting.md](troubleshooting.md) for dependency issues, tmux/VHS capture failures, and raw-terminal debugging tips.

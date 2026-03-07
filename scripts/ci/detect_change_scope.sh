@@ -23,6 +23,7 @@ if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
     echo "docs_only=false"
     echo "docs_changed=false"
     echo "rust_changed=true"
+    echo "tui_changed=true"
     echo "workflow_changed=false"
     echo "ci_cd_changed=false"
     echo "base_sha="
@@ -59,6 +60,7 @@ if [ -z "$CHANGED" ]; then
     echo "docs_only=false"
     echo "docs_changed=false"
     echo "rust_changed=false"
+    echo "tui_changed=false"
     echo "workflow_changed=false"
     echo "ci_cd_changed=false"
     echo "base_sha=$DIFF_BASE"
@@ -70,6 +72,7 @@ fi
 docs_only=true
 docs_changed=false
 rust_changed=false
+tui_changed=false
 workflow_changed=false
 ci_cd_changed=false
 docs_files=()
@@ -92,6 +95,19 @@ while IFS= read -r file; do
     || [[ "$file" == docs/actions-source-policy.md ]] \
     || [[ "$file" == docs/operations/self-hosted-runner-remediation.md ]]; then
     ci_cd_changed=true
+  fi
+
+  if [[ "$file" == src/tui/* ]] \
+    || [[ "$file" == tests/tui_* ]] \
+    || [[ "$file" == Cargo.toml ]] \
+    || [[ "$file" == Cargo.lock ]] \
+    || [[ "$file" == scripts/ci/install_vhs.sh ]] \
+    || [[ "$file" == scripts/ci/install_ttyd.sh ]] \
+    || [[ "$file" == scripts/ci/run_tui_tmux_capture.sh ]] \
+    || [[ "$file" == scripts/ci/detect_change_scope.sh ]] \
+    || [[ "$file" == .github/workflows/ci-run.yml ]] \
+    || [[ "$file" == .github/workflows/test-self-hosted.yml ]]; then
+    tui_changed=true
   fi
 
   if [[ "$file" == docs/* ]] \
@@ -126,6 +142,7 @@ done <<< "$CHANGED"
   echo "docs_only=$docs_only"
   echo "docs_changed=$docs_changed"
   echo "rust_changed=$rust_changed"
+  echo "tui_changed=$tui_changed"
   echo "workflow_changed=$workflow_changed"
   echo "ci_cd_changed=$ci_cd_changed"
   echo "base_sha=$DIFF_BASE"

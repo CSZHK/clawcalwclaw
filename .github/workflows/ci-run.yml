@@ -29,6 +29,7 @@ jobs:
             docs_only: ${{ steps.scope.outputs.docs_only }}
             docs_changed: ${{ steps.scope.outputs.docs_changed }}
             rust_changed: ${{ steps.scope.outputs.rust_changed }}
+            tui_changed: ${{ steps.scope.outputs.tui_changed }}
             workflow_changed: ${{ steps.scope.outputs.workflow_changed }}
             ci_cd_changed: ${{ steps.scope.outputs.ci_cd_changed }}
             docs_files: ${{ steps.scope.outputs.docs_files }}
@@ -225,6 +226,97 @@ jobs:
                   if-no-files-found: ignore
                   retention-days: 14
 
+    tui-automation:
+        name: TUI Automation (L1/L2 + tmux capture)
+        needs: [changes]
+        if: needs.changes.outputs.tui_changed == 'true'
+        runs-on: [self-hosted, Linux, X64, aws-india, blacksmith-2vcpu-ubuntu-2404, hetzner]
+        timeout-minutes: 90
+        env:
+            CARGO_HOME: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/cargo
+            RUSTUP_HOME: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/rustup
+            CARGO_TARGET_DIR: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/target
+        steps:
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+            - name: Ensure C toolchain
+              shell: bash
+              run: bash ./scripts/ci/ensure_c_toolchain.sh
+            - name: Self-heal Rust toolchain cache
+              shell: bash
+              run: ./scripts/ci/self_heal_rust_toolchain.sh 1.92.0
+            - uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+              with:
+                  toolchain: 1.92.0
+            - name: Ensure C toolchain for Rust builds
+              run: ./scripts/ci/ensure_cc.sh
+            - name: Ensure cargo component
+              shell: bash
+              run: bash ./scripts/ci/ensure_cargo_component.sh 1.92.0
+            - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v3
+              with:
+                  prefix-key: ci-run-tui-automation
+                  cache-bin: false
+            - name: Install pinned TUI capture tools
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  tool_dir="${RUNNER_TEMP}/tui-ci-bin"
+                  mkdir -p "${tool_dir}"
+                  ./scripts/ci/install_vhs.sh "${tool_dir}"
+                  ./scripts/ci/install_ttyd.sh "${tool_dir}"
+                  echo "${tool_dir}" >> "$GITHUB_PATH"
+            - name: Verify TUI capture prerequisites
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  for cmd in tmux ffmpeg vhs ttyd; do
+                    if ! command -v "${cmd}" >/dev/null 2>&1; then
+                      echo "::error::Missing required command: ${cmd}"
+                      exit 1
+                    fi
+                  done
+                  tmux -V
+                  ffmpeg -version | head -n1
+                  vhs --version
+                  ttyd --version | head -n1
+            - name: Run TUI L1 tests
+              run: cargo test --locked --lib tui
+            - name: Run TUI L2 tests
+              env:
+                  CARGO_BUILD_JOBS: "2"
+              run: cargo test --locked --features tui-ratatui --test tui_render_test --test tui_event_handling_test
+            - name: Build TUI binary
+              env:
+                  CARGO_BUILD_JOBS: "2"
+              run: cargo build --locked --features tui-ratatui --bin clawclawclaw
+            - name: Run tmux TUI smoke + artifact capture
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  binary_path="${CARGO_TARGET_DIR:-target}/debug/clawclawclaw"
+                  ./scripts/ci/run_tui_tmux_capture.sh \
+                    --binary "${binary_path}" \
+                    --artifacts-dir artifacts/tui
+            - name: Publish TUI artifact summary
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  if [ -d artifacts/tui ]; then
+                    {
+                      echo "### TUI Automation Artifacts"
+                      find artifacts/tui -maxdepth 1 -type f | sort | sed 's/^/- `/' | sed 's/$/`/'
+                    } >> "$GITHUB_STEP_SUMMARY"
+                  fi
+            - name: Upload TUI artifacts
+              if: always()
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+              with:
+                  name: tui-automation-artifacts
+                  path: artifacts/tui/*
+                  if-no-files-found: ignore
+                  retention-days: 14
+
     build:
         name: Build (Smoke)
         needs: [changes]
@@ -393,7 +485,7 @@ jobs:
     ci-required:
         name: CI Required Gate
         if: always()
-        needs: [changes, lint, workspace-check, package-check, test, build, docs-only, non-rust, docs-quality, lint-feedback, license-file-owner-guard]
+        needs: [changes, lint, workspace-check, package-check, test, tui-automation, build, docs-only, non-rust, docs-quality, lint-feedback, license-file-owner-guard]
         runs-on: [self-hosted, Linux, X64, aws-india, light, cpu40]
         steps:
             - name: Enforce required status
@@ -403,9 +495,11 @@ jobs:
 
                   event_name="${{ github.event_name }}"
                   rust_changed="${{ needs.changes.outputs.rust_changed }}"
+                  tui_changed="${{ needs.changes.outputs.tui_changed }}"
                   docs_changed="${{ needs.changes.outputs.docs_changed }}"
                   docs_result="${{ needs.docs-quality.result }}"
                   license_owner_result="${{ needs.license-file-owner-guard.result }}"
+                  tui_automation_result="${{ needs.tui-automation.result }}"
 
                   # --- Helper: enforce PR governance gates ---
                   check_pr_governance() {
@@ -432,10 +526,21 @@ jobs:
                   fi
 
                   # --- Non-rust fast path ---
-                  if [ "$rust_changed" != "true" ]; then
+                  if [ "$rust_changed" != "true" ] && [ "$tui_changed" != "true" ]; then
                     check_pr_governance
                     check_docs_quality
                     echo "Non-rust fast path passed."
+                    exit 0
+                  fi
+
+                  if [ "$rust_changed" != "true" ] && [ "$tui_changed" = "true" ]; then
+                    check_pr_governance
+                    if [ "$tui_automation_result" != "success" ]; then
+                      echo "TUI automation job did not pass: ${tui_automation_result}"
+                      exit 1
+                    fi
+                    check_docs_quality
+                    echo "TUI-only CI path passed."
                     exit 0
                   fi
 
@@ -450,6 +555,7 @@ jobs:
                   echo "workspace-check=${workspace_check_result}"
                   echo "package-check=${package_check_result}"
                   echo "test=${test_result}"
+                  echo "tui-automation=${tui_automation_result}"
                   echo "build=${build_result}"
                   echo "docs=${docs_result}"
                   echo "license_file_owner_guard=${license_owner_result}"
@@ -458,6 +564,11 @@ jobs:
 
                   if [ "$lint_result" != "success" ] || [ "$workspace_check_result" != "success" ] || [ "$package_check_result" != "success" ] || [ "$test_result" != "success" ] || [ "$build_result" != "success" ]; then
                     echo "Required CI jobs did not pass: lint=${lint_result} workspace-check=${workspace_check_result} package-check=${package_check_result} test=${test_result} build=${build_result}"
+                    exit 1
+                  fi
+
+                  if [ "$tui_changed" = "true" ] && [ "$tui_automation_result" != "success" ]; then
+                    echo "TUI automation job did not pass: ${tui_automation_result}"
                     exit 1
                   fi
 
