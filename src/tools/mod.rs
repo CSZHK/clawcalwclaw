@@ -143,8 +143,8 @@ pub use shell::ShellTool;
 pub use subagent_list::SubAgentListTool;
 pub use subagent_manage::SubAgentManageTool;
 pub use subagent_registry::SubAgentRegistry;
-pub use subagent_spawn::SubAgentSpawnTool;
-pub use task_plan::TaskPlanTool;
+pub use subagent_spawn::{SubAgentSpawnTool, SubagentObserverFactory};
+pub use task_plan::{TaskPlanSnapshotItem, TaskPlanSnapshotStatus, TaskPlanTool};
 pub use traits::Tool;
 #[allow(unused_imports)]
 pub use traits::{ToolResult, ToolSpec};
@@ -166,6 +166,17 @@ use crate::security::SecurityPolicy;
 use async_trait::async_trait;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+#[derive(Clone, Default)]
+pub struct WorkbenchToolHandles {
+    pub task_plan: Option<Arc<TaskPlanTool>>,
+    pub subagent_registry: Option<Arc<SubAgentRegistry>>,
+}
+
+pub struct ToolRuntimeBootstrap {
+    pub tools: Vec<Box<dyn Tool>>,
+    pub handles: WorkbenchToolHandles,
+}
 
 #[derive(Clone)]
 struct ArcDelegatingTool {
@@ -420,6 +431,44 @@ pub fn all_tools_with_runtime(
     fallback_api_key: Option<&str>,
     root_config: &crate::config::Config,
 ) -> Vec<Box<dyn Tool>> {
+    all_tools_with_runtime_and_handles(
+        config,
+        security,
+        runtime,
+        memory,
+        composio_key,
+        composio_entity_id,
+        browser_config,
+        http_config,
+        web_fetch_config,
+        workspace_dir,
+        agents,
+        fallback_api_key,
+        root_config,
+        None,
+    )
+    .tools
+}
+
+/// Create the runtime tool registry plus same-session typed handles needed by
+/// terminal workbench consumers.
+#[allow(clippy::implicit_hasher, clippy::too_many_arguments)]
+pub fn all_tools_with_runtime_and_handles(
+    config: Arc<Config>,
+    security: &Arc<SecurityPolicy>,
+    runtime: Arc<dyn RuntimeAdapter>,
+    memory: Arc<dyn Memory>,
+    composio_key: Option<&str>,
+    composio_entity_id: Option<&str>,
+    browser_config: &crate::config::BrowserConfig,
+    http_config: &crate::config::HttpRequestConfig,
+    web_fetch_config: &crate::config::WebFetchConfig,
+    workspace_dir: &std::path::Path,
+    agents: &HashMap<String, DelegateAgentConfig>,
+    fallback_api_key: Option<&str>,
+    root_config: &crate::config::Config,
+    subagent_observer_factory: Option<SubagentObserverFactory>,
+) -> ToolRuntimeBootstrap {
     let has_shell_access = runtime.has_shell_access();
     let has_filesystem_access = runtime.has_filesystem_access();
     let clawclawclaw_dir = root_config
@@ -433,6 +482,12 @@ pub fn all_tools_with_runtime(
         root_config.security.audit.clone(),
     ));
 
+    let task_plan_tool = Arc::new(TaskPlanTool::new(security.clone()));
+    let mut workbench_handles = WorkbenchToolHandles {
+        task_plan: Some(task_plan_tool.clone()),
+        subagent_registry: None,
+    };
+
     let mut tool_arcs: Vec<Arc<dyn Tool>> = vec![
         Arc::new(CronAddTool::new(config.clone(), security.clone())),
         Arc::new(CronListTool::new(config.clone())),
@@ -445,7 +500,7 @@ pub fn all_tools_with_runtime(
         Arc::new(MemoryRecallTool::new(memory.clone())),
         Arc::new(MemoryForgetTool::new(memory, security.clone())),
         Arc::new(ScheduleTool::new(security.clone(), root_config.clone())),
-        Arc::new(TaskPlanTool::new(security.clone())),
+        task_plan_tool,
         Arc::new(ModelRoutingConfigTool::new(
             config.clone(),
             security.clone(),
@@ -711,6 +766,7 @@ pub fn all_tools_with_runtime(
         }
 
         let subagent_registry = Arc::new(SubAgentRegistry::new());
+        workbench_handles.subagent_registry = Some(subagent_registry.clone());
         tool_arcs.push(Arc::new(
             SubAgentSpawnTool::new(
                 all_agents,
@@ -725,7 +781,8 @@ pub fn all_tools_with_runtime(
                 root_config.agent.subagents.auto_activate,
                 runtime_config_path,
             )
-            .with_load_tracker(load_tracker),
+            .with_load_tracker(load_tracker)
+            .with_observer_factory(subagent_observer_factory),
         ));
         tool_arcs.push(Arc::new(SubAgentListTool::new(subagent_registry.clone())));
         tool_arcs.push(Arc::new(SubAgentManageTool::new(
@@ -785,7 +842,10 @@ pub fn all_tools_with_runtime(
     // runtime tool graph is used.
     let built_tools = boxed_registry_from_arcs(tool_arcs);
     let (extended_tools, _bg_job_store) = add_bg_tools(built_tools);
-    extended_tools
+    ToolRuntimeBootstrap {
+        tools: extended_tools,
+        handles: workbench_handles,
+    }
 }
 
 #[cfg(test)]

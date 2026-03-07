@@ -206,22 +206,30 @@ mod tui_event_handling {
     /// Test pending approval state management
     #[test]
     fn pending_approval_state_lifecycle() {
-        use clawclawclaw::tui::state::PendingApproval;
+        use clawclawclaw::tui::state::{ApprovalQueueItem, ApprovalQueueStatus};
 
         let mut state = TuiState::new("provider", "model");
-        assert!(state.pending_approval.is_none());
+        assert!(state.approval_queue.is_empty());
 
-        state.pending_approval = Some(PendingApproval {
+        state.enqueue_approval(ApprovalQueueItem {
             request_id: "req-001".to_string(),
             tool_name: "shell".to_string(),
             arguments_summary: "rm -rf /tmp".to_string(),
+            requested_at: "10:00:00".to_string(),
+            status: ApprovalQueueStatus::Pending,
+            status_message: None,
         });
-        assert!(state.pending_approval.is_some());
-        assert_eq!(state.pending_approval.as_ref().unwrap().tool_name, "shell");
+        assert_eq!(state.approval_queue.len(), 1);
+        assert_eq!(state.active_approval().unwrap().tool_name, "shell");
 
-        // Simulating user approval clears the state
-        state.pending_approval = None;
-        assert!(state.pending_approval.is_none());
+        state.update_approval_status(
+            "req-001",
+            ApprovalQueueStatus::Denied,
+            Some("Denied".to_string()),
+        );
+        assert_eq!(state.active_approval().unwrap().status, ApprovalQueueStatus::Denied);
+        state.dismiss_approval("req-001");
+        assert!(state.approval_queue.is_empty());
     }
 
     /// Test status transitions

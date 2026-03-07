@@ -8,6 +8,13 @@ Refs: `docs/plans/2026-03-06-tui-agent-workbench-proposal.md`, `docs/plans/2026-
 
 ## 1. 目的
 
+## Status (2026-03-07)
+
+- Contract A is implemented via queue-first TUI approval state plus authority-first resolution in `src/tui/app.rs`; TUI constants now centralize sender/channel/reply-target identity and bridge failures stay fail-closed.
+- Contract B is implemented via a `SubagentObserverFactory` hook in `src/tools/subagent_spawn.rs` and a TUI forwarding observer / telemetry cache in `src/tui/projections.rs`; `SubAgentRegistry` still owns lifecycle truth.
+- Contract C is implemented via `TaskPlanTool::snapshot()` and `build_task_board_view(...)` in `src/tui/projections.rs`; durable goals and session tasks remain separate authorities and are merged only for read-only rendering.
+
+
 本文档是 `docs/plans/2026-03-06-tui-agent-workbench-proposal.md` 的配套细化规格，目标是冻结 3 个足够窄、可直接编码的桥接契约：
 
 1. `Approval Bridge`

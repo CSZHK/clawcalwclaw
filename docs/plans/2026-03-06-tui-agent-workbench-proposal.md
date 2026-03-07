@@ -8,6 +8,15 @@ Scope: terminal-native TUI workbench evolution
 
 ## 1. Purpose
 
+## Status (2026-03-07)
+
+- Implemented the workbench baseline in `src/tui/`, `src/tools/`, and `src/observability/` without introducing new public config keys.
+- The shipped baseline keeps the terminal-native monolith, preserves chat-first fallback, and adds read-only task board / sub-agent panes only when projections are available.
+- Approval handling now closes the TUI loop with queue-first render state, authority-first resolution through `ApprovalManager`, and explicit fail-closed handling for failed/expired prompts.
+- Task board projection now reads durable goals via `GoalEngine` and session tasks via `TaskPlanTool::snapshot()`; no `Tool` downcast path is used.
+- Agentic sub-agents now optionally forward safe observability events into the TUI while `SubAgentRegistry` remains the single lifecycle authority.
+
+
 This document is a new implementation-oriented proposal for the TUI workbench track.
 
 It is intentionally **parallel to**, not a replacement for, the broader TUI workbench vision draft. The goal here is to turn the high-level direction into a smaller set of repository-aligned decisions, explicit constraints, phased delivery boundaries, and validation gates.

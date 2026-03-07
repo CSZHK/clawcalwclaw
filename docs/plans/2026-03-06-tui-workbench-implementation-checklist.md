@@ -8,6 +8,15 @@ Scope: `src/tui/`, `src/agent/`, `src/tools/`
 
 ## 1. Purpose
 
+## 1.1 Implementation Status (2026-03-07)
+
+- Work completed in `src/tui/app.rs`, `src/tui/state.rs`, `src/tui/projections.rs`, `src/tui/widgets/{approval,task_board,subagents,mod}.rs`, `src/tools/{mod,task_plan,subagent_spawn}.rs`, and `src/goals/engine.rs`.
+- Approval bridge: shipped queue-first UI state, explicit approved/denied/failed/expired statuses, redacted previews, centralized TUI approval identity constants, and authority-first resolution through `ApprovalManager`.
+- Task board: shipped typed same-session handles, `TaskPlanTool::snapshot()`, and a read-only sidebar projection for durable goals + session tasks with chat-first fallback when empty/unavailable.
+- Sub-agent observability: shipped optional forwarding observer plumbing, TUI telemetry cache/projection, and a dedicated low-noise sub-agent pane while keeping `SubAgentRegistry` authoritative.
+- Focused validation completed with `cargo +1.88.0 test --lib tui`, `cargo +1.88.0 test --features tui-ratatui --test tui_render_test --test tui_event_handling_test`, `cargo +1.88.0 test snapshot_preserves_order_and_statuses --lib`, `cargo +1.88.0 test snapshot_tracks_create_add_update_and_delete --lib`, `cargo +1.88.0 test --features tui-ratatui task_board_view_keeps_same_title_multi_authority_items --lib`, and `cargo +1.88.0 test --features tui-ratatui observer_factory_forwards_safe_events --lib`.
+
+
 This document turns the 2026-03-06 TUI workbench proposal set into a file-scoped implementation checklist.
 
 It is not a new vision document. Its job is to answer one narrower question:

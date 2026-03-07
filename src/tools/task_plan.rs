@@ -21,6 +21,23 @@ enum TaskStatus {
     Completed,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TaskPlanSnapshotStatus {
+    Pending,
+    InProgress,
+    Completed,
+}
+
+impl TaskPlanSnapshotStatus {
+    fn from_task_status(status: TaskStatus) -> Self {
+        match status {
+            TaskStatus::Pending => Self::Pending,
+            TaskStatus::InProgress => Self::InProgress,
+            TaskStatus::Completed => Self::Completed,
+        }
+    }
+}
+
 impl fmt::Display for TaskStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -47,6 +64,13 @@ struct TaskItem {
     id: usize,
     title: String,
     status: TaskStatus,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaskPlanSnapshotItem {
+    pub id: usize,
+    pub title: String,
+    pub status: TaskPlanSnapshotStatus,
 }
 
 // ── Tool ─────────────────────────────────────────────────────────────────
@@ -219,6 +243,19 @@ impl TaskPlanTool {
             output: "Task list cleared.".into(),
             error: None,
         }
+    }
+
+    pub fn snapshot(&self) -> Vec<TaskPlanSnapshotItem> {
+        self.tasks
+            .read()
+            .unwrap()
+            .iter()
+            .map(|task| TaskPlanSnapshotItem {
+                id: task.id,
+                title: task.title.clone(),
+                status: TaskPlanSnapshotStatus::from_task_status(task.status),
+            })
+            .collect()
     }
 }
 
@@ -529,6 +566,81 @@ mod tests {
         let tool = readonly_tool();
         let r = tool.execute(json!({ "action": "list" })).await.unwrap();
         assert!(r.success);
+    }
+
+    #[tokio::test]
+    async fn snapshot_empty_when_no_tasks_exist() {
+        let tool = readonly_tool();
+        assert!(tool.snapshot().is_empty());
+    }
+
+    #[tokio::test]
+    async fn snapshot_preserves_order_and_statuses() {
+        let tool = default_tool();
+        tool.execute(json!({
+            "action": "create",
+            "tasks": [
+                {"title": "first", "status": "pending"},
+                {"title": "second", "status": "in_progress"},
+                {"title": "third", "status": "completed"}
+            ]
+        }))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            tool.snapshot(),
+            vec![
+                TaskPlanSnapshotItem {
+                    id: 1,
+                    title: "first".to_string(),
+                    status: TaskPlanSnapshotStatus::Pending,
+                },
+                TaskPlanSnapshotItem {
+                    id: 2,
+                    title: "second".to_string(),
+                    status: TaskPlanSnapshotStatus::InProgress,
+                },
+                TaskPlanSnapshotItem {
+                    id: 3,
+                    title: "third".to_string(),
+                    status: TaskPlanSnapshotStatus::Completed,
+                },
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn snapshot_tracks_create_add_update_and_delete() {
+        let tool = default_tool();
+
+        tool.execute(json!({
+            "action": "create",
+            "tasks": [{"title": "bootstrap"}]
+        }))
+        .await
+        .unwrap();
+        assert_eq!(tool.snapshot().len(), 1);
+
+        tool.execute(json!({ "action": "add", "title": "follow-up" }))
+            .await
+            .unwrap();
+        assert_eq!(tool.snapshot().len(), 2);
+
+        tool.execute(json!({
+            "action": "update",
+            "id": 2,
+            "status": "completed"
+        }))
+        .await
+        .unwrap();
+        assert_eq!(
+            tool.snapshot()[1].status,
+            TaskPlanSnapshotStatus::Completed
+        );
+
+        tool.execute(json!({ "action": "delete" })).await.unwrap();
+        assert!(tool.snapshot().is_empty());
     }
 
     #[tokio::test]

@@ -2,6 +2,10 @@
 //!
 //! This module intentionally stays UI-focused and does not import agent internals.
 
+use std::collections::VecDeque;
+
+use super::projections::{SubAgentPaneView, TaskBoardView};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InputMode {
     Normal,
@@ -32,12 +36,34 @@ pub struct ToolCallEntry {
     pub status: ToolCallStatus,
 }
 
-/// Pending tool approval request displayed as a modal overlay.
-#[derive(Debug, Clone)]
-pub struct PendingApproval {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ApprovalQueueStatus {
+    Pending,
+    Approved,
+    Denied,
+    Failed,
+    Expired,
+}
+
+impl ApprovalQueueStatus {
+    pub fn is_pending(self) -> bool {
+        matches!(self, Self::Pending)
+    }
+
+    pub fn is_terminal(self) -> bool {
+        !self.is_pending()
+    }
+}
+
+/// Approval queue item displayed as a modal overlay.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ApprovalQueueItem {
     pub request_id: String,
     pub tool_name: String,
     pub arguments_summary: String,
+    pub requested_at: String,
+    pub status: ApprovalQueueStatus,
+    pub status_message: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,19 +105,23 @@ pub struct TuiState {
     pub awaiting_response: bool,
     pub streaming_assistant_idx: Option<usize>,
 
-    // ── Structured tool tracking (Feature 1) ──
+    // ── Structured tool tracking ──
     pub tool_calls: Vec<ToolCallEntry>,
 
-    // ── Token/cost tracking (Feature 2) ──
+    // ── Token/cost tracking ──
     pub session_input_tokens: u64,
     pub session_output_tokens: u64,
     pub session_cost_usd: f64,
 
-    // ── Help overlay (Feature 3) ──
+    // ── Help overlay ──
     pub show_help: bool,
 
-    // ── Tool approval (Feature 4) ──
-    pub pending_approval: Option<PendingApproval>,
+    // ── Tool approval ──
+    pub approval_queue: VecDeque<ApprovalQueueItem>,
+
+    // ── Workbench projections ──
+    pub task_board_view: Option<TaskBoardView>,
+    pub subagent_pane_view: Option<SubAgentPaneView>,
 
     history_cursor: Option<usize>,
 }
@@ -117,14 +147,15 @@ impl TuiState {
             session_output_tokens: 0,
             session_cost_usd: 0.0,
             show_help: false,
-            pending_approval: None,
+            approval_queue: VecDeque::new(),
+            task_board_view: None,
+            subagent_pane_view: None,
             history_cursor: None,
         }
     }
 
     pub fn push_chat_message(&mut self, role: TuiRole, content: impl Into<String>) {
         self.messages.push(TuiChatMessage::new(role, content));
-        // New messages should keep the viewport pinned to bottom by default.
         self.scroll_offset = 0;
     }
 
@@ -276,11 +307,81 @@ impl TuiState {
     pub fn toggle_help(&mut self) {
         self.show_help = !self.show_help;
     }
+
+    // ── Approval queue ──
+
+    pub fn enqueue_approval(&mut self, item: ApprovalQueueItem) -> bool {
+        if self
+            .approval_queue
+            .iter()
+            .any(|existing| existing.request_id == item.request_id)
+        {
+            return false;
+        }
+        self.approval_queue.push_back(item);
+        true
+    }
+
+    pub fn active_approval(&self) -> Option<&ApprovalQueueItem> {
+        self.approval_queue
+            .iter()
+            .find(|item| item.status.is_pending())
+            .or_else(|| self.approval_queue.front())
+    }
+
+    pub fn active_pending_request_id(&self) -> Option<&str> {
+        self.approval_queue
+            .iter()
+            .find(|item| item.status.is_pending())
+            .map(|item| item.request_id.as_str())
+    }
+
+    pub fn update_approval_status(
+        &mut self,
+        request_id: &str,
+        status: ApprovalQueueStatus,
+        status_message: Option<String>,
+    ) -> bool {
+        let Some(item) = self
+            .approval_queue
+            .iter_mut()
+            .find(|item| item.request_id == request_id)
+        else {
+            return false;
+        };
+
+        item.status = status;
+        item.status_message = status_message;
+        true
+    }
+
+    pub fn dismiss_approval(&mut self, request_id: &str) -> bool {
+        let before = self.approval_queue.len();
+        self.approval_queue.retain(|item| item.request_id != request_id);
+        before != self.approval_queue.len()
+    }
+
+    pub fn clear_terminal_approvals(&mut self) {
+        self.approval_queue.retain(|item| item.status.is_pending());
+    }
+
+    // ── Workbench projections ──
+
+    pub fn set_task_board_view(&mut self, view: Option<TaskBoardView>) {
+        self.task_board_view = view;
+    }
+
+    pub fn set_subagent_pane_view(&mut self, view: Option<SubAgentPaneView>) {
+        self.subagent_pane_view = view;
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{InputMode, ToolCallStatus, TuiRole, TuiState};
+    use super::{
+        ApprovalQueueItem, ApprovalQueueStatus, InputMode, ToolCallStatus, TuiRole, TuiState,
+    };
+    use crate::tui::projections::{SubAgentPaneView, TaskBoardView};
 
     #[test]
     fn push_message_appends_and_keeps_bottom_scroll() {
@@ -365,5 +466,72 @@ mod tests {
         assert!(state.show_help);
         state.toggle_help();
         assert!(!state.show_help);
+    }
+
+    #[test]
+    fn approval_queue_progresses_without_overwrite() {
+        let mut state = TuiState::new("provider", "model");
+        assert!(state.enqueue_approval(ApprovalQueueItem {
+            request_id: "req-1".to_string(),
+            tool_name: "shell".to_string(),
+            arguments_summary: "ls -la".to_string(),
+            requested_at: "10:00:00".to_string(),
+            status: ApprovalQueueStatus::Pending,
+            status_message: None,
+        }));
+        assert!(state.enqueue_approval(ApprovalQueueItem {
+            request_id: "req-2".to_string(),
+            tool_name: "file_write".to_string(),
+            arguments_summary: "write config".to_string(),
+            requested_at: "10:00:01".to_string(),
+            status: ApprovalQueueStatus::Pending,
+            status_message: None,
+        }));
+        assert!(!state.enqueue_approval(ApprovalQueueItem {
+            request_id: "req-2".to_string(),
+            tool_name: "ignored".to_string(),
+            arguments_summary: "ignored".to_string(),
+            requested_at: "10:00:02".to_string(),
+            status: ApprovalQueueStatus::Pending,
+            status_message: None,
+        }));
+
+        assert_eq!(state.active_pending_request_id(), Some("req-1"));
+        state.update_approval_status(
+            "req-1",
+            ApprovalQueueStatus::Approved,
+            Some("Approved in TUI".to_string()),
+        );
+        assert_eq!(state.active_pending_request_id(), Some("req-2"));
+    }
+
+    #[test]
+    fn approval_queue_can_dismiss_terminal_items() {
+        let mut state = TuiState::new("provider", "model");
+        state.enqueue_approval(ApprovalQueueItem {
+            request_id: "req-1".to_string(),
+            tool_name: "shell".to_string(),
+            arguments_summary: "ls -la".to_string(),
+            requested_at: "10:00:00".to_string(),
+            status: ApprovalQueueStatus::Denied,
+            status_message: Some("Denied".to_string()),
+        });
+        assert!(state.dismiss_approval("req-1"));
+        assert!(state.approval_queue.is_empty());
+    }
+
+    #[test]
+    fn workbench_snapshots_replace_cleanly() {
+        let mut state = TuiState::new("provider", "model");
+        state.set_task_board_view(Some(TaskBoardView::default()));
+        state.set_subagent_pane_view(Some(SubAgentPaneView::default()));
+
+        assert!(state.task_board_view.is_some());
+        assert!(state.subagent_pane_view.is_some());
+
+        state.set_task_board_view(None);
+        state.set_subagent_pane_view(None);
+        assert!(state.task_board_view.is_none());
+        assert!(state.subagent_pane_view.is_none());
     }
 }

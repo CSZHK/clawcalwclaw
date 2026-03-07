@@ -10,7 +10,7 @@ use super::orchestration_settings::load_orchestration_settings;
 use super::subagent_registry::{SubAgentRegistry, SubAgentSession, SubAgentStatus};
 use super::traits::{Tool, ToolResult};
 use crate::config::{DelegateAgentConfig, SubAgentsConfig};
-use crate::observability::traits::{Observer, ObserverEvent, ObserverMetric};
+use crate::observability::traits::Observer;
 use crate::providers::{self, ChatMessage, Provider};
 use crate::security::policy::ToolOperation;
 use crate::security::SecurityPolicy;
@@ -24,6 +24,9 @@ use std::time::Duration;
 
 /// Default timeout for background sub-agent provider calls.
 const SPAWN_TIMEOUT_SECS: u64 = 300;
+
+pub type SubagentObserverFactory =
+    Arc<dyn Fn(String, String) -> Arc<dyn Observer> + Send + Sync>;
 
 /// Tool that spawns a delegate agent in the background, returning immediately
 /// with a session ID. The sub-agent runs asynchronously and stores its result
@@ -39,6 +42,7 @@ pub struct SubAgentSpawnTool {
     subagent_settings: SubAgentsConfig,
     load_tracker: AgentLoadTracker,
     runtime_config_path: Option<PathBuf>,
+    observer_factory: Option<SubagentObserverFactory>,
 }
 
 impl SubAgentSpawnTool {
@@ -72,12 +76,18 @@ impl SubAgentSpawnTool {
             subagent_settings,
             load_tracker: AgentLoadTracker::new(),
             runtime_config_path,
+            observer_factory: None,
         }
     }
 
     /// Reuse a shared runtime load tracker.
     pub fn with_load_tracker(mut self, load_tracker: AgentLoadTracker) -> Self {
         self.load_tracker = load_tracker;
+        self
+    }
+
+    pub fn with_observer_factory(mut self, observer_factory: Option<SubagentObserverFactory>) -> Self {
+        self.observer_factory = observer_factory;
         self
     }
 
@@ -349,15 +359,21 @@ impl Tool for SubAgentSpawnTool {
         let registry = self.registry.clone();
         let sid = session_id.clone();
         let mut bg_load_lease = load_lease;
+        let observer_factory = self.observer_factory.clone();
 
         let handle = tokio::spawn(async move {
             let result = if is_agentic {
+                let observer = observer_factory
+                    .as_ref()
+                    .map(|factory| factory(sid.clone(), agent_name_owned.clone()))
+                    .unwrap_or_else(|| Arc::new(crate::observability::NoopObserver));
                 run_agentic_background(
                     &agent_name_owned,
                     &agent_config,
                     &*provider,
                     &full_prompt,
                     &parent_tools,
+                    observer,
                     &multimodal_config,
                 )
                 .await
@@ -497,25 +513,13 @@ impl Tool for ToolArcRef {
     }
 }
 
-struct NoopObserver;
-
-impl Observer for NoopObserver {
-    fn record_event(&self, _event: &ObserverEvent) {}
-    fn record_metric(&self, _metric: &ObserverMetric) {}
-    fn name(&self) -> &str {
-        "noop"
-    }
-    fn as_any(&self) -> &dyn std::any::Any {
-        self
-    }
-}
-
 async fn run_agentic_background(
     agent_name: &str,
     agent_config: &DelegateAgentConfig,
     provider: &dyn Provider,
     full_prompt: &str,
     parent_tools: &[Arc<dyn Tool>],
+    observer: Arc<dyn Observer>,
     multimodal_config: &crate::config::MultimodalConfig,
 ) -> anyhow::Result<ToolResult> {
     if agent_config.allowed_tools.is_empty() {
@@ -564,15 +568,13 @@ async fn run_agentic_background(
     }
     history.push(ChatMessage::user(full_prompt.to_string()));
 
-    let noop_observer = NoopObserver;
-
     let result = tokio::time::timeout(
         Duration::from_secs(SPAWN_TIMEOUT_SECS),
         crate::agent::loop_::run_tool_call_loop(
             provider,
             &mut history,
             &sub_tools,
-            &noop_observer,
+            observer.as_ref(),
             &agent_config.provider,
             &agent_config.model,
             temperature,

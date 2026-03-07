@@ -5,6 +5,7 @@
 
 pub mod app;
 pub mod events;
+pub mod projections;
 pub mod state;
 pub mod terminal;
 pub mod widgets;

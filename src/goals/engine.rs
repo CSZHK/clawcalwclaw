@@ -122,6 +122,7 @@ impl<'de> Deserialize<'de> for StepStatus {
 
 // ── GoalEngine ──────────────────────────────────────────────────
 
+#[derive(Debug, Clone)]
 pub struct GoalEngine {
     state_path: PathBuf,
 }

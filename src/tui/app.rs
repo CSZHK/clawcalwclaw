@@ -8,6 +8,7 @@
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+use std::future::pending;
 
 use anyhow::Result;
 use futures_util::StreamExt;
@@ -23,28 +24,45 @@ use crate::agent::loop_::{
     SafetyHeartbeatConfig,
 };
 use crate::config::{resolve_default_model_id, Config, ProgressMode};
+use crate::goals::engine::GoalEngine;
 use crate::memory::{self, Memory};
 use crate::observability::{self, Observer};
 use crate::providers::{self, ChatMessage, Provider};
 use crate::runtime;
 use crate::security::SecurityPolicy;
-use crate::tools::{self, Tool};
+use crate::tools::{self, SubAgentRegistry, TaskPlanTool, Tool};
 use crate::util::truncate_with_ellipsis;
 
 use super::events::{translate_delta, TuiEvent};
-use super::state::{InputMode, TuiRole, TuiState};
+use super::projections::{
+    build_subagent_observer_factory, build_subagent_pane_view, build_task_board_view,
+    SubagentTelemetryCache, SubagentTelemetryEvent,
+};
+use super::state::{ApprovalQueueItem, ApprovalQueueStatus, InputMode, TuiRole, TuiState};
 use super::terminal::{install_panic_hook, install_signal_handlers};
 use super::widgets;
 
 const DELTA_CHANNEL_BUFFER: usize = 256;
 const AGENT_EVENT_CHANNEL_BUFFER: usize = 256;
 const DOUBLE_CTRL_C_WINDOW: Duration = Duration::from_millis(300);
+const WORKBENCH_REFRESH_INTERVAL: Duration = Duration::from_millis(750);
+const APPROVAL_PREVIEW_MAX_LEN: usize = 240;
+const TUI_APPROVAL_SENDER: &str = "tui-user";
+const TUI_APPROVAL_CHANNEL: &str = "tui";
+const TUI_APPROVAL_REPLY_TARGET: &str = "tui";
 
 #[derive(Debug)]
 struct AgentTaskResult {
     request_id: u64,
     history: Vec<ChatMessage>,
     output: std::result::Result<String, String>,
+}
+
+#[derive(Clone)]
+struct WorkbenchReadHandles {
+    goal_engine: GoalEngine,
+    task_plan: Arc<TaskPlanTool>,
+    subagent_registry: Option<Arc<SubAgentRegistry>>,
 }
 
 struct TuiRuntimeContext {
@@ -63,6 +81,8 @@ struct TuiRuntimeContext {
     temperature: f64,
     history: Vec<ChatMessage>,
     canary_tokens_enabled: bool,
+    workbench: Option<WorkbenchReadHandles>,
+    subagent_telemetry_rx: Option<tokio::sync::mpsc::UnboundedReceiver<SubagentTelemetryEvent>>,
 }
 
 pub async fn run(config: &Config) -> Result<()> {
@@ -112,6 +132,8 @@ async fn run_loop(
             missing_api_key_guidance(&runtime_ctx.provider_name),
         );
     }
+    let mut subagent_telemetry = SubagentTelemetryCache::default();
+    refresh_workbench_views(&runtime_ctx, &mut state, &subagent_telemetry).await;
 
     let (delta_tx, mut delta_rx) = tokio::sync::mpsc::channel::<String>(DELTA_CHANNEL_BUFFER);
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<AgentTaskResult>();
@@ -124,6 +146,8 @@ async fn run_loop(
     let mut active_request_id: Option<u64> = None;
     let mut next_request_id = 1_u64;
     let mut last_ctrl_c_at: Option<Instant> = None;
+    let mut workbench_refresh = tokio::time::interval(WORKBENCH_REFRESH_INTERVAL);
+    workbench_refresh.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
     loop {
         terminal.draw(|frame| {
@@ -132,11 +156,14 @@ async fn run_loop(
             }
         })?;
 
+        let mut needs_workbench_refresh = false;
+
         tokio::select! {
             maybe_event = event_stream.next() => {
                 match maybe_event {
                     Some(Ok(event)) => {
                         let is_resize = matches!(&event, Event::Resize(_, _));
+                        let approval_visible = !state.approval_queue.is_empty();
                         handle_terminal_event(
                             event,
                             &mut state,
@@ -151,6 +178,7 @@ async fn run_loop(
                             &mut last_ctrl_c_at,
                         )
                         .await?;
+                        needs_workbench_refresh = approval_visible || !state.approval_queue.is_empty();
                         if is_resize {
                             terminal.autoresize()?;
                         }
@@ -168,9 +196,11 @@ async fn run_loop(
             }
             Some(agent_event) = agent_event_rx.recv() => {
                 handle_agent_event(agent_event, &mut state, &runtime_ctx);
+                needs_workbench_refresh = true;
             }
             Some(prompt) = approval_prompt_rx.recv() => {
                 handle_approval_prompt(prompt, &mut state);
+                needs_workbench_refresh = true;
             }
             Some(task_result) = result_rx.recv() => {
                 if active_request_id != Some(task_result.request_id) {
@@ -182,7 +212,6 @@ async fn run_loop(
                 state.set_idle();
                 state.clear_progress();
                 state.clear_tool_calls();
-                state.pending_approval = None;
 
                 runtime_ctx.history = task_result.history;
                 match task_result.output {
@@ -195,10 +224,30 @@ async fn run_loop(
                         state.push_chat_message(TuiRole::Error, friendly);
                     }
                 }
+                needs_workbench_refresh = true;
+            }
+            subagent_event = recv_subagent_telemetry(&mut runtime_ctx) => {
+                match subagent_event {
+                    Some(event) => {
+                        subagent_telemetry.record(event);
+                        needs_workbench_refresh = true;
+                    }
+                    None => {
+                        runtime_ctx.subagent_telemetry_rx = None;
+                    }
+                }
+            }
+            _ = workbench_refresh.tick() => {
+                needs_workbench_refresh = true;
             }
             _ = session_cancel.cancelled() => {
                 state.should_quit = true;
             }
+        }
+
+        reconcile_approval_queue(&runtime_ctx, &mut state);
+        if needs_workbench_refresh {
+            refresh_workbench_views(&runtime_ctx, &mut state, &subagent_telemetry).await;
         }
 
         if state.should_quit {
@@ -305,21 +354,34 @@ async fn handle_key_event(
     }
 
     // ── Approval modal intercepts keys before normal mode handling ──
-    if state.pending_approval.is_some() {
+    if let Some(active_request_id) = state.active_approval().map(|item| item.request_id.clone()) {
+        let active_status = state.active_approval().map(|item| item.status);
         match key.code {
-            KeyCode::Char('y' | 'Y') => {
-                if let Some(approval) = state.pending_approval.take() {
-                    resolve_approval(&runtime_ctx.approval_manager, &approval.request_id, true);
-                }
+            KeyCode::Char('y' | 'Y') if active_status == Some(ApprovalQueueStatus::Pending) => {
+                resolve_approval_request(
+                    state,
+                    &runtime_ctx.approval_manager,
+                    &active_request_id,
+                    crate::approval::ApprovalResponse::Yes,
+                );
                 return Ok(true);
             }
-            KeyCode::Char('n' | 'N') => {
-                if let Some(approval) = state.pending_approval.take() {
-                    resolve_approval(&runtime_ctx.approval_manager, &approval.request_id, false);
-                }
+            KeyCode::Char('n' | 'N') if active_status == Some(ApprovalQueueStatus::Pending) => {
+                resolve_approval_request(
+                    state,
+                    &runtime_ctx.approval_manager,
+                    &active_request_id,
+                    crate::approval::ApprovalResponse::No,
+                );
                 return Ok(true);
             }
-            _ => return Ok(true), // Swallow all other keys while modal is open
+            KeyCode::Esc | KeyCode::Enter
+                if active_status.is_some_and(ApprovalQueueStatus::is_terminal) =>
+            {
+                state.dismiss_approval(&active_request_id);
+                return Ok(true);
+            }
+            _ => return Ok(true),
         }
     }
 
@@ -485,25 +547,61 @@ fn handle_agent_event(event: AgentEvent, state: &mut TuiState, runtime_ctx: &Tui
 }
 
 fn handle_approval_prompt(prompt: NonCliApprovalPrompt, state: &mut TuiState) {
-    let args_summary = truncate_json_for_display(&prompt.arguments, 200);
-    state.pending_approval = Some(super::state::PendingApproval {
+    let args_summary = truncate_json_for_display(&prompt.arguments, APPROVAL_PREVIEW_MAX_LEN);
+    state.enqueue_approval(ApprovalQueueItem {
         request_id: prompt.request_id,
         tool_name: prompt.tool_name,
         arguments_summary: args_summary,
+        requested_at: chrono::Local::now().format("%H:%M:%S").to_string(),
+        status: ApprovalQueueStatus::Pending,
+        status_message: None,
     });
 }
 
-fn resolve_approval(
+fn resolve_approval_request(
+    state: &mut TuiState,
     approval_manager: &crate::approval::ApprovalManager,
     request_id: &str,
-    approved: bool,
+    decision: crate::approval::ApprovalResponse,
 ) {
-    let decision = if approved {
-        crate::approval::ApprovalResponse::Yes
-    } else {
-        crate::approval::ApprovalResponse::No
+    let resolution = match decision {
+        crate::approval::ApprovalResponse::Yes => approval_manager
+            .confirm_non_cli_pending_request(
+                request_id,
+                TUI_APPROVAL_SENDER,
+                TUI_APPROVAL_CHANNEL,
+                TUI_APPROVAL_REPLY_TARGET,
+            )
+            .map(|_| (ApprovalQueueStatus::Approved, "Approved in TUI".to_string())),
+        crate::approval::ApprovalResponse::No => approval_manager
+            .reject_non_cli_pending_request(
+                request_id,
+                TUI_APPROVAL_SENDER,
+                TUI_APPROVAL_CHANNEL,
+                TUI_APPROVAL_REPLY_TARGET,
+            )
+            .map(|_| (ApprovalQueueStatus::Denied, "Denied in TUI".to_string())),
+        _ => Err(crate::approval::PendingApprovalError::NotFound),
     };
+
+    let (status, message) = match resolution {
+        Ok(value) => value,
+        Err(crate::approval::PendingApprovalError::Expired) => (
+            ApprovalQueueStatus::Expired,
+            "Approval expired before resolution".to_string(),
+        ),
+        Err(crate::approval::PendingApprovalError::RequesterMismatch) => (
+            ApprovalQueueStatus::Failed,
+            "Approval requester mismatch; runtime stayed fail-closed".to_string(),
+        ),
+        Err(crate::approval::PendingApprovalError::NotFound) => (
+            ApprovalQueueStatus::Failed,
+            "Approval request no longer exists; runtime stayed fail-closed".to_string(),
+        ),
+    };
+
     approval_manager.record_non_cli_pending_resolution(request_id, decision);
+    let _ = state.update_approval_status(request_id, status, Some(message));
 }
 
 fn estimate_usage_cost(
@@ -525,7 +623,95 @@ fn estimate_usage_cost(
 
 /// Truncate a JSON value to a human-readable summary for the approval modal.
 fn truncate_json_for_display(value: &serde_json::Value, max_len: usize) -> String {
-    truncate_with_ellipsis(&value.to_string(), max_len)
+    let redacted = redact_json_for_preview(value, 0);
+    truncate_with_ellipsis(&redacted.to_string(), max_len)
+}
+
+fn redact_json_for_preview(value: &serde_json::Value, depth: usize) -> serde_json::Value {
+    const MAX_DEPTH: usize = 3;
+
+    if depth >= MAX_DEPTH {
+        return serde_json::Value::String("[truncated]".to_string());
+    }
+
+    match value {
+        serde_json::Value::Object(map) => serde_json::Value::Object(
+            map.iter()
+                .map(|(key, value)| {
+                    let lowered = key.to_ascii_lowercase();
+                    let redacted = if ["key", "token", "secret", "password", "authorization"]
+                        .iter()
+                        .any(|needle| lowered.contains(needle))
+                    {
+                        serde_json::Value::String("[redacted]".to_string())
+                    } else {
+                        redact_json_for_preview(value, depth + 1)
+                    };
+                    (key.clone(), redacted)
+                })
+                .collect(),
+        ),
+        serde_json::Value::Array(values) => serde_json::Value::Array(
+            values
+                .iter()
+                .take(8)
+                .map(|value| redact_json_for_preview(value, depth + 1))
+                .collect(),
+        ),
+        other => other.clone(),
+    }
+}
+
+fn reconcile_approval_queue(runtime_ctx: &TuiRuntimeContext, state: &mut TuiState) {
+    let pending_ids = state
+        .approval_queue
+        .iter()
+        .filter(|item| item.status == ApprovalQueueStatus::Pending)
+        .map(|item| item.request_id.clone())
+        .collect::<Vec<_>>();
+
+    for request_id in pending_ids {
+        if !runtime_ctx
+            .approval_manager
+            .has_non_cli_pending_request(&request_id)
+        {
+            let _ = state.update_approval_status(
+                &request_id,
+                ApprovalQueueStatus::Expired,
+                Some("Approval expired or disappeared; runtime stayed fail-closed".to_string()),
+            );
+        }
+    }
+}
+
+async fn refresh_workbench_views(
+    runtime_ctx: &TuiRuntimeContext,
+    state: &mut TuiState,
+    subagent_telemetry: &SubagentTelemetryCache,
+) {
+    let Some(handles) = runtime_ctx.workbench.as_ref() else {
+        state.set_task_board_view(None);
+        state.set_subagent_pane_view(None);
+        return;
+    };
+
+    let task_board = build_task_board_view(&handles.goal_engine, Some(handles.task_plan.as_ref())).await;
+    state.set_task_board_view(Some(task_board));
+
+    let subagent_view = handles
+        .subagent_registry
+        .as_ref()
+        .map(|registry| build_subagent_pane_view(registry.as_ref(), subagent_telemetry));
+    state.set_subagent_pane_view(subagent_view);
+}
+
+async fn recv_subagent_telemetry(
+    runtime_ctx: &mut TuiRuntimeContext,
+) -> Option<SubagentTelemetryEvent> {
+    match runtime_ctx.subagent_telemetry_rx.as_mut() {
+        Some(rx) => rx.recv().await,
+        None => pending::<Option<SubagentTelemetryEvent>>().await,
+    }
 }
 
 fn finalize_assistant_output(state: &mut TuiState, output: String) {
@@ -682,8 +868,8 @@ async fn submit_user_message(
     // Build NonCliApprovalContext so the agent loop can request tool approvals
     // via the TUI approval modal (same pattern used by Telegram/Discord channels).
     let non_cli_approval_context = Some(NonCliApprovalContext {
-        sender: "tui-user".to_string(),
-        reply_target: "tui".to_string(),
+        sender: TUI_APPROVAL_SENDER.to_string(),
+        reply_target: TUI_APPROVAL_REPLY_TARGET.to_string(),
         prompt_tx: approval_prompt_tx,
     });
 
@@ -703,7 +889,7 @@ async fn submit_user_message(
                     temperature,
                     false,
                     Some(approval_manager.as_ref()),
-                    "tui",
+                    TUI_APPROVAL_CHANNEL,
                     non_cli_approval_context,
                     &multimodal,
                     max_tool_iterations,
@@ -910,7 +1096,9 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         (None, None)
     };
 
-    let mut tools_registry = tools::all_tools_with_runtime(
+    let (subagent_telemetry_tx, subagent_telemetry_rx) =
+        tokio::sync::mpsc::unbounded_channel::<SubagentTelemetryEvent>();
+    let tool_bootstrap = tools::all_tools_with_runtime_and_handles(
         Arc::new(config.clone()),
         &security,
         runtime_adapter,
@@ -924,7 +1112,9 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         &config.agents,
         config.api_key.as_deref(),
         config,
+        Some(build_subagent_observer_factory(subagent_telemetry_tx)),
     );
+    let mut tools_registry = tool_bootstrap.tools;
 
     let peripheral_tools: Vec<Box<dyn Tool>> =
         crate::peripherals::create_peripheral_tools(&config.peripherals).await?;
@@ -1007,6 +1197,11 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
     let approval_manager = Arc::new(crate::approval::ApprovalManager::from_config(
         &config.autonomy,
     ));
+    let workbench = tool_bootstrap.handles.task_plan.clone().map(|task_plan| WorkbenchReadHandles {
+        goal_engine: GoalEngine::new(&config.workspace_dir),
+        task_plan,
+        subagent_registry: tool_bootstrap.handles.subagent_registry.clone(),
+    });
 
     Ok(TuiRuntimeContext {
         config: config.clone(),
@@ -1024,6 +1219,8 @@ async fn bootstrap_runtime(config: &Config) -> Result<TuiRuntimeContext> {
         temperature: config.default_temperature,
         history,
         canary_tokens_enabled: config.security.canary_tokens,
+        workbench,
+        subagent_telemetry_rx: Some(subagent_telemetry_rx),
     })
 }
 

@@ -11,6 +11,10 @@ use ratatui::Terminal;
 #[cfg(feature = "tui-ratatui")]
 mod tui_render {
     use super::*;
+    use clawclawclaw::tui::projections::{
+        SubAgentPaneView, SubAgentProjectionItem, SubAgentViewStatus, TaskAuthorityKey,
+        TaskBoardItem, TaskBoardStatus, TaskBoardView,
+    };
     use clawclawclaw::tui::state::{InputMode, TuiRole, TuiState};
     use clawclawclaw::tui::widgets;
 
@@ -184,14 +188,17 @@ mod tui_render {
 
     #[test]
     fn renders_approval_modal_when_pending() {
-        use clawclawclaw::tui::state::PendingApproval;
+        use clawclawclaw::tui::state::{ApprovalQueueItem, ApprovalQueueStatus};
 
         let mut terminal = create_test_terminal((80, 24));
         let mut state = TuiState::new("provider", "model");
-        state.pending_approval = Some(PendingApproval {
+        state.enqueue_approval(ApprovalQueueItem {
             request_id: "req-123".to_string(),
             tool_name: "shell".to_string(),
             arguments_summary: "rm -rf /tmp/test".to_string(),
+            requested_at: "10:00:00".to_string(),
+            status: ApprovalQueueStatus::Pending,
+            status_message: None,
         });
 
         terminal
@@ -267,5 +274,92 @@ mod tui_render {
         // The scroll_offset should affect what's visible
         assert!(state.scroll_offset > 0);
         let _ = content; // Content analysis would need more sophisticated parsing
+    }
+
+    #[test]
+    fn renders_task_board_sidebar_when_projection_present() {
+        let mut terminal = create_test_terminal((100, 28));
+        let mut state = TuiState::new("provider", "model");
+        state.set_task_board_view(Some(TaskBoardView {
+            durable_items: vec![TaskBoardItem {
+                authority: TaskAuthorityKey::GoalStep {
+                    goal_id: "g1".to_string(),
+                    step_id: "s1".to_string(),
+                },
+                title: "Design bridge".to_string(),
+                status: TaskBoardStatus::InProgress,
+                priority_label: Some("High".to_string()),
+                group_label: "Workbench".to_string(),
+                detail_summary: None,
+            }],
+            session_items: Vec::new(),
+            merged_items: vec![TaskBoardItem {
+                authority: TaskAuthorityKey::GoalStep {
+                    goal_id: "g1".to_string(),
+                    step_id: "s1".to_string(),
+                },
+                title: "Design bridge".to_string(),
+                status: TaskBoardStatus::InProgress,
+                priority_label: Some("High".to_string()),
+                group_label: "Workbench".to_string(),
+                detail_summary: None,
+            }],
+            refreshed_at: "10:00:00".to_string(),
+            error_summary: None,
+        }));
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let content = terminal
+            .backend()
+            .buffer()
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+        assert!(content.contains("Task Board"));
+        assert!(content.contains("Design bridge"));
+    }
+
+    #[test]
+    fn renders_subagent_sidebar_when_projection_present() {
+        let mut terminal = create_test_terminal((100, 28));
+        let mut state = TuiState::new("provider", "model");
+        state.set_subagent_pane_view(Some(SubAgentPaneView {
+            items: vec![SubAgentProjectionItem {
+                session_id: "s1".to_string(),
+                agent_name: "researcher".to_string(),
+                status: SubAgentViewStatus::Running,
+                task_summary: "Trace workbench bridge".to_string(),
+                started_at: "10:00:00".to_string(),
+                completed_at: None,
+                last_event_summary: Some("Running shell".to_string()),
+                last_tool_name: Some("shell".to_string()),
+                input_tokens: None,
+                output_tokens: None,
+                error_summary: None,
+            }],
+            refreshed_at: "10:00:01".to_string(),
+        }));
+
+        terminal
+            .draw(|frame| {
+                widgets::render(frame, &state);
+            })
+            .expect("draw failed");
+
+        let content = terminal
+            .backend()
+            .buffer()
+            .content
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+        assert!(content.contains("Sub-Agents"));
+        assert!(content.contains("researcher"));
     }
 }
