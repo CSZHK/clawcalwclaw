@@ -170,14 +170,24 @@ mod tui_e2e {
                 self.temp_dir.path(),
             );
             let normalized = if pane_capture.len() >= log_capture.len() {
-                pane_capture
+                pane_capture.clone()
             } else {
-                log_capture
+                log_capture.clone()
             };
             if let Some(dir) = &self.artifact_dir {
                 let _ = fs::create_dir_all(dir);
-                let path = dir.join(format!("{}.ascii", self.artifact_prefix));
-                let _ = fs::write(path, &normalized);
+                let _ = fs::write(
+                    dir.join(format!("{}.pane.txt", self.artifact_prefix)),
+                    &pane_capture,
+                );
+                let _ = fs::write(
+                    dir.join(format!("{}.script.log", self.artifact_prefix)),
+                    &log_capture,
+                );
+                let _ = fs::write(
+                    dir.join(format!("{}.ascii", self.artifact_prefix)),
+                    &normalized,
+                );
             }
             normalized
         }
@@ -188,7 +198,7 @@ mod tui_e2e {
                 "-p",
                 "-t",
                 self.target.as_str(),
-                "#{pane_dead} #{pane_exit_status}",
+                "#{pane_dead} #{pane_dead_status}",
             ]);
             let status = String::from_utf8_lossy(&output.stdout);
             let mut parts = status.split_whitespace();
@@ -266,7 +276,6 @@ mod tui_e2e {
     }
 
     #[test]
-    #[ignore = "manual tmux harness; merge gate uses scripts/ci/run_tui_tmux_capture.sh"]
     fn startup_help_quit() {
         let _serial = test_lock();
         let Some(harness) = start_harness("startup-help-quit", 100, 28) else {
@@ -287,13 +296,12 @@ mod tui_e2e {
         assert!(contains_loose(&help, "/setup-key <KEY>"), "{help}");
 
         harness.send_key("Escape");
-        harness.send_key("C-d");
+        harness.send_key("q");
         let status = harness.wait_for_exit(EXIT_TIMEOUT);
         assert_exit_success(status, &harness.capture_if_possible().unwrap_or_default());
     }
 
     #[test]
-    #[ignore = "manual tmux harness; merge gate uses scripts/ci/run_tui_tmux_capture.sh"]
     fn edit_mode_setup_help_quit() {
         let _serial = test_lock();
         let Some(harness) = start_harness("setup-help-quit", 100, 28) else {
@@ -326,13 +334,12 @@ mod tui_e2e {
         assert!(contains_loose(&help, "/setup"), "{help}");
 
         harness.send_key("Escape");
-        harness.send_key("C-d");
+        harness.send_key("q");
         let status = harness.wait_for_exit(EXIT_TIMEOUT);
         assert_exit_success(status, &harness.capture_if_possible().unwrap_or_default());
     }
 
     #[test]
-    #[ignore = "manual tmux harness; merge gate uses scripts/ci/run_tui_tmux_capture.sh"]
     fn double_ctrl_c_quit() {
         let _serial = test_lock();
         let Some(harness) = start_harness("double-ctrl-c", 100, 28) else {

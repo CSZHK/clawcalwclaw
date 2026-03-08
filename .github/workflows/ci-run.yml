@@ -30,6 +30,7 @@ jobs:
             docs_changed: ${{ steps.scope.outputs.docs_changed }}
             rust_changed: ${{ steps.scope.outputs.rust_changed }}
             tui_changed: ${{ steps.scope.outputs.tui_changed }}
+            web_changed: ${{ steps.scope.outputs.web_changed }}
             workflow_changed: ${{ steps.scope.outputs.workflow_changed }}
             ci_cd_changed: ${{ steps.scope.outputs.ci_cd_changed }}
             docs_files: ${{ steps.scope.outputs.docs_files }}
@@ -289,14 +290,20 @@ jobs:
               env:
                   CARGO_BUILD_JOBS: "2"
               run: cargo build --locked --features tui-ratatui --bin clawclawclaw
+            - name: Run TUI P0 PTY acceptance
+              env:
+                  CARGO_BUILD_JOBS: "2"
+                  TUI_ARTIFACT_DIR: artifacts/tui/pty
+              run: cargo test --locked --features tui-ratatui --test tui_e2e_pty -- --test-threads=1
             - name: Run tmux TUI smoke + artifact capture
+              if: always()
               shell: bash
               run: |
                   set -euo pipefail
                   binary_path="${CARGO_TARGET_DIR:-target}/debug/clawclawclaw"
                   ./scripts/ci/run_tui_tmux_capture.sh \
                     --binary "${binary_path}" \
-                    --artifacts-dir artifacts/tui
+                    --artifacts-dir artifacts/tui/capture
             - name: Publish TUI artifact summary
               if: always()
               shell: bash
@@ -305,7 +312,7 @@ jobs:
                   if [ -d artifacts/tui ]; then
                     {
                       echo "### TUI Automation Artifacts"
-                      find artifacts/tui -maxdepth 1 -type f | sort | sed 's/^/- `/' | sed 's/$/`/'
+                      find artifacts/tui -type f | sort | sed 's/^/- `/' | sed 's/$/`/'
                     } >> "$GITHUB_STEP_SUMMARY"
                   fi
             - name: Upload TUI artifacts
@@ -313,7 +320,52 @@ jobs:
               uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
               with:
                   name: tui-automation-artifacts
-                  path: artifacts/tui/*
+                  path: artifacts/tui/**
+                  if-no-files-found: ignore
+                  retention-days: 14
+
+    web-acceptance:
+        name: Web Acceptance (Playwright P0)
+        needs: [changes]
+        if: needs.changes.outputs.web_changed == 'true'
+        runs-on: [self-hosted, Linux, X64, aws-india, blacksmith-2vcpu-ubuntu-2404, hetzner]
+        timeout-minutes: 45
+        steps:
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+            - name: Setup Node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: '20'
+            - name: Install web dependencies
+              working-directory: ./web
+              run: npm ci
+            - name: Install Playwright Chromium
+              working-directory: ./web
+              env:
+                  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/web/.playwright
+              run: npx playwright install chromium
+            - name: Run web P0 acceptance
+              working-directory: ./web
+              env:
+                  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/web/.playwright
+              run: npm run test:e2e
+            - name: Publish web artifact summary
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  {
+                    echo "### Web Acceptance Artifacts"
+                    find web/test-results web/playwright-report -type f 2>/dev/null | sort | sed 's/^/- `/' | sed 's/$/`/'
+                  } >> "$GITHUB_STEP_SUMMARY"
+            - name: Upload web acceptance artifacts
+              if: always()
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+              with:
+                  name: web-acceptance-artifacts
+                  path: |
+                      web/test-results/**
+                      web/playwright-report/**
                   if-no-files-found: ignore
                   retention-days: 14
 
@@ -485,7 +537,7 @@ jobs:
     ci-required:
         name: CI Required Gate
         if: always()
-        needs: [changes, lint, workspace-check, package-check, test, tui-automation, build, docs-only, non-rust, docs-quality, lint-feedback, license-file-owner-guard]
+        needs: [changes, lint, workspace-check, package-check, test, tui-automation, web-acceptance, build, docs-only, non-rust, docs-quality, lint-feedback, license-file-owner-guard]
         runs-on: [self-hosted, Linux, X64, aws-india, light, cpu40]
         steps:
             - name: Enforce required status
@@ -497,9 +549,11 @@ jobs:
                   rust_changed="${{ needs.changes.outputs.rust_changed }}"
                   tui_changed="${{ needs.changes.outputs.tui_changed }}"
                   docs_changed="${{ needs.changes.outputs.docs_changed }}"
+                  web_changed="${{ needs.changes.outputs.web_changed }}"
                   docs_result="${{ needs.docs-quality.result }}"
                   license_owner_result="${{ needs.license-file-owner-guard.result }}"
                   tui_automation_result="${{ needs.tui-automation.result }}"
+                  web_acceptance_result="${{ needs.web-acceptance.result }}"
 
                   # --- Helper: enforce PR governance gates ---
                   check_pr_governance() {
@@ -526,21 +580,25 @@ jobs:
                   fi
 
                   # --- Non-rust fast path ---
-                  if [ "$rust_changed" != "true" ] && [ "$tui_changed" != "true" ]; then
+                  if [ "$rust_changed" != "true" ] && [ "$tui_changed" != "true" ] && [ "$web_changed" != "true" ]; then
                     check_pr_governance
                     check_docs_quality
                     echo "Non-rust fast path passed."
                     exit 0
                   fi
 
-                  if [ "$rust_changed" != "true" ] && [ "$tui_changed" = "true" ]; then
+                  if [ "$rust_changed" != "true" ] && { [ "$tui_changed" = "true" ] || [ "$web_changed" = "true" ]; }; then
                     check_pr_governance
-                    if [ "$tui_automation_result" != "success" ]; then
+                    if [ "$tui_changed" = "true" ] && [ "$tui_automation_result" != "success" ]; then
                       echo "TUI automation job did not pass: ${tui_automation_result}"
                       exit 1
                     fi
+                    if [ "$web_changed" = "true" ] && [ "$web_acceptance_result" != "success" ]; then
+                      echo "Web acceptance job did not pass: ${web_acceptance_result}"
+                      exit 1
+                    fi
                     check_docs_quality
-                    echo "TUI-only CI path passed."
+                    echo "UI-only CI path passed."
                     exit 0
                   fi
 
@@ -556,6 +614,7 @@ jobs:
                   echo "package-check=${package_check_result}"
                   echo "test=${test_result}"
                   echo "tui-automation=${tui_automation_result}"
+                  echo "web-acceptance=${web_acceptance_result}"
                   echo "build=${build_result}"
                   echo "docs=${docs_result}"
                   echo "license_file_owner_guard=${license_owner_result}"
@@ -569,6 +628,11 @@ jobs:
 
                   if [ "$tui_changed" = "true" ] && [ "$tui_automation_result" != "success" ]; then
                     echo "TUI automation job did not pass: ${tui_automation_result}"
+                    exit 1
+                  fi
+
+                  if [ "$web_changed" = "true" ] && [ "$web_acceptance_result" != "success" ]; then
+                    echo "Web acceptance job did not pass: ${web_acceptance_result}"
                     exit 1
                   fi
 

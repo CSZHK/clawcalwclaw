@@ -1,0 +1,118 @@
+name: UI Acceptance
+
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: '30 3 * * *'
+
+concurrency:
+    group: ui-acceptance-${{ github.event_name }}-${{ github.ref_name || github.run_id }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+env:
+    GIT_CONFIG_COUNT: '1'
+    GIT_CONFIG_KEY_0: core.hooksPath
+    GIT_CONFIG_VALUE_0: /dev/null
+    CARGO_TERM_COLOR: always
+
+jobs:
+    tui-acceptance:
+        name: TUI Acceptance (Nightly / Manual)
+        runs-on: [self-hosted, Linux, X64, aws-india, blacksmith-2vcpu-ubuntu-2404, hetzner]
+        timeout-minutes: 90
+        env:
+            CARGO_HOME: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/cargo
+            RUSTUP_HOME: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/rustup
+            CARGO_TARGET_DIR: ${{ github.workspace }}/.ci-rust/${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}/target
+        steps:
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+            - name: Ensure C toolchain
+              shell: bash
+              run: bash ./scripts/ci/ensure_c_toolchain.sh
+            - name: Self-heal Rust toolchain cache
+              shell: bash
+              run: ./scripts/ci/self_heal_rust_toolchain.sh 1.92.0
+            - uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+              with:
+                  toolchain: 1.92.0
+            - name: Ensure C toolchain for Rust builds
+              run: ./scripts/ci/ensure_cc.sh
+            - name: Ensure cargo component
+              shell: bash
+              run: bash ./scripts/ci/ensure_cargo_component.sh 1.92.0
+            - uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v3
+              with:
+                  prefix-key: ui-acceptance-tui
+                  cache-bin: false
+            - name: Install pinned TUI capture tools
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  tool_dir="${RUNNER_TEMP}/tui-ci-bin"
+                  mkdir -p "${tool_dir}"
+                  ./scripts/ci/install_vhs.sh "${tool_dir}"
+                  ./scripts/ci/install_ttyd.sh "${tool_dir}"
+                  echo "${tool_dir}" >> "$GITHUB_PATH"
+            - name: Run TUI acceptance suite
+              env:
+                  CARGO_BUILD_JOBS: '2'
+                  TUI_ARTIFACT_DIR: artifacts/tui/pty
+              run: |
+                  cargo test --locked --lib tui
+                  cargo test --locked --features tui-ratatui --test tui_render_test --test tui_event_handling_test
+                  cargo build --locked --features tui-ratatui --bin clawclawclaw
+                  cargo test --locked --features tui-ratatui --test tui_e2e_pty -- --test-threads=1
+            - name: Record replay artifacts
+              if: always()
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  binary_path="${CARGO_TARGET_DIR:-target}/debug/clawclawclaw"
+                  ./scripts/ci/run_tui_tmux_capture.sh \
+                    --binary "${binary_path}" \
+                    --artifacts-dir artifacts/tui/capture
+            - name: Upload TUI acceptance artifacts
+              if: always()
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+              with:
+                  name: tui-acceptance-artifacts
+                  path: artifacts/tui/**
+                  if-no-files-found: ignore
+                  retention-days: 14
+
+    web-acceptance:
+        name: Web Acceptance (Nightly / Manual)
+        runs-on: [self-hosted, Linux, X64, aws-india, blacksmith-2vcpu-ubuntu-2404, hetzner]
+        timeout-minutes: 45
+        steps:
+            - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+            - name: Setup Node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: '20'
+            - name: Install web dependencies
+              working-directory: ./web
+              run: npm ci
+            - name: Install Playwright Chromium
+              working-directory: ./web
+              env:
+                  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/web/.playwright
+              run: npx playwright install chromium
+            - name: Run web acceptance suite
+              working-directory: ./web
+              env:
+                  PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/web/.playwright
+              run: npm run test:e2e
+            - name: Upload web acceptance artifacts
+              if: always()
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+              with:
+                  name: web-acceptance-artifacts
+                  path: |
+                      web/test-results/**
+                      web/playwright-report/**
+                  if-no-files-found: ignore
+                  retention-days: 14

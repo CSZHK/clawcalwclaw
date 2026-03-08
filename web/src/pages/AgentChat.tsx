@@ -264,6 +264,7 @@ export default function AgentChat() {
           <div className="flex-1 relative">
             <input
               ref={inputRef}
+              aria-label="Chat message"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}

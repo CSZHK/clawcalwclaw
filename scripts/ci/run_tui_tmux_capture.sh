@@ -22,6 +22,14 @@ have_cmd() {
   command -v "$1" >/dev/null 2>&1
 }
 
+require_artifact_file() {
+  local path="$1"
+  if [ ! -s "${path}" ]; then
+    echo "Expected non-empty artifact: ${path}" >&2
+    exit 1
+  fi
+}
+
 bootstrap_tui_config() {
   local binary="$1"
   local home_dir="$2"
@@ -200,7 +208,7 @@ rm -f \
 
 start_tui_session "${smoke_session}"
 wait_for_session_output "${smoke_session}" "${smoke_capture_path}" "${startup_timeout_secs}"
-tmux send-keys -t "${smoke_session}:0.0" C-d
+tmux send-keys -t "${smoke_session}:0.0" q
 wait_for_session_exit "${smoke_session}" 15
 
 start_tui_session "${capture_session}"
@@ -240,6 +248,12 @@ if ! wait_for_session_exit "${capture_session}" 5; then
   echo "Capture session did not exit on its own; cleaning up tmux session after artifact generation." >&2
   tmux kill-session -t "${capture_session}" >/dev/null 2>&1 || true
 fi
+
+require_artifact_file "${smoke_capture_path}"
+require_artifact_file "${capture_probe_path}"
+require_artifact_file "${artifacts_dir}/tui-demo.ascii"
+require_artifact_file "${artifacts_dir}/tui-demo.gif"
+require_artifact_file "${artifacts_dir}/tui-demo.mp4"
 
 printf 'Generated TUI artifacts in %s\n' "${artifacts_dir}"
 find "${artifacts_dir}" -maxdepth 1 -type f | sort

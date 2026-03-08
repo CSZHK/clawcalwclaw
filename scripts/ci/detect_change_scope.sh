@@ -26,6 +26,7 @@ if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
     echo "tui_changed=true"
     echo "workflow_changed=false"
     echo "ci_cd_changed=false"
+    echo "web_changed=true"
     echo "base_sha="
   } >> "$GITHUB_OUTPUT"
   write_empty_docs_files
@@ -63,6 +64,7 @@ if [ -z "$CHANGED" ]; then
     echo "tui_changed=false"
     echo "workflow_changed=false"
     echo "ci_cd_changed=false"
+    echo "web_changed=false"
     echo "base_sha=$DIFF_BASE"
   } >> "$GITHUB_OUTPUT"
   write_empty_docs_files
@@ -75,6 +77,7 @@ rust_changed=false
 tui_changed=false
 workflow_changed=false
 ci_cd_changed=false
+web_changed=false
 docs_files=()
 while IFS= read -r file; do
   [ -z "$file" ] && continue
@@ -108,6 +111,18 @@ while IFS= read -r file; do
     || [[ "$file" == .github/workflows/ci-run.yml ]] \
     || [[ "$file" == .github/workflows/test-self-hosted.yml ]]; then
     tui_changed=true
+  fi
+
+  if [[ "$file" == web/* ]] \
+    || [[ "$file" == src/* ]] \
+    || [[ "$file" == tests/* ]] \
+    || [[ "$file" == Cargo.toml ]] \
+    || [[ "$file" == Cargo.lock ]] \
+    || [[ "$file" == scripts/ci/detect_change_scope.sh ]] \
+    || [[ "$file" == .github/workflows/ci-run.yml ]] \
+    || [[ "$file" == .github/workflows/deploy-web.yml ]] \
+    || [[ "$file" == .github/workflows/ui-acceptance.yml ]]; then
+    web_changed=true
   fi
 
   if [[ "$file" == docs/* ]] \
@@ -145,6 +160,7 @@ done <<< "$CHANGED"
   echo "tui_changed=$tui_changed"
   echo "workflow_changed=$workflow_changed"
   echo "ci_cd_changed=$ci_cd_changed"
+  echo "web_changed=$web_changed"
   echo "base_sha=$DIFF_BASE"
   echo "docs_files<<EOF"
   if [ "${#docs_files[@]}" -gt 0 ]; then

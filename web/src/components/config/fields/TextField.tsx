@@ -10,6 +10,7 @@ export default function TextField({ field, value, onChange, isMasked }: FieldPro
   return (
     <div className="relative">
       <input
+        aria-label={field.label}
         type={isPassword && !showPassword ? 'password' : 'text'}
         value={strValue}
         onChange={(e) => onChange(e.target.value)}

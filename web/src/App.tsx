@@ -56,6 +56,7 @@ function PairingDialog({ onPair }: { onPair: (code: string) => Promise<void> }) 
         </div>
         <form onSubmit={handleSubmit}>
           <input
+            aria-label="Pairing code"
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}

@@ -5,6 +5,7 @@ export default function NumberField({ field, value, onChange }: FieldProps) {
 
   return (
     <input
+      aria-label={field.label}
       type="number"
       value={numValue}
       onChange={(e) => {

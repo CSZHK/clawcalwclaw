@@ -47,6 +47,7 @@ export default function TagListField({ field, value, onChange }: FieldProps) {
         ))}
       </div>
       <input
+        aria-label={field.label}
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}

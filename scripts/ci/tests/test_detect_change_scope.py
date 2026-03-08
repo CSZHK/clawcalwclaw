@@ -149,6 +149,7 @@ class DetectChangeScopeTest(unittest.TestCase):
         self.assertEqual(out["workflow_changed"], "false")
         self.assertEqual(out["docs_changed"], "false")
         self.assertEqual(out["docs_only"], "false")
+        self.assertEqual(out["web_changed"], "true")
         self.assertEqual(out["base_sha"], common_base)
 
     def test_tui_source_change_sets_tui_changed(self) -> None:
@@ -187,6 +188,36 @@ class DetectChangeScopeTest(unittest.TestCase):
         self.assertEqual(out["rust_changed"], "false")
         self.assertEqual(out["tui_changed"], "true")
         self.assertEqual(out["workflow_changed"], "false")
+        self.assertEqual(out["ci_cd_changed"], "true")
+
+    def test_web_source_change_sets_web_changed_without_rust(self) -> None:
+        (self.tmp / "README.md").write_text("# base\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "README.md"], "git add README.md")
+        base_sha = self._commit("base")
+
+        (self.tmp / "web" / "src").mkdir(parents=True, exist_ok=True)
+        (self.tmp / "web" / "src" / "App.tsx").write_text("export default function App() { return null; }\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "web/src/App.tsx"], "git add web/src/App.tsx")
+        self._commit("feat: web app change")
+
+        out = self._run_scope(event_name="push", base_sha=base_sha)
+        self.assertEqual(out["rust_changed"], "false")
+        self.assertEqual(out["web_changed"], "true")
+        self.assertEqual(out["tui_changed"], "false")
+
+    def test_web_ci_plumbing_change_sets_web_changed(self) -> None:
+        (self.tmp / "README.md").write_text("# base\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", "README.md"], "git add README.md")
+        base_sha = self._commit("base")
+
+        (self.tmp / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
+        (self.tmp / ".github" / "workflows" / "deploy-web.yml").write_text("name: deploy-web\n", encoding="utf-8")
+        self._assert_cmd_ok(["git", "add", ".github/workflows/deploy-web.yml"], "git add deploy-web.yml")
+        self._commit("ci: touch web workflow")
+
+        out = self._run_scope(event_name="push", base_sha=base_sha)
+        self.assertEqual(out["rust_changed"], "false")
+        self.assertEqual(out["web_changed"], "true")
         self.assertEqual(out["ci_cd_changed"], "true")
 
 
